@@ -1,0 +1,9 @@
+EXPORTS
+	_ZN17CWsfWlanIapWizard13LaunchWizardLER12TWsfWlanInfoi @ 1 NONAME
+	_ZN17CWsfWlanIapWizard18CreateAccessPointLEv @ 2 NONAME
+	_ZN17CWsfWlanIapWizard4NewLEv @ 3 NONAME
+	_ZN17CWsfWlanIapWizard5NewLCEv @ 4 NONAME
+	_ZN17CWsfWlanIapWizardD0Ev @ 5 NONAME
+	_ZN17CWsfWlanIapWizardD1Ev @ 6 NONAME
+	_ZN17CWsfWlanIapWizardD2Ev @ 7 NONAME
+

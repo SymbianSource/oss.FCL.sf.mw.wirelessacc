@@ -1,0 +1,182 @@
+/*
+* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Resource definitions for project wlaninfosorting
+*
+*/
+
+
+
+NAME WIST
+
+#include <eikon.rh>
+#include <eikon.rsg>
+#include <avkon.rh>
+#include <avkon.rsg>
+#include <avkon.hrh>
+#include <avkon.loc>
+#include <data_caging_paths_strings.hrh>
+
+#include "wsfwlansortingbrand.rh"
+#include <wsfmainapplication.loc>
+#include "wsfwlaninfosorting.hrh"
+#include <wsfwlaninfosorting.mbg>
+
+
+RESOURCE RSS_SIGNATURE { }
+
+    
+RESOURCE TBUF16 { buf=""; }
+	    
+
+// ---------------------------------------------------------------------------
+// r_qtn_title_filter_out_wlans
+// ---------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_title_filter_out_wlans
+    { 
+    buf = qtn_note_title_filter_out_wlans; 
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_blacklist_filter_selection_dialog_menubar
+// ---------------------------------------------------------------------------
+//
+RESOURCE MENU_BAR r_qtn_blacklist_filter_selection_dialog_menubar
+    {
+    titles =
+        {
+        MENU_TITLE 
+            { 
+            menu_pane = R_AVKON_MENUPANE_MARKABLE_LIST; 
+            }
+        };
+	}
+
+    
+// ---------------------------------------------------------------------------
+// r_qtn_blacklist_filter_selection_dialog
+// ---------------------------------------------------------------------------
+//
+RESOURCE DIALOG r_qtn_blacklist_filter_selection_dialog
+	{
+	flags = EAknDialogMarkableList;
+	buttons = R_AVKON_SOFTKEYS_OK_CANCEL__MARK;
+	items =
+		{
+        DLG_LINE
+            {
+            type = EAknCtSingleListBox;
+            id = ESelectionListControl;
+            control = LISTBOX
+                {
+                flags = EAknListBoxMarkableList | EAknListBoxLoopScrolling;
+                };
+            }
+		};
+	}
+	
+ 
+// ---------------------------------------------------------------------------
+// r_qtn_preferred_filter_selection_dialog2
+// ---------------------------------------------------------------------------
+//
+RESOURCE AVKON_MULTISELECTION_LIST_QUERY r_qtn_preferred_filter_selection_dialog2
+    {
+	softkeys = R_AVKON_SOFTKEYS_OK_CANCEL__MARK;
+	items =
+    	{
+    	AVKON_MULTISELECTION_LIST_QUERY_DLG_LINE 
+    	    {
+    	    control = AVKON_LIST_QUERY_CONTROL
+        		{
+        		listtype = EAknCtSingleGraphicPopupMenuListBox;
+        		listbox = AVKON_MULTISELECTION_LIST_QUERY_LIST
+        		    {
+        		    };
+        		heading = qtn_note_title_filter_out_wlans;
+        		};
+    	    }
+    	};
+    }
+
+    
+// ---------------------------------------------------------------------------
+// r_qtn_user_preferred_filter_selection_dialog
+// ---------------------------------------------------------------------------
+//
+RESOURCE DIALOG r_qtn_user_preferred_filter_selection_dialog
+	{
+    flags = EAknDialogMarkableList;
+	buttons = R_AVKON_SOFTKEYS_OK_CANCEL__MARK;
+    items =
+        {
+        DLG_LINE 
+            {
+            type = EECustom;
+            id = ESnifferLabel;
+            control = LABEL  
+                {
+                };
+            },
+          
+        DLG_LINE
+            {
+            type = EAknCtSingleListBox;
+            id = ESelectionListControl;
+            control = LISTBOX
+                {
+                flags = EAknListBoxMarkableList | EAknListBoxLoopScrolling;
+                height = 18;
+                };
+            }
+        
+        };
+	}
+
+	
+// ---------------------------------------------------------------------------
+// r_qtn_ssid_branding
+//
+// To add branded networks, modify the brandedItems structure as follows:
+//
+//  brandedItems = 
+//      {
+//      WLAN_BRAND_ITEM
+//        	{
+//        	brandedSsids = { "HugeOperator_protected", "HugeOperator_public" };
+//        	bmpIdImage = EMbmWsfwlaninfosortingHugeoperator;
+//          bmpIdMask = EMbmWsfwlaninfosortingHugeoperator_mask;
+//        	}
+//      }
+//
+// Bitmap enums are defined in wsfwlaninfosorting.mbg. See also remarks
+// in wsfwlaninfosorting.mk. In case you don't want to specify custom icons,
+// set the bmpIdImage and bmpIdMask as follows:
+//
+//          bmpIdImage = EMbmWsfwlaninfosortingQgn_prop_wlan_bearer;
+//          bmpIdMask = EMbmWsfwlaninfosortingQgn_prop_wlan_bearer_mask;
+// 
+// DO NOT REMOVE the r_qtn_ssid_branding structure even if there are 
+// no networks to define! 
+// ---------------------------------------------------------------------------
+//
+RESOURCE WLAN_SORTING_BRAND r_qtn_ssid_branding
+	{
+	bmpfile = APP_BITMAP_DIR "\\wsfwlaninfosorting.mif";
+	brandedItems =
+		{
+		};
+	}
+

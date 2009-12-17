@@ -1,0 +1,69 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*		Localization strings for Plugin
+*
+*/
+
+
+//  LOCALISATION STRINGS
+
+//d:Text of a list item in Connection view's list
+//d:Item opens WLAN view
+//l:list_double_large_graphic_pane_t1
+//r:5.0
+#define qtn_set_folder_conn_wlan "WLAN"
+        
+// d:Text to indicate that the wlan scanning is off.
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define qtn_cp_detail_wlan_scan_off	"WLAN scanning off"
+
+// d:Text indicate that wlan scan did not find any wlan in the range 
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define qtn_cp_detail_wlan_no_nw_available	"No networks available"
+
+// d:Text used to tell that a preconfigured wlan accesspoint is found.
+// d:%U stands for wlan ssid( max 50 digits ) 
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define qtn_cp_detail_wlan_known_nw_available	"'%U' available"
+
+// d:Text use to indicate that a non-configured wlan is in the range 
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define	qtn_cp_detail_wlan_network_available	"Network available"
+
+// d:Text use to indicate that multiple non-configured wlans is in the range 
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define qtn_cp_detail_wlan_networks_available	"Networks available"
+
+// d:Text used the show connected wlan 
+// d: %U wlan ssid ( max 50 digits ) 
+// d:(one row)
+// l:list_double_large_graphic_pane_t2
+#define qtn_cp_detail_wlan_connected	"Connected to '%U'"
+
+//d: In case of error, the error code is passed to error resolver
+//d: and the error note is displayed accordingly. If error resolver
+//d: cannot resolve the error, an error note "System error" is displayed.
+//l: popup_note_window/opt2
+//w:
+//r:5.0
+//
+#define qtn_err_os_general "System error"
+
+// End of File

@@ -1,0 +1,391 @@
+/*
+* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Resource definitions for project AiPlugin
+*
+*/
+
+
+
+NAME WLPL
+
+#include <eikon.rh>
+#include <eikon.rsg>
+#include <avkon.rh>
+#include <avkon.rsg>
+#include <avkon.hrh>
+#include <avkon.loc>
+
+#include <wsfaiplugin.loc>
+#include <wsfmainapplication.loc>
+
+
+RESOURCE RSS_SIGNATURE { }
+
+
+RESOURCE TBUF16 { buf=""; }
+
+
+
+// --------------------------------------------------------------------------
+// Localised strings
+// --------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_sniffer_plug_in_refreshing         
+    { 
+    buf = qtn_sniffer_plug_in_refreshing; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_connecting         
+    { 
+    buf = qtn_sniffer_plug_in_connecting; 
+    }
+
+RESOURCE TBUF r_qtn_status_no_wlans_available         
+    { 
+    buf = qtn_sniffer_plug_in_no_wlans_found; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_scanning_off        
+    { 
+    buf = qtn_sniffer_plug_in_scanning_off; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_ssid_found    
+    { 
+    buf = qtn_sniffer_plug_in_ssid_found; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_unknown_ssid_found    
+    { 
+    buf = qtn_sniffer_plug_in_unknown_wlan_found; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_unknown_ssids_found    
+    { 
+    buf = qtn_sniffer_plug_in_unknown_wlans_found; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_connected_to_ssid    
+    { 
+    buf = qtn_sniffer_plug_in_iap_connected; 
+    }
+
+RESOURCE TBUF r_qtn_wlan_manual_ssid_input    
+    { 
+    buf = qtn_wlan_manual_ssid_input; 
+    }
+
+RESOURCE TBUF r_qtn_msk_sniffer_activate    
+    { 
+    buf = qtn_msk_sniffer_activate; 
+    }
+
+RESOURCE TBUF r_qtn_ai_wizard_title            
+    { 
+    buf = qtn_ai_wizard_title; 
+    }
+
+RESOURCE TBUF r_qtn_wlan_info_no_networks_found 
+    {
+    buf = qtn_wlan_info_no_networks_found; 
+    }
+
+RESOURCE TBUF r_qtn_wlan_info_connection_already_active
+    {
+    buf = qtn_wlan_info_connection_already_active; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_connected_to
+    {
+    buf = qtn_sniffer_plug_in_connected_to; 
+    }
+
+RESOURCE TBUF r_qtn_sniffer_plug_in_wlan_network_found
+    {
+    buf = qtn_sniffer_plug_in_wlan_network_found; 
+    }
+
+RESOURCE TBUF r_ssid
+    {
+    buf = L"'%U[16]'"; 
+    }
+
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_offline_items
+// Options menu items for 'Offline' state
+// --------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_aiplugin_options_offline_items
+    {    
+    items =
+        {
+        LBUF
+            {  
+            txt = qtn_sniffer_opt_start_web_browsing;        
+            },
+        LBUF
+            {  
+            txt = qtn_sniffer_opt_connect;
+            },
+        LBUF
+            {
+            txt = qtn_sniffer_plug_in_options_search_wlan_networks;        
+            },
+        LBUF
+            {
+            txt = qtn_sniffer_opt_set_scanning_off;        
+            }
+        };
+    }
+    
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_connected_items
+// Options menu items for 'Connected' state
+// --------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_aiplugin_options_connected_items
+    {    
+    items =
+        {
+        LBUF
+            {  
+            txt = qtn_sniffer_opt_start_web_browsing;       
+            },
+        LBUF
+            {    
+            txt = qtn_sniffer_opt_disconnect_wlan;        
+            }
+        };
+    }
+
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_connecting_items
+// Options menu items for 'Connecting' state
+// --------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_aiplugin_options_connecting_items
+    {    
+    items =
+        {
+        LBUF
+            {    
+            txt = qtn_sniffer_opt_disconnect_wlan;        
+            }
+        };
+    }
+    
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_browsing_items
+// Options menu items for 'Browsing' state
+// --------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_aiplugin_options_browsing_items
+    {    
+    items =
+        {
+        LBUF
+            {
+            txt = qtn_sniffer_opt_continue_web_browsing;        
+            },
+        LBUF
+            {    
+            txt = qtn_sniffer_opt_disconnect_wlan;      
+            }
+        };
+    }
+    
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_offline
+// Options menu in 'Offline' state
+// --------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_aiplugin_options_offline
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;  
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_aiplugin_options_offline_items;
+                    };
+                };
+            }
+        };
+    }
+    
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_connected
+// Options menu in 'Connected' state
+// --------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_aiplugin_options_connected
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;    
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_aiplugin_options_connected_items;
+                    };
+                };
+            }
+        };
+    } 
+
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_connecting
+// Options menu in 'Connecting' state
+// --------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_aiplugin_options_connecting
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;    
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_aiplugin_options_connecting_items;
+                    };
+                };
+            }
+        };
+    }   
+
+
+// --------------------------------------------------------------------------
+// r_qtn_aiplugin_options_browsing
+// Options menu in 'Browsing' state
+// --------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_aiplugin_options_browsing
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;    
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_aiplugin_options_browsing_items;
+                    };
+                };
+            }
+        };
+    }    
+
+
+// --------------------------------------------------------------------------
+// r_qtn_plugin_search_wlan_networks
+// Search for wlan networks query
+// --------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_plugin_search_wlan_networks
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = r_qtn_plugin_search_wlan_network_buttons;    
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype =  EAknCtSingleGraphicPopupMenuListBox;
+                heading = qtn_wlan_prmpt_select_network;
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    };
+                };
+            }
+        };
+    }
+    
+
+// --------------------------------------------------------------------------
+// r_qtn_plugin_search_wlan_network_buttons
+// CBA buttons for search for wlan networks query
+// --------------------------------------------------------------------------
+//
+RESOURCE CBA r_qtn_plugin_search_wlan_network_buttons
+     {
+     buttons =
+        {
+        CBA_BUTTON { id = EEikBidOk; txt = qtn_sniffer_softkey_connect; },
+        CBA_BUTTON { id = EEikBidCancel; txt = text_softkey_cancel; },
+        CBA_BUTTON { id = EEikBidOk; txt = ""; }
+        };
+    }    
+
+
+//----------------------------------------------------------------------------
+// r_qtn_sniffer_quest_restart_browsing_with_wlan
+// String for Web application needs to be restarted query
+//----------------------------------------------------------------------------
+RESOURCE TBUF r_qtn_sniffer_quest_restart_browsing_with_wlan
+    {
+    buf = qtn_sniffer_quest_restart_browsing_with_wlan;
+    }
+
+
+//----------------------------------------------------------------------------
+// r_restart_browsing_confirmation_query
+// Query to restart browser with WLAN
+//----------------------------------------------------------------------------
+RESOURCE DIALOG r_restart_browsing_confirmation_query
+    {
+    flags=EGeneralQueryFlags;
+    buttons=R_AVKON_SOFTKEYS_YES_NO__YES;
+    items=
+        {
+        DLG_LINE
+            {
+            type=EAknCtQuery;
+            id = EGeneralQuery;
+            control= AVKON_CONFIRMATION_QUERY
+                {
+                layout = EConfirmationQueryLayout;
+                };
+            }
+        };
+    }
+
+

@@ -1,0 +1,33 @@
+/*
+* Copyright (c) 2002-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  The information required for building
+*
+*/
+
+#ifndef __WSFWIDGET_20026F45_IBY__
+#define __WSFWIDGET_20026F45_IBY__
+
+#ifdef __PROTOCOL_WLAN
+
+#if defined(__LAYOUT_360_640_TOUCH) || defined(__LAYOUT_640_360_TOUCH) 
+
+// Enabled by DTD-localization tools
+data=ZPRIVATE\200159c0\install\wsfwidget_20026F45\hsps\00\manifest.dat \private\200159c0\install\wsfwidget_20026F45\hsps\00\manifest.dat
+data=ZPRIVATE\200159c0\install\wsfwidget_20026F45\xuikon\00\wsfwidget.o0000 \private\200159c0\install\wsfwidget_20026F45\xuikon\00\wsfwidget.o0000
+
+#endif // __LAYOUT_360_640_TOUCH || __LAYOUT_640_360_TOUCH
+
+#endif // __PROTOCOL_WLAN
+
+#endif // __WSFWIDGET_20026F45_IBY__

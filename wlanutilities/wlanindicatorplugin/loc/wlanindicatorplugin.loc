@@ -1,0 +1,49 @@
+/*
+* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Localization strings for project wlanindicatorplugin
+*
+*/
+
+
+
+// d:One unknown network found.
+// l:list_single_uniindi_pane_t1
+// r:5.0
+//
+#define qtn_uni_ind_wlan_avail_unknown "WLAN network found"
+
+// d:Multiple unknown networks found.
+// l:list_single_uniindi_pane_t1
+// r:5.0
+//
+#define qtn_uni_ind_wlan_avail_unknown_many	 "WLAN networks found"
+
+// d:One or more known networks found.
+// d: %U is the IAP of the network, or in case more than one found,
+// d: %U is the first network in alphabetical order.
+// l:list_single_uniindi_pane_t1
+// r:5.0
+//
+#define qtn_uni_ind_wlan_avail_known "'%U' found"
+
+// d:WLAN connection exists.
+// d: %U is the name of the WLAN IAP, or the SSID of the WLAN network in case
+// d: connection was created using "Search for WLAN" functionality.
+// l:list_single_uniindi_pane_t1
+// r:5.0
+//
+#define qtn_uni_ind_wlan_conn "'%U' connected"
+
+
+

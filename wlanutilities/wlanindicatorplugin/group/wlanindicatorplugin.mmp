@@ -1,0 +1,64 @@
+/*
+* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Project definition file for project wlanindicatorplugin
+*
+*/
+
+
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
+
+// Build target
+TARGET                  wlanindicatorplugin.dll
+TARGETTYPE              PLUGIN
+UID                     0x10009D8D 0x2001247E
+CAPABILITY              CAP_ECOM_PLUGIN
+VENDORID                VID_DEFAULT
+
+// Source files location
+SOURCEPATH              ../src
+SOURCE                  dllmain.cpp
+SOURCE                  wlanindicatorpluginimplementation.cpp
+
+// Resources
+START RESOURCE  ../data/2001247E.rss
+TARGET          wlanindicatorplugin.rsc
+TARGETPATH      ECOM_RESOURCE_DIR
+END
+
+START RESOURCE          ../data/wlanindicator.rss
+HEADER
+TARGETPATH              RESOURCE_FILES_DIR
+LANGUAGE_IDS
+END
+
+USERINCLUDE             ../inc
+
+MW_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE           /epoc32/include/ecom
+
+LIBRARY                 ecom.lib
+LIBRARY                 avkon.lib
+LIBRARY                 euser.lib
+LIBRARY                 eikcore.lib
+LIBRARY                 apgrfx.lib
+LIBRARY                 cone.lib
+LIBRARY                 commonengine.lib
+LIBRARY                 commdb.lib
+LIBRARY                 charconv.lib
+LIBRARY                 connmon.lib
+LIBRARY                 cmmanager.lib
+LIBRARY                 cmmanagerdatabase.lib
+LIBRARY                 bafl.lib
+

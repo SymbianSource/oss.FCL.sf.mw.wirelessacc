@@ -1,0 +1,47 @@
+;
+; Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+; All rights reserved.
+; This component and the accompanying materials are made available
+; under the terms of "Eclipse Public License v1.0"
+; which accompanies this distribution, and is available
+; at the URL "http://www.eclipse.org/legal/epl-v10.html".
+;
+; Initial Contributors:
+; Nokia Corporation - initial contribution.
+;
+; Contributors:
+;
+; Description:  ; Languages
+;
+
+; ============================================================================
+;  Name     : cenrep_armv5.pkg
+;  ---------------------------------------------------------------------------
+;  Version history:
+; ============================================================================
+;
+; Languages
+
+; ============================================================================
+;  Name     : cenrep_armv5.pkg
+;  ---------------------------------------------------------------------------
+;  Version history:
+; ============================================================================
+;
+; Languages
+&EN
+
+; Header
+#{"HotSpot ICTS Repository"}, (0x10202BE9), 1, 0, 0, TYPE=SISPATCH
+
+; Supports Series 60 v 3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+; Localised Vendor name
+%{"Nokia"}
+
+; Unique Vendor name
+:"Nokia"
+
+;Files
+"..\InternetConnectivityTestService\cenrep\10282EC7.txt"-"c:\private\10202BE9\10282EC7.txt"

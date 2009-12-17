@@ -1,0 +1,102 @@
+/********************
+  WIZARD PLUGIN AREA 
+*********************/
+
+widget#wizardPluginContainer{
+    display: block;
+    width: auto;
+    height: auto;
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 7%;
+    padding-bottom: 7%;
+    nav-index: appearance;
+	block-progression: tb;
+}
+
+widget#wizardPluginContainer:focus {
+	touchfeedbackdown: basic; 
+	touchfeedbackdrag: sensitive; 
+	background-color: "SKIN(268458534 9896)";
+}
+
+button.wizardStatusBox1 { 
+	display: block;
+	visibility: visible;
+	width: auto;
+	height: adaptive;
+	position: absolute;
+    top: 0u;
+    block-progression: lr;
+    direction: ltr;
+}
+
+button.wizardStatusBox2{ 
+	display: block;
+	visibility: visible;
+	width: auto;
+	height: adaptive;
+	position: absolute;
+    top: 5u;
+    block-progression: lr;
+    direction: ltr;
+}
+
+image.wizardicon { 
+    display: block;
+    visibility: visible;
+    position: static;
+    margin-top: 4%;
+    margin-left: 1.0u;
+    width: 4.0u;
+    height: 4.0u;
+}
+
+text.wizardEntryText1 {
+    display: block;
+    visibility: visible;    
+    position: static;
+    width: auto;
+    height: 4.0u;
+    margin-top: 4%;
+    margin-left: 1.0u;
+    font-family: EAknLogicalFontSecondaryFont;
+    font-size: 3.5u;
+    color: "SKIN(268458534 13056 74)";
+    text-align: left;
+    direction: ltr;
+}
+
+text.wizardEntryText2 {
+    display: block;
+    visibility: visible;    
+    position: static;
+    width: auto;
+    height: 4.0u;
+    margin-left: 6.0u;
+    font-family: EAknLogicalFontSecondaryFont;
+    font-size: 3.5u;
+    color: "SKIN(268458534 13056 74)";
+    text-align: left;
+    direction: ltr;
+}
+
+image#wizardSecureIcon {
+    display: block;
+    visibility: visible;
+    position: static;
+    margin-top: 0.2%;
+    margin-right: 0.5u;
+    width: 4.0u;
+    height: 4.0u;     
+}
+
+image#wizardStrengthIcon {
+    display: block;
+    visibility: visible;
+    position: static;
+    margin-top: 0.2%;
+    margin-right: 1u;
+    width: 4.0u;
+    height: 4.0u;    
+}

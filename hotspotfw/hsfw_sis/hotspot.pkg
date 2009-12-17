@@ -1,0 +1,63 @@
+;
+; Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+; All rights reserved.
+; This component and the accompanying materials are made available
+; under the terms of "Eclipse Public License v1.0"
+; which accompanies this distribution, and is available
+; at the URL "http://www.eclipse.org/legal/epl-v10.html".
+;
+; Initial Contributors:
+; Nokia Corporation - initial contribution.
+;
+; Contributors:
+;
+; Description:  ;Languages
+;
+&EN
+
+;Header
+#{"Hotspot FW demo"},(0x10282ECB),1,0,0
+
+; Supports Series 60 v 3.0
+[0x101F7961], 0, 0, 0, {"Series60ProductID"}
+
+; Localised Vendor Name
+%{"Nokia"}
+
+;Unique Vendor Name
+:"Nokia"
+
+; Uninstall
+"\EPOC32\RELEASE\ARMV5\UREL\HotspotUninstall.exe"-"c:\sys\bin\HotspotUninstall.exe", FR, RR, RW
+
+; Server
+"\EPOC32\RELEASE\ARMV5\UREL\HotSpotServer.exe"-"c:\sys\bin\HotSpotServer.exe"
+
+; Client API
+"\EPOC32\RELEASE\ARMV5\UREL\hotspotclient.dll"-"c:\sys\bin\hotspotclient.dll"
+
+; ECOM plugin
+"\EPOC32\DATA\Z\Resource\Plugins\NetCfgExtnHotSpot.RSC"-"c:\resource\plugins\NetCfgExtnHotSpot.RSC"
+"\EPOC32\RELEASE\ARMV5\UREL\NetCfgExtnHotSpot.dll"-"c:\sys\bin\NetCfgExtnHotSpot.dll"
+
+; ECOM plugin
+"\EPOC32\DATA\Z\Resource\Plugins\HssMgmtImpl.rsc"-"c:\resource\plugins\HssMgmtImpl.rsc"
+"\EPOC32\RELEASE\ARMV5\UREL\hssmgmtimpl.dll"-"c:\sys\bin\hssmgmtimpl.dll"
+
+; ICTS 
+"\EPOC32\RELEASE\ARMV5\UREL\ictsclientinterface.dll"-"c:\sys\bin\ictsclientinterface.dll"
+
+"\EPOC32\RELEASE\ARMV5\UREL\wlanagthotspotimpl.dll"-"c:\sys\bin\wlanagthotspotimpl.dll"
+"\EPOC32\RELEASE\ARMV5\UREL\wlanagt2.agt"-"c:\sys\bin\WlanAgt2.agt"
+"\EPOC32\DATA\Z\Resource\Plugins\WlanAgtHotSpotImpl.RSC"-"c:\resource\plugins\WlanAgtHotSpotImpl.RSC"
+
+; Hotspot browser logon application 
+"\epoc32\release\armv5\urel\HsBrowser.exe"			-"c:\sys\bin\HsBrowser.exe"
+
+; Hotspot browser logon application, resources and bitmaps
+"\epoc32\data\z\resource\apps\hsbrowser.rsc"		-"c:\Resource\apps\hsbrowser.rsc"
+"\epoc32\data\z\private\10003a3f\apps\hsbrowser_reg.RSC"	-"c:\private\10003a3f\import\apps\hsbrowser_reg.rsc"
+
+; Embedded SIS-files
+@"ictscenrep.sisx"             ,(0x10202BE9)
+"backup_registration.xml"-"c:\private\10282ECB\backup_registration.xml"

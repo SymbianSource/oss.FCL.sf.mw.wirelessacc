@@ -1,0 +1,95 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Build information file for project WlanInfoSorting
+*
+*/
+
+
+#include <platform_paths.hrh>
+
+PRJ_PLATFORMS
+DEFAULT
+
+
+PRJ_EXPORTS
+
+../inc/wsfwlaninfoarrayvisitor.h    	|../../../inc/wsfwlaninfoarrayvisitor.h 
+
+../rom/wsfwlaninfosorting.iby		    CORE_MW_LAYER_IBY_EXPORT_PATH(wsfwlaninfosorting.iby)
+../rom/wsfwlaninfosortingresources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(wsfwlaninfosortingresources.iby)
+
+// blacklist database
+../data/2000cf30.spd				    /epoc32/release/winscw/udeb/z/private/100012a5/policy/2000cf30.spd
+../data/2000cf30.spd				    /epoc32/release/winscw/urel/z/private/100012a5/policy/2000cf30.spd
+../data/2000cf30.spd	 		        /epoc32/data/z/private/100012a5/policy/2000cf30.spd
+
+// backup registration
+../data/backup_registration.xml         /epoc32/release/winscw/udeb/z/private/10281caa/backup_registration.xml
+../data/backup_registration.xml         /epoc32/release/winscw/urel/z/private/10281caa/backup_registration.xml
+../data/backup_registration.xml         /epoc32/data/z/private/10281caa/backup_registration.xml
+
+
+PRJ_MMPFILES
+// gnumakefile 		wlaninfosortingicons.mk
+wlaninfosorting.mmp
+
+
+PRJ_EXTENSIONS
+/*
+* Add your branding icons here like:
+*
+* START EXTENSION s60/mifconv
+* OPTION TARGETFILE wsfwlaninfosorting.mif
+* OPTION HEADERFILE wsfwlaninfosorting.mbg
+* OPTION SOURCES -c8,1 hugeoperatoricon
+* OPTION SOURCES -c8,1 hugeoperatoricon2 
+* END
+*
+* and use the enums that result in wsfwlaninfosorting.mbg when specifying
+* the custfav networks in the resource.
+*
+* If there are no customer favourite networks defined, you must still invoke 
+* mifconv the following way:
+*
+* START EXTENSION s60/mifconv
+* OPTION TARGETFILE wsfwlaninfosorting.mif
+* OPTION HEADERFILE wsfwlaninfosorting.mbg
+* OPTION SOURCES -c8,1 qgn_prop_wlan_bearer 
+* END
+*
+* In case any of the defined networks doesn't need a specific icon, you must
+* use the following invocation:
+*
+* START EXTENSION s60/mifconv
+* OPTION TARGETFILE wsfwlaninfosorting.mif
+* OPTION HEADERFILE wsfwlaninfosorting.mbg
+* OPTION SOURCES -c8,1 qgn_prop_wlan_bearer 
+* OPTION SOURCES -c8,1 hugeoperatoricon
+* OPTION SOURCES -c8,1 hugeoperatoricon2 
+* END
+*
+* and use the enums that result in wsfwlaninfosorting.mbg when specifying
+* the custfav networks in the resource. For the networks without icon, use
+* the enums corresponding to qgn_prop_wlan_bearer.
+*/
+
+START EXTENSION s60/mifconv
+OPTION TARGETFILE wsfwlaninfosorting.mif
+OPTION HEADERFILE wsfwlaninfosorting.mbg
+OPTION SOURCES -c8,1 qgn_prop_wlan_bearer 
+END
+
+
+
+

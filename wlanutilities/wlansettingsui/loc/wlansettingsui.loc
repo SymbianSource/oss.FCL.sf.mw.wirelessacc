@@ -1,0 +1,153 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*		Localization strings for the dll
+*
+*/
+
+
+//  LOCALISATION STRINGS
+
+//d:Title pane text of WLAN (Wireless Local Area Network) settings.
+//l:title_pane_t2/opt9
+//w:
+//r:3.1
+//
+#define qtn_wlan_main_title "Wireless LAN"
+
+//d:Setting list item name.
+//d:"Show WLAN availability" setting: defines if WLAN availablility indicator
+//d:is displayed or not.
+//l:list_setting_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_show_wlan_avail "Show WLAN availability"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_show_wlan_avail "Show WLAN availability" setting value:
+//d:WLAN availability indicator is not displayed.
+//d:Backround scan for WLAN networks is never performed (==off).
+//l:list_set_graphic_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_bg_scan_never "No"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_show_wlan_avail "Show WLAN availability" setting value:
+//d:WLAN availability indicator is displayed.
+//d:Backround scan for WLAN networks is performed regularly.
+//l:list_set_graphic_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_bg_scan_enabled "Yes"
+
+//d:Setting list item name.
+//d:"Scan networks" setting: controls the interval, how often a background scan
+//d:for surrounding WLAN networks is performed.
+//l:list_setting_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_bg_scan_interval "Update availability"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_bg_scan_interval "Scan network" setting value:
+//d:Backround scan for WLAN networks is performed in every 1 minute.
+//l:list_set_graphic_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_bg_scan_1_min "Every 1 min."
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_bg_scan_interval "Scan network" setting value:
+//d:Backround scan for WLAN networks is performed in every %N minutes.
+//l:list_set_graphic_pane_t1
+//w:
+//r:5.2
+//
+#define qtn_wlan_sett_bg_scan_x_min "Every %N minutes"
+
+//d:Setting list item name.
+//d:"Power saving" setting: controls the status of the power mode.
+//l:list_setting_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_power_saving "Power saving"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_power_saving "Power saving" setting value:
+//d:power saving enabled.
+//l:list_set_graphic_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_power_saving_enabled "Enabled"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_power_saving "Power saving" setting value:
+//d:power saving disabled.
+//l:list_set_graphic_pane_t1
+//w:
+//r:3.1
+//
+#define qtn_wlan_sett_power_saving_disabled "Disabled" 
+
+//d: In case of error, the error code is passed to error resolver
+//d: and the error note is displayed accordingly. If error resolver
+//d: cannot resolve the error, an error note "System error" is displayed.
+//l: popup_note_window/opt2
+//w:
+//r:3.1
+//
+#define qtn_err_os_general "System error"
+
+//d: In case the user wants to change the background scanning
+//d: interval while the phone is in power save mode this a 
+//l:popup_note_window
+//w: 
+//r:5.0
+//
+#define qtn_power_saving_protected_settings_infonote "Power saving is active. Unable to edit."
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_bg_scan_interval "Scan network" setting value:
+//d:Backround scan for WLAN networks is calculated by adaptive WLAN scanning engine
+//l:list_set_graphic_pane_t1
+//w:
+//r:5.0
+//
+#define qtn_wlan_sett_bg_scan_auto      "Automatically"
+
+//d:Setting choice item.
+//d:qtn_wlan_sett_bg_scan_interval "Scan network" setting value:
+//d:Backround scan interval for WLAN networks is defined by user
+//l:list_set_graphic_pane_t1
+//w:
+//r:5.2
+//
+#define qtn_wlan_sett_bg_scan_user_def "User-defined interval"
+
+//d:"Interval (in minutes):" - data query
+//l:popup_query_data_window/opt5
+//w:
+//r:5.2
+//
+#define qtn_wlan_prmpt_bg_scan_interval "Interval (in minutes):"
+
+// End of File
