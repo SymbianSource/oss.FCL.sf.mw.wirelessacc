@@ -450,14 +450,11 @@ void CWsfWlanIapWizard::AskNetworkDetailsL()
             if ( !foundSsid )
                 {
                 LOG_WRITE( "direct scan failed, entering fully manual mode" );
-                // pop up info note: No WLAN networks found
-                HBufC* infoText = StringLoader::LoadLC( 
-                                          R_QTN_WLAN_INFO_NO_NETWORKS_FOUND );
-                CAknInformationNote* informationNote = 
-                                    new (ELeave) CAknInformationNote( ETrue );
-                informationNote->ExecuteLD( *infoText );
-                CleanupStack::PopAndDestroy( infoText );
                 
+                // pop up discreet popup: No WLANs found
+                CConnectionUiUtilities* connUiUtils = CConnectionUiUtilities::NewL();        
+                connUiUtils->NoWLANNetworksAvailableNote();
+                delete connUiUtils;                
                 
                 // now entering fully manual mode
 

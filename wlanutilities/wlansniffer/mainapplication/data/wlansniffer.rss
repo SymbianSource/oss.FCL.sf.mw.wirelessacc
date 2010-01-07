@@ -57,8 +57,6 @@ RESOURCE TBUF r_default_document_name
 //
 // ---------------------------------------------------------
 //
-
-
 RESOURCE EIK_APP_INFO
     {
     menubar = r_sniffer_menubar;
@@ -126,19 +124,6 @@ RESOURCE AVKON_VIEW r_sniffer_mainview
     {
     menubar = r_sniffer_menubar;
     cba = r_sniffer_options_back_menu;
-    }
-
-// ---------------------------------------------------------
-//   
-//   r_sniffer_detailsview
-//   Details
-//
-// ---------------------------------------------------------
-//
-RESOURCE AVKON_VIEW r_sniffer_detailsview
-    {
-    menubar = r_sniffer_menubar;
-    cba = R_AVKON_SOFTKEYS_OK_EMPTY;
     }
 
 // ---------------------------------------------------------
@@ -270,6 +255,37 @@ RESOURCE MENU_PANE r_sniffer_context_menu
             }
         };
     }
+
+// ---------------------------------------------------------
+//   
+//   r_sniffer_detailsview
+//   Details
+//
+// ---------------------------------------------------------
+//
+RESOURCE AVKON_VIEW r_sniffer_detailsview
+    {
+    menubar = r_sniffer_detailsview_menubar;
+    cba = R_AVKON_SOFTKEYS_OK_EMPTY;
+    }
+
+
+// ---------------------------------------------------------
+//
+// r_sniffer_detailsview_menubar
+//
+// ---------------------------------------------------------
+//  
+RESOURCE MENU_BAR r_sniffer_detailsview_menubar
+    {
+    titles =
+         {
+         MENU_TITLE
+             {
+             menu_pane = R_AVKON_MENUPANE_EMPTY;
+             }
+         };
+     }
 
 //-----------------------------------------------------------------------------
 //
@@ -650,11 +666,6 @@ RESOURCE TBUF r_qtn_wlan_wait_searching_networks
     buf = qtn_wlan_wait_searching_networks;
     }
 
-RESOURCE TBUF r_qtn_sniffer_wait_connecting
-    {
-    buf = qtn_sniffer_wait_connecting;
-    }
-
 RESOURCE TBUF r_qtn_sniffer_title
     {
     buf = qtn_sniffer_title;
@@ -673,11 +684,6 @@ RESOURCE TBUF r_qtn_sniffer_navi_many_wlan_nws_available
 RESOURCE TBUF r_qtn_sniffer_quest_restart_browsing_with_wlan
     {
     buf = qtn_sniffer_quest_restart_browsing_with_wlan;
-    }
-
-RESOURCE TBUF r_qtn_sniffer_wait_connecting_user_conn
-    {
-    buf = qtn_sniffer_wait_connecting_user_conn;
     }
 
 //-----------------------------------------------------------------------------

@@ -11,13 +11,6 @@ widget#wizardPluginContainer{
     block-progression: tb;
 }
 
-widget#wizardPluginContainer:focus {
-    background-image: "SKIN(268458534 24576)";
-    background-color: "SKIN(268458534 5120 9)";
-	touchfeedbackdown: basic; 
-	touchfeedbackdrag: sensitive; 
-}
-
 button.wizardStatusBox1 { 
 	display: block;
 	visibility: visible;

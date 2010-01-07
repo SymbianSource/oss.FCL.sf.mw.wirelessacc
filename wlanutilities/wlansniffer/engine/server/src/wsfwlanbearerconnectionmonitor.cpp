@@ -884,34 +884,6 @@ void CWsfWlanBearerConnectionMonitor::ShutdownOwnedConnectionL()
             iClientPoll->Cancel();
             }
             
-        case ECsPreferencesChanged:         // fall-through
-            {
-            // restoring default connection
-            TCmDefConnValue defConn;
-            TInt error = KErrNone;
-            
-            LOG_WRITE( "reading default connection" );
-            TRAP( error, iCmMgr.ReadDefConnL( defConn ) );
-            if ( error )
-                {
-                // Ignore possible failure and continue the cleanup
-                LOG_WRITEF( "ReadDefConnL returned error %d", error );
-                }
-            
-            if ( error == KErrNone && defConn == iCurrentDefConn )
-                {
-                // nobody has overwritten our setting so it's our duty to
-                // restore the original value
-                LOG_WRITE( "restoring default connection" );
-                TRAP( error, iCmMgr.WriteDefConnL( iOriginalDefConn ) );
-                if ( error )
-                    {
-                    // Ignore possible failure and continue the cleanup
-                    LOG_WRITEF( "WriteDefConnL returned error %d", error );
-                    }
-                }
-            }
-            
         case ECsConnectionCreated:          // fall-through
             {
 
@@ -920,6 +892,7 @@ void CWsfWlanBearerConnectionMonitor::ShutdownOwnedConnectionL()
         case ECsSocketOpened:               // fall-through
             {
             // closing the connection handle
+            LOG_WRITE( "closing the connection handle" );
             iConnection.Close();
             iSocketServ.Close();
             }
@@ -1048,51 +1021,8 @@ void CWsfWlanBearerConnectionMonitor::RunL()
             {
             LOG_WRITE( "<EConnectionCreated>" );
             
-            // changing connection preferences
             // start monitoring the iap
             MonitorAccessPoint( iConnIap );
-            
-            TInt error = KErrNone;
-
-            // store previous default connection value
-            TRAP( error, iCmMgr.ReadDefConnL( iOriginalDefConn ) );
-            if ( error )
-                {
-                // Ignore possible failure and continue
-                LOG_WRITEF( "RunL ReadDefConnL returned error %d", error );
-                }
-            else 
-                {
-                LOG_WRITEF( "original default connection type/id = %d/%d", 
-                            iOriginalDefConn.iType,
-                            iOriginalDefConn.iId );
-                
-                // set the new connection as default
-                iCurrentDefConn.iType = ECmDefConnConnectionMethod;
-                iCurrentDefConn.iId = iConnIap;
-    
-                TRAP( error, iCmMgr.WriteDefConnL( iCurrentDefConn ) );
-                if ( error )
-                    {
-                    // Ignore possible failure and continue
-                    LOG_WRITEF( "RunL WriteDefConnL returned error %d", error );
-                    }
-    
-                LOG_WRITEF( "current default connection set to type/id = %d/%d", 
-                            iCurrentDefConn.iType,
-                            iCurrentDefConn.iId );
-                }
-            
-            iConnectingState = ECsPreferencesChanged;
-            SetActive();
-            TRequestStatus* status = &iStatus;
-            User::RequestComplete( status, KErrNone );
-            break;
-            }
-            
-        case ECsPreferencesChanged:
-            {
-            LOG_WRITE( "<EPreferencesChanged>" );
             
             // reset inactivity time
             iInactivityStart.UniversalTime();

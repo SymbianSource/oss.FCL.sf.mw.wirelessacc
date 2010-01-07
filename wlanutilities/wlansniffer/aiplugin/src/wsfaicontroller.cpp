@@ -32,6 +32,7 @@
 #include <cmmanager.h>
 #include <internetconnectivitycrkeys.h>
 #include <wlanerrorcodes.h>
+#include <ConnectionUiUtilities.h>
 
 //  CLASS HEADER
 #include "wsfaicontroller.h"
@@ -1141,12 +1142,9 @@ void TWsfAiController::HandleMskIfOfflineL()
             if ( !wlanArray || !wlanArray->Count() )
                 {
                 // there are no available networks
-                HBufC* infoText = StringLoader::LoadLC( 
-                                          R_QTN_WLAN_INFO_NO_NETWORKS_FOUND ); 
-                CAknInformationNote* infoNote = new (ELeave) 
-                                                 CAknInformationNote( ETrue );
-                infoNote->ExecuteLD( *infoText ); 
-                CleanupStack::PopAndDestroy( infoText );
+                CConnectionUiUtilities* connUiUtils = CConnectionUiUtilities::NewL();        
+                connUiUtils->NoWLANNetworksAvailableNote();
+                delete connUiUtils;
                 }
 
             // launch the search dialog

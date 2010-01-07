@@ -146,21 +146,6 @@
 //
 #define qtn_netw_conset_info_eap_settings_default "Default EAP values set. Configure advanced settings by editing the method."
 
-//d:Confirmation query, displayed if user skipped the test.
-//l:popup_note_window 
-//w:
-//r:5.0
-//
-#define qtn_netw_conset_ict_quest_skipped_save "Save connection method for later use?"
-
-//d: Note to indicate to user that the connection method/access point
-//d: will not be saved
-//l: popup_note_window
-//w:
-//r:5.0
-//
-#define qtn_netw_conset_ict_info_method_not_saved "Connection method will not be saved"
-
 //d: Text of an information note used to ensure the user the a new connection
 //d: method has been added successfully.
 //l: popup_note_window

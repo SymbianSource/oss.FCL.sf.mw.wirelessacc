@@ -215,12 +215,6 @@
 //r:3.0
 //
 #define qtn_wlan_wait_searching_networks "Searching WLAN networks" 
-
-//d:During connection creation a wait note Connecting via... is shown
-//l:popup_note_wait_window
-//r:3.0
-//
-#define qtn_sniffer_wait_connecting "Connecting via '%U'"
  
 //d: This confirmation query is displayed if the user selected Start web browsing
 //d: on a WLAN network but the browser is already running and using 
@@ -242,14 +236,6 @@
 //r:3.0
 //
 #define qtn_note_title_filter_out_wlans "Hide selected networks:"
-
-
-//d:During connection creation the wait note is shown while 
-//d:connecting to an IAP if WLAN usage option is selected as Forced
-//l:popup_note_wait_window
-//r:5.0.1
-//
-#define qtn_sniffer_wait_connecting_user_conn "Connecting. All applications will use this connection"
 
 
 

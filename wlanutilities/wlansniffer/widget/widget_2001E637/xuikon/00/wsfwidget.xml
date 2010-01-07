@@ -7,26 +7,12 @@
 	
 		<actions>
 			<action>
-				<trigger name="stylus">
-				<property name="eventtype" value="up" />
-					</trigger>
-					<trigger name="activate"/>
-				<trigger name="keyevent">
-				    <!-- enter key / EStdKeyEnter	-->
-					<property name="scancode" value="3" />
-					<property name="eventtype" value="1" />
-				</trigger>
-					<event name="WLANWizard/OpenMenu" />
+			    <trigger name="activate"/>
+			    <event name="WLANWizard/OpenMenu" />
 			</action>
-			
 			<action>
-					<trigger name="gainfocus"/>
-					<event name="WLANWizard/GainFocusInfoArea" />
-			</action>
-			
-			<action>
-				<trigger class="western" name="down" />
-				<trigger class="arabic" name="up" />
+				<trigger name="gainfocus"/>
+				<event name="WLANWizard/GainFocusInfoArea" />
 			</action>
 		</actions>
 
@@ -37,7 +23,7 @@
 			<text id="statusName1" class="wizardEntryText1" focusable="false">
 				<property class="WLANWizard/NetworkStatus" />
 			</text>
-		</button>	<!-- enf of wizardInfoArea1 -->
+		</button> <!-- enf of wizardInfoArea1 -->
 			
 		<button id="wizardInfoArea2" class="wizardStatusBox2" focusable="false">
 			<text id="statusName2" class="wizardEntryText2" focusable="false">

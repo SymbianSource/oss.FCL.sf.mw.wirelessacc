@@ -26,6 +26,7 @@
 #include <centralrepository.h>
 #include <ErrorUI.h>
 #include <wlansniffer.rsg>
+#include <ConnectionUiUtilities.h>
 
 #include "wlansettingsui.h"
 #include "wsfappui.h"
@@ -404,11 +405,10 @@ void CWsfAppUi::ShowMenuBarL()
 void CWsfAppUi::ShowNoWlansFoundInfoL()
     {
     LOG_ENTERFN( "CWsfAppUi::ShowNoWlansFoundInfoL" );
-    HBufC* infoText = StringLoader::LoadLC( 
-                                        R_QTN_WLAN_INFO_NO_NETWORKS_FOUND );
-    CAknInformationNote* infoNote = new (ELeave) CAknInformationNote( ETrue );
-    infoNote->ExecuteLD( *infoText ); 
-    CleanupStack::PopAndDestroy( infoText );
+    
+    CConnectionUiUtilities* connUiUtils = CConnectionUiUtilities::NewL();                                
+    connUiUtils->NoWLANNetworksAvailableNote();
+    delete connUiUtils;
     }
     
 

@@ -95,24 +95,6 @@ RESOURCE DIALOG r_waitnote_connecting
     }        
 
 
-//----------------------------------------------------------------------------
-// r_qtn_sniffer_wait_connecting
-// String for connecting waitnote
-//----------------------------------------------------------------------------
-RESOURCE TBUF r_qtn_sniffer_wait_connecting         
-    { 
-    buf = qtn_sniffer_wait_connecting; 
-    }
-    
-//----------------------------------------------------------------------------
-// r_qtn_sniffer_wait_connecting_user_conn
-// String for connecting waitnote when WLAN usage is set as Forced
-//----------------------------------------------------------------------------
-RESOURCE TBUF r_qtn_sniffer_wait_connecting_user_conn         
-    { 
-    buf = qtn_sniffer_wait_connecting_user_conn; 
-    }
-
 
 //----------------------------------------------------------------------------
 // r_aihelper_localisable_app_info

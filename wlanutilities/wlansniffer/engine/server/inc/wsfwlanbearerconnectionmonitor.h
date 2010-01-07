@@ -76,12 +76,6 @@ NONSHARABLE_CLASS( CWsfWlanBearerConnectionMonitor ): public CActive,
             ECsConnectionCreated,
             
             /**
-            * Application connection preferences and default connection 
-            * has been changed
-            */
-            ECsPreferencesChanged,
-            
-            /**
             * Connection environment fully initialized
             */
             ECsConnected

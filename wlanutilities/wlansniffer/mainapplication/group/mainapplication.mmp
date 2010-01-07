@@ -92,7 +92,7 @@ LIBRARY             commonui.lib
 LIBRARY             wsfwlaninfo.lib
 LIBRARY             wsfwlaninfosorting.lib
 LIBRARY             wsfmodel.lib
-
+LIBRARY             connectionuiutilities.lib
 
 // Logger
 DEBUGLIBRARY        flogger.lib
