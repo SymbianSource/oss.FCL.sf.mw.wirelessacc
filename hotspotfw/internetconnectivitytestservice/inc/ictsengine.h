@@ -225,11 +225,6 @@ class CIctsEngine : public CBase,
         */
         RHssInterface iHsServer;
 
-        /**
-        * Easy WLAN IAP id
-        */
-        TUint32 iEasyWlanIapId;
-
     };
 
 

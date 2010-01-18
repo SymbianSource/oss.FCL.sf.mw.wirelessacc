@@ -23,13 +23,14 @@
 #include "hssnotif.h"
 #include "hsslogintimer.h"
 #include "hsslogouttimer.h"
+#include "hssclientinterface.h"
+#include "am_debug.h"
 #include <internetconnectivitycrkeys.h>
 #include <WlanCdbCols.h>
 #include <starterclient.h>
-#include "e32std.h"
-#include "am_debug.h"
+#include <cmmanagerext.h>
+#include <e32std.h>
 #include <ecom.h>
-#include "hssclientinterface.h"
 #include <f32file.h>
 #include <apgcli.h>
 
@@ -62,8 +63,6 @@ void CHotSpotSession::ConstructL()
     iLogoutTimer = CHssLogoutTimer::NewL( *this );
     
     iMgtClient = CWlanMgmtClient::NewL();
-    
-    iRepository = CRepository::NewL( KCRUidInternetConnectivitySettings );
     }
 
 // -----------------------------------------------------------------------------
@@ -126,12 +125,6 @@ CHotSpotSession::~CHotSpotSession()
         delete iLogoutTimer;
         }
     iLogoutTimer = NULL;
-    
-    if ( iRepository != NULL )
-        {
-        delete iRepository;
-        }
-    iRepository = NULL;
     
     if ( iIcts != NULL )
         {
@@ -649,23 +642,9 @@ void CHotSpotSession::TestInternetConnectivityL()
         {
         delete iIcts;
         }
-    TInt connectivityTestAllowed( EIctsRunAutomatically );
-    iRepository->Get( KIctsTestPermission, connectivityTestAllowed );
-    DEBUG1("CHotSpotSession::TestInternetConnectivityL: %d", connectivityTestAllowed);
-    if ( connectivityTestAllowed == EIctsNeverRun )
-        {
-        TInt indx = iServer.FindMessage( iIapId, EHssStartLogin );
-        if ( KErrNotFound != indx )
-            {
-            iServer.CompleteMessage( indx, KErrNone );    
-            }
-        }
-    else
-        {
-        iIcts = CIctsClientInterface::NewL( iIapId, iNetId, *this );
-        iIcts->StartL();
-        }
-    
+   
+    iIcts = CIctsClientInterface::NewL( iIapId, iNetId, *this );
+    iIcts->StartL();
     }
 
 // -----------------------------------------------------------------------------
@@ -812,13 +791,14 @@ void CHotSpotSession::ProcessUnRegisterL( const RMessage2& aMessage )
 	{
 	DEBUG("CHotSpotSession::ProcessUnRegisterL");
 	iAllowNotifications = EFalse;
-   
+    TInt ret( KErrNone );
+
     // Read message
     TInt iapId = ( TInt )aMessage.Int0();
     
-    TInt ret( KErrNone );
     // Check that this is not Easy WLAN
-    if ( iServer.GetEasyWlanId() != iapId  )
+    TRAP_IGNORE( EasyWlanIdL() );
+    if ( iEasyWlanId != iapId  )
         {
         TRAPD( err, iIapSettingsHandler->DeleteIapL( iapId ) );
         // return KErrGeneral if IAP removal is not successful
@@ -847,8 +827,9 @@ TInt CHotSpotSession::ProcessStartLoginL( const TUint aIapId, const TUint aNetId
     TBuf8<KExtensionAPILength> extAPI;
     iIapId = aIapId;
     
-    // This is Easy WLAN. 
-    if ( iServer.GetEasyWlanId() == aIapId )
+    // Check if Easy WLAN.
+    TRAP_IGNORE( EasyWlanIdL() );
+    if ( iEasyWlanId == aIapId )
     	{
     	 DEBUG("CHotSpotSession::ProcessStartLogin Easy WLAN detected");
         // Just test internet connectivity and complete message later
@@ -1165,6 +1146,25 @@ void CHotSpotSession::AuthenticateL( const TDesC& aString )
     CleanupStack::PopAndDestroy( param );
 
     DEBUG("CHotSpotSession::AuthenticateLC() done");
+    }
+
+// -----------------------------------------------------------------------------
+// EasyWlanIdL
+// -----------------------------------------------------------------------------
+//
+void CHotSpotSession::EasyWlanIdL()
+    {
+    DEBUG("CHotSpotSession::EasyWlanIdL()");
+    // Set to default value just in case
+    iEasyWlanId = KEasyWlanServiceId; 
+    
+    RCmManagerExt cmManager;
+    cmManager.OpenL();
+    CleanupClosePushL( cmManager );
+    
+    iEasyWlanId = cmManager.EasyWlanIdL();
+    DEBUG1("CHotSpotSession::EasyWlanIdL() ret: % d", iEasyWlanId);
+    CleanupStack::PopAndDestroy( &cmManager );
     }
 
 // -----------------------------------------------------------------------------

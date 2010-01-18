@@ -49,6 +49,14 @@ class MWsfWlanConnectionDetailsProvider
         */ 
         virtual TBool ConnectedWlanConnectionDetailsL( 
                                                 TWsfWlanInfo* aWlanInfo ) = 0;
+        
+        /**
+        * Queries if there is an active WLAN connection.
+        * @since S60 5.2
+        * @return ETrue if there is an active WLAN connection, 
+        *         EFalse otherwise.
+        */ 
+        virtual TBool IsConnected() = 0;
 
     };
 

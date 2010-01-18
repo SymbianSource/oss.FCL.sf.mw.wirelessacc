@@ -141,6 +141,7 @@ EXPORT_C void TWsfWlanInfo::InternalizeL( RReadStream& aStream )
 	iBrandId = aStream.ReadInt8L();
 	iPriority = aStream.ReadInt8L();
 	aStream >> iNetworkName;
+	aStream >> iRawSsid;
 	}
 
 
@@ -163,6 +164,7 @@ EXPORT_C void TWsfWlanInfo::ExternalizeL(RWriteStream& aStream) const
 	aStream.WriteInt8L( iBrandId );
 	aStream.WriteInt8L( iPriority );
 	aStream << iNetworkName;
+	aStream << iRawSsid;
 	}
 
 

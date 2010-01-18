@@ -60,44 +60,6 @@ class CHsBrowserHsSrvNotifs : public CBase, public MWlanMgmtNotifications
         * Connection state has changed .
         */
     	virtual void ConnectionStateChanged( TWlanConnectionMode aNewState );
-    
-	    /**
-	    * BSSID has changed (i.e. AP handover).
-	    */
-	    virtual void BssidChanged( TWlanBssid& /* aNewBSSID */ ) {};
-	
-	    /**
-	    * Connection has been lost.
-	    */
-	    virtual void BssLost() {};
-	
-	    /**
-	    * Connection has been regained.
-	    */
-	    virtual void BssRegained() {};
-	
-	    /**
-	    * New networks have been detected during scan.
-	    */
-	    virtual void NewNetworksDetected() {};
-	
-	    /**
-	    * One or more networks have been lost since the last scan.
-	    */
-	    virtual void OldNetworksLost() {};
-	
-	    /**
-	    * The used transmit power has been changed.
-	    * @param aPower The transmit power in mW.
-	    */
-	    virtual void TransmitPowerChanged( TUint /* aPower */ ) {};
-	    
-	    /**
-	    * Received signal strength level has been changed.
-	    * @param aRssClass specifies the current class of the received signal
-	    * @param aRss RSS level in absolute dBm values.
-	    */
-	    virtual void RssChanged(TWlanRssClass /* aRssClass */, TUint /* aRss */ ) {};
 
                         
     private:

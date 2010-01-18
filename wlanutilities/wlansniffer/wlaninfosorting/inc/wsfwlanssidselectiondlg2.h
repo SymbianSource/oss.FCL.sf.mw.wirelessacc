@@ -39,8 +39,7 @@ class CGulIcon;
 * @lib wsfwlaninfosorting.lib
 * @since S60 5.0
 */
-NONSHARABLE_CLASS( CWsfWlanSsidSelectionDlg2 ): public CAknListQueryDialog,
-                                                public MEikListBoxObserver
+NONSHARABLE_CLASS( CWsfWlanSsidSelectionDlg2 ): public CAknListQueryDialog
     {
     public:     
         /**
@@ -84,12 +83,11 @@ NONSHARABLE_CLASS( CWsfWlanSsidSelectionDlg2 ): public CAknListQueryDialog,
 
         
     public: // from CEikDialog
-        void PreLayoutDynInitL();
-        
+        TKeyResponse OfferKeyEventL( const TKeyEvent& aKeyEvent, 
+                                     TEventCode aType );
 
-    public: // From MEikListBoxObserver
-        void HandleListBoxEventL( CEikListBox* aListBox, 
-                                  TListBoxEvent aEventType );                       
+        void PreLayoutDynInitL();
+                             
             
     private:    // new methods
 

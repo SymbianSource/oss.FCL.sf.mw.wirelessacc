@@ -20,7 +20,6 @@
 #define HOTSPOTSESSION_H
 
 //  INCLUDES
-#include <centralrepository.h>
 #include "hssclientplugin.h"
 #include <e32base.h>
 #include <e32svr.h>
@@ -233,6 +232,12 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aString, redirect URL
         */        
         void AuthenticateL( const TDesC& aString );
+        
+        /**
+        * Reads EasyWLAN IAP id
+        * @return None 
+        */
+        void EasyWlanIdL();
     
     private:    // Data
     
@@ -323,12 +328,6 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * Flag for notification sending
         */       
 		TBool iAllowNotifications;
-		
-        /**
-        * Instance of CenRep
-        * Own.  
-        */
-        CRepository* iRepository;
         
         /**
         * Client UID of this session
@@ -339,6 +338,11 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * Flag for indicate if extended HSFW API is used
         */
         TBool iHotspotExtension;
+        
+        /**
+        * Easy WLAN IAP Id
+        */
+        TUint32 iEasyWlanId;
 	};
 	
 #endif

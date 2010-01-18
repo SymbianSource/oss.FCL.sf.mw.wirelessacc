@@ -231,20 +231,6 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @return None
         */
         void CheckIapsL();
-       
-        /**
-        * Checks EasyWLAN service id
-        * @since Series 60 MCL
-        * @return ETrue if commits were successful, otherwise EFalse. 
-        */
-        TBool EasyWlanIdL();
-        
-        /**
-        * Getter for EasyWLAN service id
-        * @since Series 60 MCL
-        * @return EasyWLAN IAP id
-        */
-        TUint32 GetEasyWlanId();
         
         /**
         * Get login timer value for the specified client.
@@ -359,16 +345,6 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         */
         TInt iCurrentServiceIdInUse;
         
-        /**
-        * Return/leave value of ChangeConfigDaemonL()   
-        */
-        TInt iConfigDaemonChanged;
-        
-        /**
-        * Service id of IAP in use
-        */
-        TUint32 iEasyWlanId;
-
         /**
         * Array for storing client dependent login and logout timer values.
         */

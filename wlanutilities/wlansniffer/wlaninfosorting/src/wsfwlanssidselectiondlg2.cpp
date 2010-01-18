@@ -119,6 +119,25 @@ CWsfWlanSsidSelectionDlg2::~CWsfWlanSsidSelectionDlg2()
 
 
 // ----------------------------------------------------------------------------
+// CWsfWlanSsidSelectionDlg2::OfferKeyEventL
+// ----------------------------------------------------------------------------
+//
+TKeyResponse CWsfWlanSsidSelectionDlg2::OfferKeyEventL( 
+                                                    const TKeyEvent& aKeyEvent, 
+                                                    TEventCode aType )
+    {
+    if ( aKeyEvent.iCode == EKeyApplicationF )
+        {
+        return EKeyWasConsumed;
+        }
+    else
+        {
+        return CAknListQueryDialog::OfferKeyEventL( aKeyEvent, aType );
+        }
+    }
+
+
+// ----------------------------------------------------------------------------
 // CWsfWlanSsidSelectionDlg2::PreLayoutDynInitL
 // ----------------------------------------------------------------------------
 //
@@ -225,59 +244,6 @@ CGulIcon* CWsfWlanSsidSelectionDlg2::CreateIconLC( const TDesC& aFileName,
         
     return icon;
     }
-    
-    
-// ----------------------------------------------------------------------------
-// CWsfWlanSsidSelectionDlg2::HandleListBoxEventL
-// ----------------------------------------------------------------------------
-//
-void CWsfWlanSsidSelectionDlg2::HandleListBoxEventL( CEikListBox* aListBox,
-                                                     TListBoxEvent aEventType )
-    {
-    LOG_ENTERFN( "CWsfWlanSsidSelectionDlg2::HandleListBoxEventL" );
-    
-    switch ( aEventType )
-        {
-        case EEventEnterKeyPressed:
-        case EEventItemClicked:
-            // both handled in the same way for now...
-            {
-            // An item should be marked/unmarked.
-            LOG_WRITE( "selection toggle" );
-            CEikListBox* listBox = ListBox(); 
-            TInt index = listBox->View()->CurrentItemIndex();
 
-            if ( listBox->View()->ItemIsSelected( index ) )
-                {
-                // if the item was unmarked select  
-                listBox->View()->SelectItemL( index );
-                }
-            else
-                {
-                // if the item was marked deselect  
-                listBox->View()->DeselectItem( index );
-                }
-            
-            listBox->DrawDeferred();
-            break;
-            }
-        case EEventItemDoubleClicked:
-            {
-            break;
-            }
-        case EEventEditingStarted:
-            {
-            break;
-            }
-        case EEventEditingStopped:
-            {
-            break;
-            }
-        default:
-            {
-            CAknListQueryDialog::HandleListBoxEventL( aListBox, aEventType );
-            break;
-            };
-        };
-    }
+
 

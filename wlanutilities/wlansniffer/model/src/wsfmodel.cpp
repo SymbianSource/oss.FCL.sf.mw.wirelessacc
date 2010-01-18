@@ -895,6 +895,7 @@ EXPORT_C TBool CWsfModel::RefreshScanL()
     {
     LOG_ENTERFN( "CWsfModel::RefreshScanL" );
     iRefreshing = iSession.RequestScanL();
+    LOG_WRITEF( "iRefreshing = %d", iRefreshing );
     return iRefreshing;
     }
     
@@ -1124,6 +1125,30 @@ void CWsfModel::CheckUnknownWapiL( TWsfWlanInfo& aWlan ) const
     if( !aWlan.Known() && aWlan.SecurityMode() == EWlanSecModeWAPI )
         {
         User::Leave( KErrWlanProtectedSetupSetupLocked );
+        }
+    }
+
+// ----------------------------------------------------------------------------
+// CWsfModel::CheckIsIapIdValidL
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::CheckIsIapIdValidL( TUint aIapId ) const
+    {    
+    LOG_ENTERFN( "CWsfModel::CheckIsIapIdValidL" );
+    LOG_WRITEF( "Checking iapId= %d", aIapId );
+    if( aIapId )
+        {
+        RCmManagerExt cmManager;
+        cmManager.OpenL();
+        CleanupClosePushL( cmManager );        
+
+        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( aIapId );
+        cm.Close();
+        CleanupStack::PopAndDestroy( &cmManager );
+        }
+    else
+        {
+        User::Leave( KErrArgument );
         }
     }
     

@@ -359,11 +359,26 @@ void CWsfWlanScanner::RunL()
 //    
 void CWsfWlanScanner::AddConnectedWLANInfoL()
     {
+    LOG_ENTERFN( "CWsfWlanScanner::AddConnectedWLANInfoL" );
     // Get the possible connection
     if ( iConnectionDetailsProvider )
         {
+        TWlanSsid connectedSsid;
+        TInt error = iWlanMgmtClient->GetConnectionSsid( connectedSsid );
+        
+        LOG_WRITEF( "GetConnectionSsid returned=%d", error );
+        
+        TBool connected = ( error == KErrNone && connectedSsid.Length() );
+    
+        if ( !connected && !iConnectionDetailsProvider->IsConnected() )
+            {
+            LOG_WRITEF( "Not connected [connected=%d]", connected );
+            return;
+            }
+        
         TWsfWlanInfo* connectedInfo = new (ELeave) TWsfWlanInfo();
         CleanupStack::PushL( connectedInfo );
+        
         if ( iConnectionDetailsProvider->ConnectedWlanConnectionDetailsL(
                 connectedInfo) )
             {
@@ -371,8 +386,8 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
             connectedSsidOrIap.Copy( connectedInfo->iSsid );
             // ConnectedWlanConnectionDetailsL() may have returned an IAP name instead of SSID.
             // make sure that we really have SSID in connectedInfo->iSSID at this phase.
-            TWlanSsid connectedSsid;
-            iWlanMgmtClient->GetConnectionSsid( connectedSsid );
+            
+            connectedInfo->iRawSsid.Copy( connectedSsid );
             connectedInfo->iSsid.Copy( connectedSsid );
             connectedInfo->iCoverage = 0;
             connectedInfo->iVisibility = 1;
@@ -1344,7 +1359,8 @@ void CWsfWlanScanner::GetWlanInfoFromIapL( TWsfWlanInfo& aWlanInfo )
 
     // ssid
     wlanTableView->ReadTextL( TPtrC( NU_WLAN_SSID ), aWlanInfo.iSsid );
-                                                      
+    aWlanInfo.iRawSsid.Copy( aWlanInfo.iSsid );
+    
     // security mode
     TUint32 secMode(0);
     wlanTableView->ReadUintL(TPtrC( WLAN_SECURITY_MODE), secMode);
@@ -1399,6 +1415,7 @@ TBool CWsfWlanScanner::RefreshNetworkNameL( TWsfWlanInfo& aWlanInfo )
             {
             ssid8.Copy( ieData, ieLen );
             aWlanInfo.iSsid.Copy( ssid8 );
+            aWlanInfo.iRawSsid.Copy( ssid8 );
             TBuf<KWlanMaxSsidLength> ssid16;
             ssid16.Copy( ssid8 );
             LOG_WRITEF( "SSID: [%S]", &ssid16 );

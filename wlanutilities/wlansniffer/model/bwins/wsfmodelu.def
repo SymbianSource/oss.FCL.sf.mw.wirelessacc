@@ -35,4 +35,5 @@ EXPORTS
 	?TestConnectedAccessPointL@CWsfModel@@QAEHAAVTWsfWlanInfo@@H@Z @ 34 NONAME ; int CWsfModel::TestConnectedAccessPointL(class TWsfWlanInfo &, int)
 	?FinalizeConnectL@CWsfModel@@QAEXXZ @ 35 NONAME ; void CWsfModel::FinalizeConnectL(void)
 	?ConnectWithoutConnWaiterL@CWsfModel@@QAEHKH@Z @ 36 NONAME ; int CWsfModel::ConnectWithoutConnWaiterL(unsigned long, int)
+	?CheckIsIapIdValidL@CWsfModel@@QBEXI@Z @ 37 NONAME ; void CWsfModel::CheckIsIapIdValidL(unsigned int) const
 

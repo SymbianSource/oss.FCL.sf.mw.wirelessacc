@@ -375,6 +375,16 @@ void TWsfMainController::WlanConnectionClosedL()
             if ( firstItem && firstItem->Connected() )
                 {
                 firstItem->iConnectionState = ENotConnected;
+                TRAPD( error, iModel->CheckIsIapIdValidL( firstItem->iIapId ) );
+                if ( error )
+                    {
+                    LOG_WRITEF( "Iap Id is not valid - error=%d", error );
+                    if ( firstItem->iRawSsid.Length() )
+                        {
+                        firstItem->iSsid.Copy( firstItem->iRawSsid );
+                        }
+                    firstItem->iIapId = 0;
+                    }
                 iInfoArray->SortArrayL();
                 UpdateViewL( iInfoArray );                    
                 }

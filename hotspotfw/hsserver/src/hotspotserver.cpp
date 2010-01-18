@@ -16,10 +16,6 @@
 */
 
 
-
-
-
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <f32file.h>
@@ -172,38 +168,20 @@ CHotSpotServer::~CHotSpotServer()
 //
 void CHotSpotServer::ConstructL()
     {
-  
     DEBUG("**** HotSpotServer: CHotSpotServer::ConstructL");
-	StartL( KHotSpotServerName );
-	
-	iIapCheckValue = EFalse;
+    StartL( KHotSpotServerName );
+
+    iIapCheckValue = EFalse;
     iLogoutSent = EFalse;
     iLoginValue = ETrue;
     iAssociationValue = EFalse;
-	
-#ifndef __WINS__
-
-    // Change config daemon for Easy WLAN access point
-    iConfigDaemonChanged = KErrNone;
-    TBool retVal( EFalse );
-    iEasyWlanId = KEasyWlanServiceId; // Set to default value
-    TRAPD( leave, retVal = EasyWlanIdL() );
-    if ( KErrNone != leave )
-        {
-        iConfigDaemonChanged = leave;
-        }
-    if ( !retVal )
-        {
-        iConfigDaemonChanged = KErrGeneral;
-        }
-    DEBUG1("**** HotSpotServer: CHotSpotServer::ConstructL iConfigDaemonChanged: %d", iConfigDaemonChanged );
-#endif        
-    // Activate notifications for IAP check purposes
+    
+    // Activate notifications for IAP check purposes. Done with every server startup.
     // When EWlanConnectionModeNotConnected is received we can cancel this and 
     // we know that it safe to go through IAPs.
     iMgtClient = CWlanMgmtClient::NewL();
 #ifndef __WINS__
- 	iMgtClient->ActivateNotificationsL( *this );
+    iMgtClient->ActivateNotificationsL( *this );
 #endif 
     }
 
@@ -221,7 +199,6 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
 #ifndef __WINS__
             iMgtClient->CancelNotifications();
 #endif
-            DEBUG("CHotSpotServer::ConnectionStateChanged2");
             }
     	
      	TRAPD(err, CheckIapsL());
@@ -229,12 +206,7 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
      		{
      		DEBUG1("CHotSpotServer::ConnectionStateChanged(): %d", err);
      		}
-     	if ( iConfigDaemonChanged != KErrNone )
-     	    {
-     	    // ConstructL call leaved. Let's call again once more.
-     	    TRAP_IGNORE( EasyWlanIdL() );
-     	    }
-     	}
+    	}
     }
 
 // -----------------------------------------------------------------------------
@@ -531,46 +503,6 @@ TInt CHotSpotServer::RunError( TInt aError )
     ReStart();
     return (KErrNone);
 	}
-
-// -----------------------------------------------------------------------------
-// EasyWlanIdL
-// -----------------------------------------------------------------------------
-//
-TBool CHotSpotServer::EasyWlanIdL()
-    {
-    TBool ret( EFalse );
-    DEBUG("CHotSpotServer::EasyWlanIdL()");
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    iEasyWlanId = cmManager.EasyWlanIdL();
-    DEBUG1("CHotSpotServer::EasyWlanIdL() ret: % d", iEasyWlanId);
-    // if iEasyWlanId is 0, then it was not found
-    if ( iEasyWlanId > 0 )
-        {
-        RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( iEasyWlanId );
-        CleanupClosePushL( plugin );
-        //iEasyWlanId = plugin.GetIntAttributeL( /*ECmIapServiceId*/EWlanServiceId )
-        plugin.SetStringAttributeL( ECmConfigDaemonManagerName, KHotSpotPlugin );
-        // commit changes
-        plugin.UpdateL();
-        CleanupStack::PopAndDestroy( &plugin ); // Close() called on "plugin"
-        ret = ETrue;
-        }
-    CleanupStack::PopAndDestroy( &cmManager );
-    DEBUG("CHotSpotServer::EasyWlanIdL() DONE");
-    return ret;
-    }
-
-// -----------------------------------------------------------------------------
-// GetEasyWlanId
-// -----------------------------------------------------------------------------
-//
-TUint32 CHotSpotServer::GetEasyWlanId()
-    {
-    return iEasyWlanId;
-    }
 
 // -----------------------------------------------------------------------------
 // GetLoginTimerMicroSecs

@@ -346,6 +346,9 @@ NONSHARABLE_CLASS( TWsfWlanInfo )
         
         //UI priority for known networks
         TUint8 iPriority;
+        
+        //Raw SSID - not converted
+        TWlanSsid iRawSsid;
     };
 
 

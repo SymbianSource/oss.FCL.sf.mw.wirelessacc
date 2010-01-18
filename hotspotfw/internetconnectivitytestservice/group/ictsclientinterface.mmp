@@ -48,9 +48,6 @@ LIBRARY                 http.lib
 LIBRARY                 bafl.lib
 LIBRARY                 centralrepository.lib
 LIBRARY                 inetprotutil.lib 
-LIBRARY                 apgrfx.lib 
-LIBRARY                 eikcore.lib cone.lib 
 LIBRARY                 efsrv.lib 
 LIBRARY                 hotspotclient.lib 
-LIBRARY                 cmmanager.lib 
 

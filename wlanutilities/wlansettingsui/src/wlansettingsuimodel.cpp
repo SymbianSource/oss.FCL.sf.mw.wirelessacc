@@ -191,6 +191,10 @@ void CWlanSettingsUiModel::SaveSettingsL()
         }
 
     record->iWlanPowerMode = iPowerSaving;
+    
+    // Whenever settings are modified, iUseDefaultSettings must be set to false.
+    record->iUseDefaultSettings = EFalse;
+
     record->ModifyL( *iSession );
         
     CleanupStack::PopAndDestroy( record );        

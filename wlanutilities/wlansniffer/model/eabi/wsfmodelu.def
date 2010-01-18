@@ -38,4 +38,5 @@ EXPORTS
 	_ZN9CWsfModelD1Ev @ 37 NONAME
 	_ZN9CWsfModelD2Ev @ 38 NONAME
 	_ZThn12_N9CWsfModel14LaunchBrowserLEm @ 39 NONAME
+	_ZNK9CWsfModel18CheckIsIapIdValidLEj @ 40 NONAME
 

@@ -335,7 +335,14 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         */
         IMPORT_C static TInt IctsTestPermission();
         
-
+        /**
+        * Check if Iap Id is valid
+        * Leaves with system wide error code if Iap ID is 
+        * not valid or checking fails
+        * @since S60 5.2
+		* @param aIapId IAP id passed as a parameter
+        */        
+        IMPORT_C void CheckIsIapIdValidL( TUint aIapId ) const;
 
     public: // from  MWsfBrowserLaunchAdapter        
         /**

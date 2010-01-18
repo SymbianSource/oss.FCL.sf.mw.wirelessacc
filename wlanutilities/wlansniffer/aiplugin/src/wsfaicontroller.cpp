@@ -19,7 +19,7 @@
 //  EXTERNAL INCLUDES
 #include <apgcli.h>
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <AknIconArray.h>
 #include <AknQueryDialog.h>
 #include <cmpluginwlandef.h>

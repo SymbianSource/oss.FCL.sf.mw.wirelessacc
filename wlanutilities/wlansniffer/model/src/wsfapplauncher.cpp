@@ -22,7 +22,7 @@
 #include <apgtask.h>
 #include <apgcli.h>
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <bldvariant.hrh>
 #include <featmgr.h>
 #include <cmmanager.h>

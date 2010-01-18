@@ -16,12 +16,6 @@
 */
 
 
-#include <apgcli.h>
-#include <eikenv.h> 
-#include <apgtask.h>
-#include <coemain.h> 
-#include <cmmanagerext.h>
-#include <cmmanagerdef.h>
 #include <f32file.h> 
 
 #include "ictsengine.h"
@@ -88,14 +82,6 @@ void CIctsEngine::ConstructL()
     iPollingTimeTimer = CIctsPollingTimeTimer::NewL( *this );
     
     iHttpHandler = CIctsHttpHandler::NewL( *this, KHttpResponseTime );
-    
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    iEasyWlanIapId = cmManager.EasyWlanIdL();
-    DEBUG1("CIctsEngine::ConstructL iEasyWlanIapId %d", iEasyWlanIapId );
-    CleanupStack::PopAndDestroy( &cmManager );
     }
 
 // ---------------------------------------------------------------------------
