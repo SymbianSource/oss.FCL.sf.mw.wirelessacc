@@ -681,11 +681,6 @@ RESOURCE TBUF r_qtn_sniffer_navi_many_wlan_nws_available
     buf = qtn_cmon_navi_many_wlan_nws_available;
     }
 
-RESOURCE TBUF r_qtn_sniffer_quest_restart_browsing_with_wlan
-    {
-    buf = qtn_sniffer_quest_restart_browsing_with_wlan;
-    }
-
 //-----------------------------------------------------------------------------
 
 RESOURCE LOCALISABLE_APP_INFO r_sniffer_localisable_app_info

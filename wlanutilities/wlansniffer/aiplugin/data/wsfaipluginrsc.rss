@@ -357,16 +357,6 @@ RESOURCE CBA r_qtn_plugin_search_wlan_network_buttons
 
 
 //----------------------------------------------------------------------------
-// r_qtn_sniffer_quest_restart_browsing_with_wlan
-// String for Web application needs to be restarted query
-//----------------------------------------------------------------------------
-RESOURCE TBUF r_qtn_sniffer_quest_restart_browsing_with_wlan
-    {
-    buf = qtn_sniffer_quest_restart_browsing_with_wlan;
-    }
-
-
-//----------------------------------------------------------------------------
 // r_restart_browsing_confirmation_query
 // Query to restart browser with WLAN
 //----------------------------------------------------------------------------

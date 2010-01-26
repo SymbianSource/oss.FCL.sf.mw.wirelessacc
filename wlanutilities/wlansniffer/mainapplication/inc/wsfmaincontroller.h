@@ -27,6 +27,7 @@
 #include "wsfmainviewpartner.h"
 #include "wsfstatechangeobserver.h"
 #include "wsfdetailsviewpartner.h"
+#include "wsfwlaninfo.h"
 
 
 
@@ -277,6 +278,13 @@ class TWsfMainController: public MWsfMainUiObserver,
         * @param aPtr Pointer for this class
         */
         static void ReleaseSuppressingKeyEvents( TAny* aPtr );
+        
+        /**
+        * Updates iap id to wlan list
+        * @since S60 5.2
+        * @param aInfo reference of TWsfWlanInfo class
+        */
+        void UpdateIapIdToInfoArray( TWsfWlanInfo & aInfo );
         
     private:    // Data
 

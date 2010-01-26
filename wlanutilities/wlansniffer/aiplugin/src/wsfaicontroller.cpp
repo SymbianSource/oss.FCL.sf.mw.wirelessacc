@@ -551,44 +551,9 @@ void TWsfAiController::StartWebBrowserL( TWsfWlanInfo& aInfo )
 
         CleanupStack::PopAndDestroy( &cmmanager );
         }
-
-    const TUid KBrowserUid = { 0x10008D39 };
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
-    TApaTask task = taskList.FindApp( KBrowserUid );
-
-    // Check if the Browser application is already running.        
-    if ( task.Exists() )
-        {
-        HBufC* queryText = StringLoader::LoadLC( 
-                R_QTN_SNIFFER_QUEST_RESTART_BROWSING_WITH_WLAN );
-
-        CAknQueryDialog* dlg = CAknQueryDialog::NewL();
-        TInt ret = dlg->ExecuteLD( 
-                R_RESTART_BROWSING_CONFIRMATION_QUERY,
-                *queryText );
-
-        CleanupStack::PopAndDestroy( queryText );
-
-        if ( ( ret == EAknSoftkeyOk ) || ( ret == EAknSoftkeyYes ) )
-            {
-            // User Press OK or Yes and launch the browser
-            iModel->LaunchBrowserL( passedIap );
-            }
-        else
-            {
-            // clean up the temporary IAP if any
-            iModel->CleanUpCancelledLaunchL();
-
-            // we are at this point then we can disconnect 
-            // and iModel->DisconnectL() handles view refreshing 
-            iModel->DisconnectL();
-            }
-        }
-    else
-        {
-        // finally launch the browser
-        iModel->LaunchBrowserL( passedIap );
-        }
+    
+    // launch the browser
+    iModel->LaunchBrowserL( passedIap );
     }
 
 

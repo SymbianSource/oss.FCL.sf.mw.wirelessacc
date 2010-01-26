@@ -37,9 +37,9 @@ using namespace CMManager;
 // -----------------------------------------------------------------------------
 //
 CHssIapSettingsHandler::CHssIapSettingsHandler( )
-	{
+    {
     DEBUG("CHssIapSettingsHandler::CHssIapSettingsHandler");
-	}
+    }
 
 // -----------------------------------------------------------------------------
 // ConstructL
@@ -68,8 +68,8 @@ CHssIapSettingsHandler* CHssIapSettingsHandler::NewL()
 // -----------------------------------------------------------------------------
 //
 CHssIapSettingsHandler::~CHssIapSettingsHandler()
-	{
-	DEBUG("CHssIapSettingsHandler::~CHssIapSettingsHandler()");
+    {
+    DEBUG("CHssIapSettingsHandler::~CHssIapSettingsHandler()");
     }
 
 // -----------------------------------------------------------------------------
@@ -150,7 +150,7 @@ void CHssIapSettingsHandler::CreateIapL()
         // Internet destination will always exist in the system.
         // Internet destination will have ESnapPurposeInternet set in its metadata.
         if (destination.MetadataL( CMManager::ESnapMetadataPurpose ) == 
-		                                CMManager::ESnapPurposeInternet )
+                                        CMManager::ESnapPurposeInternet )
             {
             CWlanMgmtClient* wlanMgmtClient = CWlanMgmtClient::NewL();
             CleanupStack::PushL( wlanMgmtClient );
@@ -256,7 +256,7 @@ TInt CHssIapSettingsHandler::FindClientL( const TUint aIapId, TUid& aUid, TDes8&
     cmManager.OpenL();
     CleanupClosePushL( cmManager );
     
-	RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapId );
+    RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapId );
     CleanupClosePushL( plugin );
     
     HBufC* uid = plugin.GetStringAttributeL( EWlanServiceExtensionTableName );
@@ -267,7 +267,7 @@ TInt CHssIapSettingsHandler::FindClientL( const TUint aIapId, TUid& aUid, TDes8&
     // Find and remove [ and ]. 
     // If found [ it's known that buffer contains UID
     TInt indx = buffer.Find( KMark1 );
-    	 if ( KErrNotFound != indx )
+         if ( KErrNotFound != indx )
          {
          DEBUG("CHssIapSettingsHandler::FindClientL Client is found");
          buffer.Delete( indx, 1 );
