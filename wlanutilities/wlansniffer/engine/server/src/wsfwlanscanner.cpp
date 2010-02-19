@@ -98,6 +98,7 @@ CWsfWlanScanner::~CWsfWlanScanner()
     delete iScanArray;
     iDirectScanSsids.Close();
     iDirectScanIapIDs.Close();
+    iAvailableIaps.Close();
     iDbSession = NULL; // not owning
     iConnectionDetailsProvider = NULL;
     }
@@ -174,9 +175,9 @@ void CWsfWlanScanner::RunL()
     
     /*
      * Scan logic
-     * 1. Do broadcast scan - state = EIdle
-     * 2. Get available IAPs - state = EBroadcastScan
-     * 3. Process broadcast scan results state = EBroadcastScan
+     * 1. Get available IAPs - state = EIdle
+     * 2. Do broadcast scan - state = EIdle
+     * 3. Process broadcast scan results - state = EBroadcastScan
      * 4. Do direct scans for remaining known networks
      *    from step 2. Get available IAPs - state = EDirectScan
      * 5. Add connected network - state = EFinished
@@ -196,8 +197,15 @@ void CWsfWlanScanner::RunL()
             iObserver->WlanScanStarted();
             }
 
-        // do broadcast scan
+        
 #ifndef __WINS__
+        // get available iaps
+        // (this only shows iaps with security mode matching to scan results
+        // and  also finds hidden wlans for which an iap has been configured)
+        iAvailableIaps.Reset();
+        iWlanMgmtClient->GetAvailableIaps( iAvailableIaps );
+        
+		// do broadcast scan
         iWlanMgmtClient->GetScanResults( iStatus, *iScanInfo );
         SetActive();
 #else
@@ -944,12 +952,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
     TInt nElem = 0;
     TBool isHidden( EFalse );
 
-    // get available iaps
-    // (this only shows iaps with security mode matching to scan results
-    // and  also finds hidden wlans for which an iap has been configured)
-    RArray<TUint> availableIaps;
-    iWlanMgmtClient->GetAvailableIaps(availableIaps);
-    TInt avIapCount = availableIaps.Count();
+    TInt avIapCount = iAvailableIaps.Count();
 
     LOG_WRITEF( "Available iap count %d", avIapCount ); 
 
@@ -958,7 +961,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
         TBool addToArray( ETrue ); 
         TWsfWlanInfo* availableInfo = new ( ELeave ) TWsfWlanInfo();       
         CleanupStack::PushL( availableInfo );
-        availableInfo->iIapId = availableIaps[i];
+        availableInfo->iIapId = iAvailableIaps[i];
         TRAPD( error, GetWlanInfoFromIapL( *availableInfo ) );
 
         if ( error == KErrNotFound )

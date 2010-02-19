@@ -154,13 +154,18 @@ NONSHARABLE_CLASS( CWsfMainView ): public CAknView,
         */
         MWsfMainViewControllerIf& Controller();
         
-        /*
+        /**
          * Sets the iSelectionKey True
          * @since S60 5.0 
          */
         void SelectionKeyPressed();
-    
-    private:
+        
+        /**
+         * Checks if Browser is using the active WLAN connection
+         */
+        void UpdateBrowserUsageInfoL();
+
+    private:  //New functions
         
         /**
         * Check if the Browser application is already running and 
@@ -169,7 +174,7 @@ NONSHARABLE_CLASS( CWsfMainView ): public CAknView,
         * @return EFalse if Start Web Browsing menu item should be shown
         *         ETrue if Start Web Browsing menu item should not be shown
         */
-        TBool StartWebBrowsingVisibleL();
+        TBool IsBrowserUsingWlanL();
         
     private:
 
@@ -194,6 +199,12 @@ NONSHARABLE_CLASS( CWsfMainView ): public CAknView,
         * Indicates FSelectionKey is pressed or not.
         */
         TBool iSelectionKey;
+        
+        /**
+         * If Browser is using the WLAN connection or not.
+         */
+        TBool iIsBrowserUsingWlan;
+        
     };
 
 

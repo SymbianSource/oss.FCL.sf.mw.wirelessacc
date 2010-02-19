@@ -18,6 +18,7 @@
 //  EXTERNAL INCLUDES
 #include <badesca.h>
 #include <StringLoader.h> 
+#include <AknUtils.h>
 #include <wlansniffer.rsg>
 #include <coemain.h>
 #include <avkon.rsg>
@@ -654,7 +655,8 @@ HBufC* CWsfDetailsViewModel::FormatSpeedLC()
 
     const TInt KMaxRateStringWidth = 8;
     TBuf<KMaxRateStringWidth> rate;
-    rate.Format( KRateFmt, iWlanInfo.iTransferRate );
+    rate.Format( KRateFmt, iWlanInfo.iTransferRate );   
+    AknTextUtils::DisplayTextLanguageSpecificNumberConversion( rate );
     
     return StringLoader::LoadLC( R_QTN_SNIFFER_WLAN_MAX_DATA_RATE, 
                                  rate, iCoeEnv );

@@ -28,6 +28,7 @@ class CAknDoubleGraphicStyleListBox;
 class MWsfMainViewControllerPartner;
 class CAknNavigationDecorator;
 class CAknNavigationControlContainer;
+class CWsfMainView;
 
 //  CLASS DEFINITION
 /**
@@ -44,7 +45,8 @@ class CWsfMainViewContainer : public CCoeControl
          * @param aRect gives the correct TRect for construction.
          * @return instance of CWsfMainViewContainer class  
          */
-        static CWsfMainViewContainer* NewL( const TRect& aRect );
+        static CWsfMainViewContainer* NewL( const TRect& aRect,
+                CWsfMainView* aParentView );
 
         /**
          * Two-phased constructor. Leaves the object on CleanupStack
@@ -52,7 +54,8 @@ class CWsfMainViewContainer : public CCoeControl
          * @param aRect gives the correct TRect for construction.
          * @return instance of CWsfMainViewContainer class  
          */
-        static CWsfMainViewContainer* NewLC( const TRect& aRect );
+        static CWsfMainViewContainer* NewLC( const TRect& aRect,
+                CWsfMainView* aParentView );
 
         /**
          * Destructor of CWsfMainViewContainer class
@@ -73,7 +76,7 @@ class CWsfMainViewContainer : public CCoeControl
          * @since S60 5.0 
          * @param aRect gives the correct TRect for construction.
          */
-        void ConstructL( const TRect& aRect );
+        void ConstructL( const TRect& aRect, CWsfMainView* aParentView );
 
     public:     // New methods
 
@@ -298,7 +301,7 @@ class CWsfMainViewContainer : public CCoeControl
          */
         TInt iConnectingIndex;
 
-        /*
+        /**
          * The periodic that steps the animation
          */
         CPeriodic* iAnimationPeriodic;
@@ -308,6 +311,11 @@ class CWsfMainViewContainer : public CCoeControl
          * Own.
          */
         HBufC* iStatusConnecting;
+        
+        /**
+         * Reference to the parent view
+         */
+        CWsfMainView* iParentView;
 
     };
 

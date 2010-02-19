@@ -147,8 +147,10 @@ void CWsfMainView::HandleCommandL( TInt aCommand )
             }
         case EAknSoftkeyContextOptions:
             {
+            LOG_WRITE( "CWsfMainView::HandleCommandL, Options" );
+            UpdateBrowserUsageInfoL();
             MenuBar()->SetMenuTitleResourceId( R_SNIFFER_CONTEXT_MENUBAR );
-            MenuBar()->SetMenuType( CEikMenuBar::EMenuContext ); 
+            MenuBar()->SetMenuType( CEikMenuBar::EMenuContext );
             MenuBar()->TryDisplayMenuBarL();
             MenuBar()->SetMenuTitleResourceId( R_SNIFFER_MENUBAR );
             MenuBar()->SetMenuType( CEikMenuBar::EMenuOptions ); 
@@ -174,7 +176,7 @@ void CWsfMainView::DoActivateL( const TVwsViewId& /*aPrevViewId*/,
     LOG_ENTERFN( "CWsfMainView::DoActivateL" );
     if ( !iContainer )
         { 
-        iContainer = CWsfMainViewContainer::NewL( ClientRect() );
+        iContainer = CWsfMainViewContainer::NewL( ClientRect(), this );
         // set icons array to list        
         iContainer->SetMopParent( this );
         iContainer->SetPartner( iController );
@@ -223,11 +225,13 @@ MWsfMainViewControllerIf& CWsfMainView::Controller()
 void CWsfMainView::DynInitMenuPaneL( TInt aResourceId, 
                                      CEikMenuPane* aMenuPane )
     {
+    LOG_ENTERFN( "CWsfMainView::DynInitMenuPaneL" );
+    LOG_WRITEF( "resource id = %d", aResourceId );
     iController.UpdateSelectedItemL();
     
     if ( aResourceId == R_SNIFFER_MENU )
         {
-        LOG_ENTERFN( "CWsfMainView::DynInitMenuPaneL" );
+        LOG_WRITE( "CWsfMainView::DynInitMenuPaneL, R_SNIFFER_MENU" );
         const CWsfDocument* doc = static_cast<const CWsfDocument*>( 
                                                          AppUi()->Document() );
         TBool blacklistEmpty( !doc->WlanInfoBranding().BlackListItemCount() );
@@ -252,13 +256,23 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
             return;
             }
 
-        TBool connectedAndUsed( StartWebBrowsingVisibleL() );
         TBool connected( selectedItem->Connected() );
+        TBool connectedAndUsed( EFalse );
+        if ( connected )
+            {
+            connectedAndUsed = iIsBrowserUsingWlan;
+            }
         TBool known( selectedItem->Known() );
         
         TBool selectedItemConnecting ( 
                 selectedItem->ConnectionStatus() == EConnecting );
-
+        
+        LOG_WRITEF( "connectedAndUsed = %d", connectedAndUsed );
+        LOG_WRITEF( "connected = %d", connected );
+        LOG_WRITEF( "known = %d", known );
+        LOG_WRITEF( "selectedItemConnecting = %d", selectedItemConnecting );
+        LOG_WRITEF( "connecting = %d", connecting );
+        
         aMenuPane->SetItemDimmed( ESnifferCmdStartBrowsing, 
                                   connectedAndUsed || selectedItemConnecting );
         aMenuPane->SetItemDimmed( ESnifferCmdContinueBrowsing, 
@@ -289,10 +303,11 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
         }
     else if ( aResourceId == R_SNIFFER_CONTEXT_MENU )
         {
+        LOG_WRITE( "CWsfMainView::DynInitMenuPaneL, R_SNIFFER_CONTEXT_MENU" );
         TWsfWlanInfo *selectedItem = iController.SelectedItem();
         
         // there must be always at least one item: "Other (unlisted)..."
-        TBool connectedAndUsed( StartWebBrowsingVisibleL() );
+        TBool connectedAndUsed( EFalse );
         TBool connected( EFalse );
         TBool known( EFalse );
         TBool hidden( ETrue );
@@ -300,18 +315,30 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
         CWsfAppUi* appui = static_cast<CWsfAppUi*>( AppUi() );
         TBool connecting( appui->SuppressingKeyEvents() );
         TBool selectedItemConnecting( EFalse );
+
         
         if ( selectedItem )
             {
             // workaround: even if the model reports no elements, we know that
             // the hidden item must always be there
             connected = selectedItem->Connected();
+            if ( connected )
+                {
+                connectedAndUsed = iIsBrowserUsingWlan;
+                }
             known = selectedItem->Known();
             hidden = selectedItem->Hidden();
             selectedItemConnecting = 
                     ( selectedItem->ConnectionStatus() == EConnecting );
             }
 
+        LOG_WRITEF( "connectedAndUsed = %d", connectedAndUsed );
+        LOG_WRITEF( "connected = %d", connected );
+        LOG_WRITEF( "known = %d", known );
+        LOG_WRITEF( "selectedItemConnecting = %d", selectedItemConnecting );
+        LOG_WRITEF( "connecting = %d", connecting );
+
+        
         aMenuPane->SetItemDimmed( ESnifferCmdStartBrowsing, 
                                   connectedAndUsed || selectedItemConnecting );
         aMenuPane->SetItemDimmed( ESnifferCmdContinueBrowsing, 
@@ -335,6 +362,8 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
 void CWsfMainView::HandleListBoxEventL( CEikListBox* /*aListBox*/, 
                                         TListBoxEvent aEventType )
     {
+    LOG_ENTERFN( "CWsfMainView::HandleListBoxEventL" );
+    LOG_WRITEF( "aEventType = %d", aEventType );
     switch ( aEventType )
         {
         case EEventEnterKeyPressed:
@@ -358,21 +387,32 @@ void CWsfMainView::SelectionKeyPressed()
     iSelectionKey = ETrue;
     }
 
-    
 // ---------------------------------------------------------------------------
-// CWsfMainView::StartWebBrowsingVisibleL
+// CWsfMainView::UpdateBrowserUsageInfoL
 // ---------------------------------------------------------------------------
 //
-TBool CWsfMainView::StartWebBrowsingVisibleL()
+void CWsfMainView::UpdateBrowserUsageInfoL()
     {
-    LOG_ENTERFN( "CWsfMainView::StartWebBrowsingVisibleL" );
+    LOG_ENTERFN( "CWsfMainView::UpdateBrowserUsageInfoL" );
+    iIsBrowserUsingWlan = IsBrowserUsingWlanL();
+    }
+
+    
+// ---------------------------------------------------------------------------
+// CWsfMainView::IsBrowserUsingWlanL
+// ---------------------------------------------------------------------------
+//
+TBool CWsfMainView::IsBrowserUsingWlanL()
+    {
+    LOG_ENTERFN( "CWsfMainView::IsBrowserUsingWlanL" );
+    
     const TInt KBrowserUid = 0x10008D39;
     TUid id( TUid::Uid( KBrowserUid ) );
     
     // Check if the Browser application is already running.
     TApaTaskList taskList( iEikonEnv->WsSession() );
     TApaTask task = taskList.FindApp( id );
-    TBool isBrowserRuning( EFalse );
+    TBool isBrowserRunning( EFalse );
     
 #ifndef __WINS__
 
@@ -381,6 +421,7 @@ TBool CWsfMainView::StartWebBrowsingVisibleL()
         LOG_WRITE( "The Browser is running." );
         // The Browser is already running.
         // Check if the selected WLAN is connected.
+        iController.UpdateSelectedItemL();
         TWsfWlanInfo* selectedItem = iController.SelectedItem();
         TBool connected( EFalse );
         if( selectedItem )
@@ -466,7 +507,7 @@ TBool CWsfMainView::StartWebBrowsingVisibleL()
                 
                 if ( clientBuf().iUid[i].iUid == KBrowserUid )
                     {
-                    isBrowserRuning = ETrue;
+                    isBrowserRunning = ETrue;
                     }
                 }
             CleanupStack::PopAndDestroy( waiter );
@@ -481,8 +522,8 @@ TBool CWsfMainView::StartWebBrowsingVisibleL()
         
 #endif // __WINS__
     
-    LOG_WRITEF( "isBrowserRuning: %d", isBrowserRuning ); 
-    return isBrowserRuning;
+    LOG_WRITEF( "isBrowserRunning: %d", isBrowserRunning );
+    return isBrowserRunning;
     }
 
 

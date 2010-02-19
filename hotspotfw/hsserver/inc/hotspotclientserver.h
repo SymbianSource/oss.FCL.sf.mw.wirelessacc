@@ -56,6 +56,8 @@ const TInt KScanHotspotIapId=0;
 
 const TUint KHssShutdown  = 777;
 
+const TUint8 KHssMacAddressLength = 6;
+
 const TUid KInternetConnectivityUid={0x10282EC5};
 const TUid K3rdPartyEcomInterfaceUid={0x10282ED1};
 

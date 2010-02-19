@@ -218,6 +218,8 @@ void TWsfDetailsViewController::HandlePaneTextUpdateL()
     if( iContainer )        
         {
         HBufC* paneText = iModel->FormatPaneTextLC();
+        TPtr temp( paneText->Des() );
+        AknTextUtils::DisplayTextLanguageSpecificNumberConversion( temp );
         iContainer->UpdateNaviPaneL( *paneText );
         CleanupStack::PopAndDestroy( paneText );
         }

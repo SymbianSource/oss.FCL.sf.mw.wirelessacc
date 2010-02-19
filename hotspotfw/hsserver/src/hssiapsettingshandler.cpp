@@ -164,8 +164,7 @@ void CHssIapSettingsHandler::CreateIapL()
             HBufC* ssid( NULL );
             TWlanSsid ssidConn;
             
-            wlanMgmtClient->GetConnectionSsid( ssidConn );
-            
+            User::LeaveIfError( wlanMgmtClient->GetConnectionSsid( ssidConn ) );
             ssid = HBufC::NewLC( ssidConn.Length() );
             ssid->Des().Copy( ssidConn ); 
             

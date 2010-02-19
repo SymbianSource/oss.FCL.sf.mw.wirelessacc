@@ -39,6 +39,7 @@
 #include "wsfdocument.h"
 #include "wsfwlaninfoarrayvisitor.h"
 #include "wsfappui.h"
+#include "wsfmainview.h"
 #include <wlansniffer.rsg>
 
 #include "wsflogger.h"
@@ -60,10 +61,12 @@ _LIT( KFormat1Icon, "%d" );
 // CWsfMainViewContainer::NewL
 // ---------------------------------------------------------
 //
-CWsfMainViewContainer* CWsfMainViewContainer::NewL( const TRect& aRect )
+CWsfMainViewContainer* CWsfMainViewContainer::NewL( const TRect& aRect,
+        CWsfMainView* aParentView )
     {
     LOG_ENTERFN( "CWsfMainViewContainer::NewL" );
-    CWsfMainViewContainer* self = CWsfMainViewContainer::NewLC( aRect );
+    CWsfMainViewContainer* self =
+            CWsfMainViewContainer::NewLC( aRect, aParentView );
     CleanupStack::Pop( self );
     return self;
     }
@@ -72,12 +75,13 @@ CWsfMainViewContainer* CWsfMainViewContainer::NewL( const TRect& aRect )
 // CWsfMainViewContainer::NewLC
 // ---------------------------------------------------------
 //
-CWsfMainViewContainer* CWsfMainViewContainer::NewLC( const TRect& aRect )
+CWsfMainViewContainer* CWsfMainViewContainer::NewLC( const TRect& aRect,
+        CWsfMainView* aParentView )
     {
     LOG_ENTERFN( "CWsfMainViewContainer::NewLC" );
     CWsfMainViewContainer* self = new( ELeave ) CWsfMainViewContainer;
     CleanupStack::PushL( self );
-    self->ConstructL( aRect );
+    self->ConstructL( aRect, aParentView );
     return self;
     }
 
@@ -114,10 +118,13 @@ CWsfMainViewContainer::CWsfMainViewContainer()
 // CWsfMainViewContainer::ConstructL
 // ---------------------------------------------------------
 //
-void CWsfMainViewContainer::ConstructL( const TRect& aRect )
+void CWsfMainViewContainer::ConstructL( const TRect& aRect,
+        CWsfMainView* aParentView )
     {
     LOG_ENTERFN( "CWsfMainViewContainer::ConstructL" );
-    CreateWindowL(); 
+    CreateWindowL();
+    
+    iParentView = aParentView;
    
     iListBox = new( ELeave ) CAknDoubleGraphicStyleListBox();
     TInt flags( EAknGenericListBoxFlags );
@@ -487,6 +494,9 @@ void CWsfMainViewContainer::UpdateHotSpotsL( MDesCArray* aItemTextArray,
             }
         CleanupStack::PopAndDestroy(text);
         }
+    
+    iParentView->UpdateBrowserUsageInfoL();
+    
     iListBox->DrawDeferred(); 
     }
 

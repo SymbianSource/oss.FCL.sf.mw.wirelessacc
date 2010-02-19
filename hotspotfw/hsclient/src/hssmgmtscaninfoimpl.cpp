@@ -124,9 +124,9 @@ TUint8 CHssMgmtScanInfoImpl::RXLevel() const
 //
 void CHssMgmtScanInfoImpl::Bssid( THssBssid& aBssid ) const
     {
-    TMacAddress bssid;
-    iScanInfo->BSSID( bssid.iMacAddress );
-    aBssid.Copy( &bssid.iMacAddress[0], KMacAddressLength );
+    TUint8 bssid[ KHssMacAddressLength ];
+    iScanInfo->BSSID( bssid );
+    aBssid.Copy( &bssid[ 0 ], KHssMacAddressLength );
     }
 
 // ---------------------------------------------------------

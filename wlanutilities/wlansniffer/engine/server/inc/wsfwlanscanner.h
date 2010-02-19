@@ -496,6 +496,11 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
         */
         TBuf8<KWlanMaxAccessPointNameLength> iConnectedSsidOrIap;
         
+		/**
+        * Array containing the available IAP IDs 
+        */
+        RArray<TUint> iAvailableIaps;
+        
     };
 
 

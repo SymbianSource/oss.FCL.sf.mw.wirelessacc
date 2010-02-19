@@ -20,10 +20,7 @@
 #define C_WSFAIPLUGIN_H
 
 //  EXTERNAL INCLUDES
-#include <aicontentpublisher.h>
-#include <aicontentobserver.h>
-#include <aipropertyextension.h>
-#include <aieventhandlerextension.h>
+#include <hscontentpublisher.h>
 #include <e32cmn.h>
 
 //  INTERNAL INCLUDES
@@ -56,9 +53,7 @@ class CWsfDbObserver;
  * @lib wsfaiplugin.lib
  * @since S60 v5.0
  */
-NONSHARABLE_CLASS( CWsfAiPlugin ): public CAiContentPublisher,
-                                   public MAiPropertyExtension,
-                                   public MAiEventHandlerExtension,
+NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
                                    public MWsfAiPublishObserver
     {
     public: // Constructors and destructor
@@ -112,99 +107,46 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CAiContentPublisher,
         */                
         void CWsfAiPlugin::DoConnectingStepL();
     
-    public:     // from CAiContentPublisher
+    public:     // from CHSContentPublisher
         
         /**
-        * This method transit the plugin to "Alive" state.
-        * The method is called by the framework to instruct plug-in that it is
-        * allowed to actively publish its data to its observers. This means the plugin
-        * is allowed to consume memory and CPU resources, e.g plug-in is able load 
-        * engines, run timers, perform asynchronous operations, etc. The method 
-        * transits the plug-in to "Alive" state. There can be many concurrent
-        * calls to resume, with different or the same reason code, this allows
-        * the plugin to properly respond to enviroment change that raise the
-        * need to re-publish content (changes like date/time change etc).
-        *
-        * @param aReason reason for state change, see TAiTransitionChange.
-        */
-        void Resume( TAiTransitionReason aReason );
+         * @see CHsContentPublisher
+         */
+        void Start( TStartReason aReason );
+
+        /**
+         * @see CHsContentPublisher
+         */
+        void Stop( TStopReason aReason );
+
+        /**
+         * @see CHsContentPublisher
+         */    
+        void Resume( TResumeReason aReason );
+
+        /**
+         * @see CHsContentPublisher
+         */    
+        void Suspend( TSuspendReason aReason );
         
         /**
-        * This method transits the plug-in to "Suspendend" state.
-        * The method is called by the framework to instruct plug-in that it is
-        * not allowed to consume CPU resources, e.g plug-in MUST stop each
-        * timer, cancel outstanding asynchronous operations, etc. 
-        *
-        * @param aReason reason for state change, see TAiTransitionChange.
-        */
-        void Suspend( TAiTransitionReason aReason );
-        
-        /**
-        * This method transits the plug-in to "Idle" state.
-        * The method is called by the framework to request the plug-in free all
-        * memory and CPU resources and close all its open files, the plug-in 
-        * should unload its engines during backup operation.
-        *
-        * @param aReason reason for state change, see TAiTransitionChange.
-        */
-        void Stop( TAiTransitionReason aReason );
-        
-        /**
-        * Adds the content observer / subscriber to plug-in. The plug-in MUST
-        * maintain a registry of subscribers and send notification to all them
-        * whenever the plug-in changes state or new content available.
-        *
-        * @param aObserver content observer to register.
-        */
+         * @see CHsContentPublisher
+         */
         void SubscribeL( MAiContentObserver& aObserver );
     
         /**
-        * Configures the plug-in.
-        *
-        * @param aSettings setting items defined in the UI definition.
-        *                  This plugin takes ownership of the
-        *                  MAiPluginSettings objects in the array.
-        *                  If this method leaves the caller will handle the cleanup.
-        */
+         * @see CHsContentPublisher
+         */
         void ConfigureL( RAiSettingsItemArray& aSettings );
-        
+    
         /**
-        * Returns interface extension. In S60 3.2 only event & property
-        * extensions are supported. See MAiEventHandlerExtension & MAiPropertyExtension
-        * interfaces.
-        *
-        * @param  aUid - UID of the extension interface to access.
-        * @return the extension interface. Actual type depends on the passed aUid 
-        *         argument.
-        */
-        TAny* Extension( TUid aUid );
+         * @see CHsContentPublisher
+         */
+        TAny* GetProperty( TProperty aProperty );
 
-    
-    public:     // from MAiPropertyExtension
-    
         /**
-        * Read property of publisher plug-in.
-        *
-        * @param aProperty - identification of property.
-        * @return Pointer to property value.
-        */
-        TAny* GetPropertyL( TInt aProperty );
-    
-        /**
-        * Write property value.
-        *
-        * @param aProperty - identification of property.
-        * @param aValue - contains pointer to property value.
-        */
-        void SetPropertyL( TInt aProperty, TAny* aValue );
-    
-    
-    public:     // from MAiEventHandlerExtension
-    
-        /**
-        * See aieventhandlerextension.h for detailed description.
-        * @since S60 5.0
-        */
+         * @see CHsContentPublisher
+         */
         void HandleEvent( TInt aEvent, const TDesC& aParam );
 
     
@@ -350,11 +292,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CAiContentPublisher,
         * Own.
         */
         MAiContentItemIterator* iEvents;
-    
-        /**
-        * Information about the content publisher (this plug-in)
-        */
-        TAiPublisherInfo iInfo;
     
         /**
         * Pointer to CWsfModel

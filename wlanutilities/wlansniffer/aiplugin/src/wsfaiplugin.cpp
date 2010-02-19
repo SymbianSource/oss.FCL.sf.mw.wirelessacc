@@ -54,7 +54,6 @@ LOCAL_D const TInt KTransparentIcon = ETransparentIcon;
 LOCAL_D const TUid KUidSnifferApp = {0x10281CAA};
 LOCAL_D const TInt KRefreshStepTime = 200 * 1000;
 LOCAL_D const TInt KConnectingStepTime = 200 * 1000;
-_LIT8( KWlanWizardName, "WLANWizard" );
 
 
 
@@ -154,9 +153,6 @@ void CWsfAiPlugin::ConstructL()
     {
     LOG_ENTERFN( "CWsfAiPlugin::ConstructL" );
     AllocateResourcesL();
-        
-    iInfo.iUid = KUidWlanWizardPlugin;
-    iInfo.iName.Copy( KWlanWizardName );
     
     iContent = AiUtility::CreateContentItemArrayIteratorL( 
                                                     KAiWizardContent );
@@ -416,68 +412,21 @@ void CWsfAiPlugin::AllocateResourcesL()
     iResourceFileOffset = env->AddResourceFileL( resourceFile );    
     }
 
-
 // --------------------------------------------------------------------------
-// CWsfAiPlugin::Resume
-// --------------------------------------------------------------------------
-//
-void CWsfAiPlugin::Resume( TAiTransitionReason aReason )
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::Resume" );
-    switch ( aReason ) 
-        {
-        case EAiSystemStartup:
-            {
-            LOG_WRITE( "Resume - EAiSystemStartup");
-            iStartupRefresh->CallBack();
-            break;
-            }
-            
-        case EAiIdleForeground: 
-            { 
-            // AI came to foreground -> make refresh scan 
-            if ( !iAiModel->Connected() && !iModel->IsConnecting() )
-                {
-                LOG_WRITE( "Call Refresh scan" );
-                TRAP_IGNORE( iModel->RefreshScanL() );
-                }
-            else
-                {
-                LOG_WRITE( "Connected no need to refresh scan results" );
-                }
-            break; 
-            } 
-            
-        case EAiIdleBackground:
-            {
-            // AI went to background -> dismiss open dialogs/menus
-            TRAP_IGNORE( iController.DismissDialogsL() );
-            break;
-            }
-            
-        default: 
-            { 
-            break; 
-            } 
-        } 
-    }
-
-
-// --------------------------------------------------------------------------
-// CWsfAiPlugin::Suspend
+// CWsfAiPlugin::Start
 // --------------------------------------------------------------------------
 //
-void CWsfAiPlugin::Suspend( TAiTransitionReason /*aReason*/ )
+void CWsfAiPlugin::Start( TStartReason /*aReason*/ )
     {
-    LOG_ENTERFN( "CWsfAiPlugin::Suspend" );
+    LOG_ENTERFN( "CWsfAiPlugin::Start");
+    iStartupRefresh->CallBack();
     }
-
 
 // --------------------------------------------------------------------------
 // CWsfAiPlugin::Stop
 // --------------------------------------------------------------------------
 //
-void CWsfAiPlugin::Stop( TAiTransitionReason /*aReason*/ )
+void CWsfAiPlugin::Stop( TStopReason /*aReason*/ )
     {
     LOG_ENTERFN( "CWsfAiPlugin::Stop" );
     TRAP_IGNORE( iController.DeInitializeL() );
@@ -490,6 +439,50 @@ void CWsfAiPlugin::Stop( TAiTransitionReason /*aReason*/ )
         }
     }
 
+// --------------------------------------------------------------------------
+// CWsfAiPlugin::Resume
+// --------------------------------------------------------------------------
+//
+void CWsfAiPlugin::Resume( TResumeReason aReason )
+    {
+    LOG_ENTERFN( "CWsfAiPlugin::Resume" );
+    if( aReason == EForeground ) 
+        {
+        // HS came to foreground -> make refresh scan
+        if ( !iAiModel->Connected() && !iModel->IsConnecting() )
+            {
+            LOG_WRITE( "Call Refresh scan" );
+            TRAP_IGNORE( iModel->RefreshScanL() );
+            }
+        else
+            {
+            LOG_WRITE( "Connected no need to refresh scan results" );
+            }
+        }
+    }
+
+// --------------------------------------------------------------------------
+// CWsfAiPlugin::Suspend
+// --------------------------------------------------------------------------
+//
+void CWsfAiPlugin::Suspend( TSuspendReason aReason )
+    {
+    LOG_ENTERFN( "CWsfAiPlugin::Suspend" );
+    
+    if( aReason == EBackground )
+        {
+        if ( iAnimationPeriodic )
+            {
+            LOG_WRITE( "Cancel animation update" );
+            iAnimationPeriodic->Cancel();
+            delete iAnimationPeriodic;
+            iAnimationPeriodic = NULL;
+            }
+                
+        // HS went to background -> dismiss open dialogs/menus
+        TRAP_IGNORE( iController.DismissDialogsL() );
+        }
+    }
 
 // --------------------------------------------------------------------------
 // CWsfAiPlugin::SubscribeL
@@ -498,7 +491,7 @@ void CWsfAiPlugin::Stop( TAiTransitionReason /*aReason*/ )
 void CWsfAiPlugin::SubscribeL( MAiContentObserver& aObserver )
     {
     LOG_ENTERFN( "CWsfAiPlugin::Subscribe" );
-    return iObservers.AppendL( &aObserver );
+    iObservers.AppendL( &aObserver );
     }
 
 
@@ -511,75 +504,23 @@ void CWsfAiPlugin::ConfigureL( RAiSettingsItemArray& /*aSettings*/ )
     LOG_ENTERFN( "CWsfAiPlugin::ConfigureL" );
     }
 
-
-// --------------------------------------------------------------------------
-// CWsfAiPlugin::Extension
-// --------------------------------------------------------------------------
-//
-TAny* CWsfAiPlugin::Extension( TUid aUid )
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::Extension" );
-    if ( aUid == KExtensionUidProperty )
-        {
-        return static_cast<MAiPropertyExtension*>( this );
-        }
-    else if ( aUid == KExtensionUidEventHandler )
-        {
-        return static_cast<MAiEventHandlerExtension*>( this );
-        }
-
-    return NULL;
-    }
-
-
 // --------------------------------------------------------------------------
 // CWsfAiPlugin::GetPropertyL
 // --------------------------------------------------------------------------
 //
-TAny* CWsfAiPlugin::GetPropertyL( TInt aProperty )
+TAny* CWsfAiPlugin::GetProperty( TProperty aProperty )
     {
-    switch ( aProperty )
+    if( aProperty == EPublisherContent )
         {
-        case EAiPublisherInfo:
-            {
-            return &iInfo;
-            }
-
-        case EAiPublisherContent:
-            {
-            return static_cast<MAiContentItemIterator*>( iContent );
-            }
-
-        case EAiPublisherEvents:
-            {
-            return static_cast<MAiContentItemIterator*>( iEvents );
-            }
-            
-        default:
-            {
-            User::Leave( KErrNotSupported );
-            }
+        return iContent;
         }
-    
+    else if( aProperty == EPublisherEvents )
+        {
+        return iEvents;
+        }
+
     return NULL;
     }
-
-
-// --------------------------------------------------------------------------
-// CWsfAiPlugin::SetPropertyL
-// --------------------------------------------------------------------------
-//
-void CWsfAiPlugin::SetPropertyL( TInt aProperty, TAny* aValue )
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::SetProperty" );
-    if ( aValue && ( aProperty == EAiPublisherInfo ) )
-        {
-        const TAiPublisherInfo* info =
-                            static_cast<const TAiPublisherInfo*>( aValue );
-        iInfo = *info;  
-        }
-    }
-
 
 // --------------------------------------------------------------------------
 // CWsfAiPlugin::HandleEvent
@@ -734,9 +675,12 @@ void CWsfAiPlugin::SetRefreshingL( TBool aRefreshing )
             }
         else
             {
-            iAnimationPeriodic->Cancel();
-            delete iAnimationPeriodic;
-            iAnimationPeriodic = NULL;
+            if ( iAnimationPeriodic )
+                {
+                iAnimationPeriodic->Cancel();
+                delete iAnimationPeriodic;
+                iAnimationPeriodic = NULL;                
+                }
             }
         }
     iRefreshing = aRefreshing;

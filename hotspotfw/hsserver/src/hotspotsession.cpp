@@ -148,38 +148,35 @@ void CHotSpotSession::ServiceL( const RMessage2& aMessage )
 void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
     {
     DEBUG( "CHotSpotSession::DispatchMessageL()" );
-    TUint value1(NULL);
-    TInt value2(NULL);
-    TInt err(KErrNone);
-    TInt indx(KErrNone);
+    TInt value( NULL );
+    TInt err( KErrNone );
+    TInt indx( KErrNone );
     TPckgBuf<TInt> iapPackage( iIapId );
     
     switch ( aMessage.Function() )
         {
         case EHssActivateNotifications :
-            iAllowNotifications = EFalse;
             DEBUG( "CHotSpotSession::ActivateNotificationsL" );
+            iAllowNotifications = EFalse;
+            
             if ( iNotifications == NULL )
                 {
-                DEBUG( "CHotSpotSession::DispatchMessageL activated !!!" );
-                iNotifications = new (ELeave) HssNotifications(*this);
+                iNotifications = new ( ELeave ) HssNotifications( *this );
                 iMgtClient->ActivateNotificationsL( *iNotifications );
                 }
             HandleOrderNotifications( aMessage );
             break;
         case EHssCancelNotifications :
-            iAllowNotifications = EFalse;
             DEBUG( "CHotSpotSession::CancelNotifications" );
+            iAllowNotifications = EFalse;
             iMgtClient->CancelNotifications( );
+        
             if ( iNotifications != NULL )
                 {
                 delete iNotifications;
                 }
             iNotifications = NULL;
             HandleCancelNotifications( aMessage );
-            break;
-        case EHssGetScanResults :
-            // Handled now in client side. Left here for future use.
             break;
         case EHssRegister :
             ProcessRegisterL( aMessage );
@@ -189,17 +186,16 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             break;
         case EHssJoin :
             iAllowNotifications = EFalse;
-            // IAP id
-            value1 = ( TInt )aMessage.Int0();
-            iIapId = value1;
-            indx = iServer.FindMessage(value1, EHssStart );
+            iIapId = ( TInt )aMessage.Int0();
+     
+            indx = iServer.FindMessage( iIapId, EHssStart );
             if ( indx >= 0 )
                 {
                 iServer.CompleteMessage( indx , KErrNone );
                 }
             else
                 {
-                indx = iServer.FindMessage(value1, EHssStartAgain );
+                indx = iServer.FindMessage( iIapId, EHssStartAgain );
                 if ( indx >= 0 )
                     {
                     iServer.CompleteMessage( indx , KErrNone );
@@ -211,8 +207,8 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             iServer.SetLogoutFlag( ETrue );
             // Do not send association status to client
             iServer.SetAssociationFlag( EFalse ); 
-             // IAP id
             iIapId = ( TInt )aMessage.Int0();
+    
             indx = iServer.FindMessage(iIapId, EHssStart );
             if ( indx >= 0 )
                 {
@@ -226,42 +222,38 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                     iServer.CompleteMessage( indx , KErrAbort );
                     }
                 }
-            
             aMessage.Complete( KErrNone );
             break;
         case EHssStop :
             iAllowNotifications = EFalse;
             iServer.SetLogoutFlag( ETrue );
-                   
             iLoginTimer->Cancel();
             iLogoutTimer->Cancel();
-            // IAP id
-            value1 = ( TInt )aMessage.Int0();
-            for (TInt counter = EHssGetScanResults; counter <EHssServerShutdown ;counter++)
+            iIapId = ( TInt )aMessage.Int0();
+    
+            for ( TInt counter = EHssGetScanResults; 
+                  counter <EHssServerShutdown ;counter++ )
                 {
-                indx = iServer.FindMessage(value1, THotSpotCommands(counter ));
+                indx = iServer.FindMessage( iIapId, 
+                                            THotSpotCommands( counter ) );
                 if ( indx >= 0 )
                     {
-                    iServer.CompleteMessage( indx , KErrCancel);
+                    iServer.CompleteMessage( indx , KErrCancel );
                     }
                 }
-                        
             aMessage.Complete( KErrNone );
             break;
         case EHssLoginComplete :
             iAllowNotifications = EFalse;
-            // IAP id
-            value1 = ( TInt )aMessage.Int0();
-            // ret value
-            value2 = ( TInt )aMessage.Int1();
-            
             iLoginTimer->Cancel();
+            iIapId = ( TInt )aMessage.Int0();
+            value = ( TInt )aMessage.Int1();
             
-            DEBUG1( "EHssLoginComplete value2: %d", value2 );
-            indx = iServer.FindMessage( value1, EHssStartLogin );
+            DEBUG1( "EHssLoginComplete return value: %d", value );
+            indx = iServer.FindMessage( iIapId, EHssStartLogin );
             if ( KErrNotFound != indx )
                 {
-                if (value2 == KErrNone)
+                if ( value == KErrNone )
                     {
                     DEBUG( "EHssLoginComplete1" );
                     iServer.CompleteMessage( indx, KErrNone );
@@ -279,11 +271,9 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
         case EHssLogoutComplete :
             iAllowNotifications = EFalse;
             iLogoutTimer->Cancel();
+            iIapId = ( TInt )aMessage.Int0();
             
-            // IAP id
-            value1 = ( TInt )aMessage.Int0();
-            
-            indx = iServer.FindMessage( value1, EHssCloseConnection );
+            indx = iServer.FindMessage( iIapId, EHssCloseConnection );
             if ( KErrNotFound != indx )
                 {
                 iServer.CompleteMessage( indx, KErrNone );    
@@ -294,10 +284,9 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
         case EHssStartLogin :
             // Do not send association status, since it's already done.
             iServer.SetAssociationFlag( EFalse ); 
-            // IAP id
             iIapId = ( TInt )aMessage.Int0();
-            // Network id
             iNetId = ( TInt )aMessage.Int1();
+     
             err = iServer.SaveMessage( iIapId, aMessage, EHssStartLogin ); 
             if ( KErrNone != err )
                 {
@@ -339,18 +328,17 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             aMessage.Complete( KErrNone );
             break;
         case EHssStart:
-            // IAP id
             iServer.SetLoginFlag( ETrue );
             iIapId = ( TInt )aMessage.Int0();
             err = iServer.SaveMessage( iIapId, aMessage, EHssStart ); 
-           if ( err != KErrNone)
+    
+            if ( err != KErrNone)
                 {
                 aMessage.Complete( err );  
                 }
             else
                 {
                 TRAPD( startLeaved, err = ProcessStartL( iIapId ) );
-                
                 if ( startLeaved != KErrNone)
                     {
                     indx = iServer.FindMessage(iIapId, EHssStart );
@@ -363,7 +351,6 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                         aMessage.Complete( KErrNotSupported );
                         }
                     }
-                
                 else if ( err != KErrNone)
                     {
                     indx = iServer.FindMessage(iIapId, EHssStart );
@@ -376,16 +363,14 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                         aMessage.Complete( KErrNotSupported );
                         }
                     }
-                // else -> client is created and called 
-                // WLAN agent waits for 30 seconds before continuing connection setup.
                 }
             break;
         case EHssStartAgain:
-            // IAP id
             iServer.SetLoginFlag( ETrue );
             iIapId = ( TInt )aMessage.Int0();
             err = iServer.SaveMessage( iIapId, aMessage, EHssStartAgain ); 
-           if ( err != KErrNone)
+            
+            if ( err != KErrNone)
                 {
                 aMessage.Complete( err );  
                 }
@@ -406,12 +391,11 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                     }
                 }
             break;
-            
         case EHssCancel:
-               iLoginTimer->Cancel();
+            iLoginTimer->Cancel();
             iLogoutTimer->Cancel();
-            // IAP id
             iIapId = ( TInt )aMessage.Int0();
+            
             if ( iServer.GetAssociationFlagValue() )
                 {
                 // We are in association phase and Agent failed it for some reason
@@ -433,17 +417,11 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                 {
                 iServer.CompleteMessage( indx , KErrCancel );
                 }
-            //Not needed to send Logout()
-            //iServer.SetLogoutFlag( ETrue )
-            //ProcessCloseL( iIapId )
             aMessage.Complete( KErrNone );
-        break;
-        
+            break;
         case EHssCloseConnection:
             iLoginTimer->Cancel();
             iLogoutTimer->Cancel();           
-        
-            // IAP id
             iIapId = ( TInt )aMessage.Int0();
 
             if ( iServer.GetAssociationFlagValue() )
@@ -476,21 +454,18 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                     }
                 }
             break;
-
         case EHssServerShutdown:
             ProcessServerShutdown( aMessage );
             break;
-            
         case EHssGetIAP:
             aMessage.WriteL( 0, iapPackage );
             aMessage.Complete( KErrNone );
             break;
-            
         case EHssUiState:
             ProcessUiState( aMessage );
             break;
         case EHssStartBrowser:
-            {   
+            {
             TInt len = aMessage.GetDesLength( 0 );
             iIapId = ( TInt )aMessage.Int1();
             iNetId = ( TInt )aMessage.Int2();
@@ -502,9 +477,8 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             AuthenticateL( ptr );
             
             CleanupStack::PopAndDestroy(buf);
-            }
             break;
-            
+            }
         case EHssSetTimerValues:
             {
             TUid clientUid( TUid::Uid( aMessage.Int0() ) );
@@ -512,16 +486,13 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             TUint logoutTimerValue = aMessage.Int2();
             iServer.SetTimerValues( clientUid, loginTimerValue, logoutTimerValue );
             aMessage.Complete( KErrNone );
-            }
             break;
-
+            }
         default:
             aMessage.Complete( KErrNotSupported );  
-            //PanicClient( aMessage, EBadRequest )
             break;
         }
        iAllowNotifications = TRUE;
-
     }
 
 // ---------------------------------------------------------
@@ -755,7 +726,7 @@ void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
     iapName = iapPckg().IapName();
     
     TUint32 iapId( 0 );
-    // TRAPD needed here so that 0 can be returned if DeleteIapL leaves
+    
     TInt ret( KErrNone );
     TRAP( ret, iIapSettingsHandler->CreateClientIapL( iapName, iapId, clientUid ));
     DEBUG1( "CHotSpotSession::EHssRegister iapId: %d", iapId );
@@ -767,8 +738,6 @@ void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
 
     else 
         {
-        // TRAP needed here so that 0 can be returned if DeleteIapL leaves
-        //TRAP(err, iIapSettingsHandler->DeleteIapL( iapId ))
         // Error, we are returning 0 to client
         // and no IAP is created
         aMessage.Complete( KErrNone );
@@ -802,9 +771,9 @@ void CHotSpotSession::ProcessUnRegisterL( const RMessage2& aMessage )
     else
         {
         ret = KErrPermissionDenied;
-        }
-        
+        }    
     aMessage.Complete( ret ); 
+    DEBUG("CHotSpotSession::ProcessUnRegisterL DONE");
     }
 
 // -----------------------------------------------------------------------------
