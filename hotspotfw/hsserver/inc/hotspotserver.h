@@ -86,20 +86,34 @@ enum THotspotPanic
 
 void PanicClient(const RMessagePtr2& aMessage,THotspotPanic aPanic);
 
+/**
+* Stores RMessage entries
+*/
 struct SRequestMapEntry
         {
         RMessagePtr2 iMessage;
         THotSpotCommands iFunction;
         TUint iIapId;
         };
-	
+/**
+* Stores timer values for each client
+*/	
 struct SLoginLogoutTimers
         {
-        TUid clientUid;
-        TUint loginTimeMicroSecs;
-        TUint logoutTimeMicroSecs;
+        TBuf<KUidLength> iClientUid;
+        TUint iLoginTimeMicroSecs;
+        TUint iLogoutTimeMicroSecs;
         };
-    
+
+/**
+* Stores all registered IAPs and their client UIDs
+*/
+struct SClientIaps
+        {
+        TUint iIapId;
+        TBuf<KUidLength> iClientUid;
+        };
+
 // CLASS DECLARATION
 
 /**
@@ -209,53 +223,78 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @return ETrue if can be sent. Otherwise EFalse.
         */
         TBool GetAssociationFlagValue();
-        
+   
         /**
-        * Set service id of IAP in use
-        * @since Series 60 3.0
-        * @param aServiceId service id
+        * Finds HotspotFW created client IAPs.
+        * @since Series 60 5.2
         * @return None
         */
-        void SetServiceId( TInt aServiceId );
+        void FindClientIapsL();
         
         /**
-        * Gets service id of IAP in use
-        * @since Series 60 3.0
-        * @return service ID
-        */
-        TInt GetServiceId();
-    
-        /**
         * Checks IAPs if there's any unused Hotspot IAPs.
-        * @since Series 60 3.0
+        * @since Series 60 3.2
         * @return None
         */
         void CheckIapsL();
         
         /**
         * Get login timer value for the specified client.
-        * @param aClientUid, client's user ID,
+        * @since Series 60 5.2
+        * @param aClientUid, clients user id
         * @return Login timer value.
         */        
-        TUint GetLoginTimeMicroSecs( TUid aClientUid );
+        TUint GetLoginTimeMicroSecs( TDes& aClientUid );
     
         /**
         * Get logout timer value for the specified client.
-        * @param aClientUid, client's user ID,
+        * @since Series 60 5.2
+        * @param aClientUid, clients user id
         * @return Logout timer value.
         */        
-        TUint GetLogoutTimeMicroSecs( TUid aClientUid );
+        TUint GetLogoutTimeMicroSecs( TDes& aClientUid );
 
         /**
         * Set both login and logout timer values for the specified client.
-        * @param aClientUid, client's user ID,
-        * @param aLoginTimerValue, set login timer value,
+        * @since Series 60 5.2
+        * @param aClientUid, clients user id
+        * @param aLoginTimerValue, set login timer value
         * @param aLogoutTimerValue, set logout timer value.
         */        
-        void CHotSpotServer::SetTimerValues(
-                TUid aClientUid,
+        void SetTimerValues(
+                TDes& aClientUid,
                 TUint aLoginTimerValue,
                 TUint aLogoutTimerValue );
+        
+        /**
+        * Finds if given IAP id has an existing client.
+        * @since Series 60 5.2
+        * @param aClientUid, clients user id
+        * @return KErrNone if client is found, otherwise KErrNotFound
+        */        
+        TInt GetClientUid( TUint aIapId, TDes& aUid );
+
+        /**
+        * Adds client IAP to the array.
+        * @since Series 60 5.2
+        * @param aIapId, IAP id
+        * @param aUid, clients user id
+        */        
+        void SetClientIap( TUint aIapId, TDes& aUid );
+
+        /**
+        * Removes client IAP from the array.
+        * @since Series 60 5.2
+        * @param aIapId, IAP id
+        */        
+        void RemoveClientIap( TUint aIapId );
+
+        /**
+        * Returns Easy WLAN IAP id.
+        * @since Series 60 5.2
+        * @return Easy WLAN id
+        */        
+        TInt GetEasyWlanId();
         
     private:
         
@@ -264,7 +303,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aClientUid, client UID to find.
         * @return matching index if UID was found, otherwise KErrNotFound.
         */        
-        TInt CHotSpotServer::FindClientUid( TUid aClientUid );
+        TInt FindClientUid( TDes& aClientUid );
         
     public: // Functions from base classes
 
@@ -331,24 +370,34 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         TBool iAssociationValue;
         
         /**
-        * Boolean flag whether the IAPs has been checked or not
+        * Flag for the IAP check
         */
         TBool iIapCheckValue;
+        
+        /**
+        * Flag for client IAP search
+        */
+        TInt iClientIapsChecked;
 
         /**
         * WLAN management API
         */
         CWlanMgmtClient* iMgtClient;
-        
-        /**
-        * Service id of IAP in use
-        */
-        TInt iCurrentServiceIdInUse;
-        
+       
         /**
         * Array for storing client dependent login and logout timer values.
         */
         RArray<SLoginLogoutTimers> iLoginLogoutTimerArray;
+        
+        /**
+        * Array for storing client IAPs and their UIDs.
+        */
+        RArray<SClientIaps> iClientIaps;
+        
+        /**
+        * Easy WLAN IAP Id
+        */
+        TInt iEasyWlanId;
 	};
 
 #endif

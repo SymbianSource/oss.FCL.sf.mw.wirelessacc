@@ -251,21 +251,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         * @param aPtr Pointer for the observer class
         */
         static void PublishCleanup( TAny* aPtr );
-       
-        /**
-        * Callback function for carrying out refresh at startup
-        * @since S60 5.0
-        * @param aPtr Pointer to this class
-        * @return Error code        
-        */
-        static TInt StartupRefresh( TAny* aPtr );
-
-        /**
-        * Callback function for carrying out refresh at startup
-        * @since S60 5.0
-        * @return Error code        
-        */
-        TInt StartupRefreshL();
 
         
     private: // Data
@@ -372,11 +357,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
          */
         TBool iRefreshing;
         
-        /**
-        * Active Object callback for displaying data at startup
-        */
-        CAsyncCallBack* iStartupRefresh;
-        
         /*
 	     * The periodic that steps the refreshing animation
 	     */
@@ -393,7 +373,12 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
          * Own.
          */
         HBufC* iKnownNetworkFound;
-	    	    
+        
+        /**
+        * A pointer to CWsfActiveWrappers
+        */
+        CWsfActiveWrappers* iActiveWrappers;
+        
     };
 
 

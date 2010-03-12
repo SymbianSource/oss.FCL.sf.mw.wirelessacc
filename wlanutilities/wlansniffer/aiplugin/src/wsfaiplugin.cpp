@@ -46,6 +46,7 @@
 #include "wsficonarraycreator.h"
 #include "wsfdbobserver.h"
 #include "wsflogger.h"
+#include "wsfactivewrappers.h"
 
 
 // define icon id for Navigation Bar icon
@@ -80,6 +81,7 @@ CWsfAiPlugin* CWsfAiPlugin::NewL()
 //
 CWsfAiPlugin::~CWsfAiPlugin()
     {
+    LOG_ENTERFN( "CWsfAiPlugin::~CWsfAiPlugin" );
     // Cancel periodic animation update
     if ( iAnimationPeriodic )
         {
@@ -91,14 +93,7 @@ CWsfAiPlugin::~CWsfAiPlugin()
     
     delete iDbObserver;
     
-    // Cancel start up refresh
-    if ( iStartupRefresh )
-        {
-        LOG_WRITE( "Cancel start up refresh" );
-        iStartupRefresh->Cancel();
-        delete iStartupRefresh;
-        iStartupRefresh = NULL;
-        }
+    delete iActiveWrappers;
     
     delete iModel;
     delete iAiModel;
@@ -164,12 +159,15 @@ void CWsfAiPlugin::ConstructL()
     // then model
     iAiModel = CWsfAiModel::NewL();
     iUi = CWsfAiView::NewL( *this );
-    iStartupRefresh = new (ELeave) CAsyncCallBack( 
-                                          TCallBack( StartupRefresh, this ), 
-                                          CActive::EPriorityIdle );
+    
     iDbObserver = CWsfDbObserver::NewL();
+    
+    iActiveWrappers = CWsfActiveWrappers::NewL( iModel, iController );
+    
     iController.SetUi( *static_cast<CWsfAiView*>( iUi ) );
-    iController.InitializeL( iModel, iAiModel, iDbObserver );
+    
+    iController.InitializeL( iModel, iAiModel, iDbObserver, 
+							 iActiveWrappers );
     }
 
 
@@ -419,7 +417,7 @@ void CWsfAiPlugin::AllocateResourcesL()
 void CWsfAiPlugin::Start( TStartReason /*aReason*/ )
     {
     LOG_ENTERFN( "CWsfAiPlugin::Start");
-    iStartupRefresh->CallBack();
+    iController.StartupRefresh();
     }
 
 // --------------------------------------------------------------------------
@@ -452,7 +450,7 @@ void CWsfAiPlugin::Resume( TResumeReason aReason )
         if ( !iAiModel->Connected() && !iModel->IsConnecting() )
             {
             LOG_WRITE( "Call Refresh scan" );
-            TRAP_IGNORE( iModel->RefreshScanL() );
+        	iActiveWrappers->RefreshScan();
             }
         else
             {
@@ -862,32 +860,6 @@ void CWsfAiPlugin::PublishCleanup( TAny* aPtr )
                      ->CancelTransaction( reinterpret_cast<TInt32>( self ) );
     }
 
-
-// ---------------------------------------------------------------------------
-// CWsfAiPlugin::StartupRefresh
-// ---------------------------------------------------------------------------
-//
-TInt CWsfAiPlugin::StartupRefresh( TAny* aPtr )
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::StartupRefresh" );
-    CWsfAiPlugin* self = static_cast<CWsfAiPlugin*>( aPtr );
-    TRAP_IGNORE( self->StartupRefreshL(); );
-    
-    return 0;
-    }
-
-
-// ---------------------------------------------------------------------------
-// CWsfAiPlugin::StartupRefreshL
-// ---------------------------------------------------------------------------
-//
-TInt CWsfAiPlugin::StartupRefreshL()
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::StartupRefresh" );
-    iController.StartupRefreshL();
-    
-    return 0;
-    }
 
 // ---------------------------------------------------------------------------
 // CWsfAiPlugin::DoRefreshingStepL

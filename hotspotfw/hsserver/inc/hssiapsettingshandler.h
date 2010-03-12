@@ -45,8 +45,8 @@ _LIT( KGenericTable, "WLANServiceTable");
 _LIT8(KEapPlus,"+0");
 _LIT8(KDot,", ");
 
-_LIT8(KMark1, "[" );
-_LIT8(KMark2, "]" );
+_LIT(KMark1, "[" );
+_LIT(KMark2, "]" );
 
 _LIT8(KEapNone,"0");
 _LIT8(KEapGtc,"6");
@@ -130,7 +130,9 @@ class CHssIapSettingsHandler : public CBase
         * @param aUid, UID of the client
         * @return Iap ID, Otherwise aIapId will be null
         */
-        void CreateClientIapL( const TDesC& aIapName, TUint32& aIapId, const TUid aUid );
+        void CreateClientIapL( const TDesC& aIapName, 
+                               TUint32& aIapId, 
+                               const TDesC& aUid );
         
         /**
         * Create new IAP to Internet SNAP.
@@ -142,16 +144,7 @@ class CHssIapSettingsHandler : public CBase
         * @param aIapID, IAP id
         */
         void DeleteIapL( const TUint aIapId );
-        
-        /**
-        * Finds client if found return its UID
-        * @param aIapId, IAP id
-        * @param aUid, UID id
-        * @param aUidText, UID id as a descriptor. Without[].
-        * @return KErrNone, if successful, otherwise one of system wide errorcodes.
-        */
-        TInt FindClientL( const TUint aIapId, TUid& aUid, TDes8& aUidText );
-           
+                  
     protected:
     
         /**

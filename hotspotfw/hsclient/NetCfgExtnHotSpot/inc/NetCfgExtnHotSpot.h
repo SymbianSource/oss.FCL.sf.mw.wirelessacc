@@ -11,11 +11,9 @@
 *
 * Contributors:
 *
-* Description:    NIFMAN configuration 
+* Description:    NIFMAN configuration daemon
 *
 */
-
-
 
 
 #ifndef __NET_CFG_EXTN_HOTSPOT_H__
@@ -35,68 +33,80 @@
 *  @since S60 5.0
 */
 class CNetworkConfigExtensionHotSpot : public CNetworkConfigExtensionBase
-	{
+    {
 
 public:
 
     /**
     * Two-phased constructor.
     */
-  	static CNetworkConfigExtensionHotSpot* NewL( TAny* aMNifIfNotify );
-   	
-   	/**
+    static CNetworkConfigExtensionHotSpot* NewL( TAny* aMNifIfNotify );
+       
+    /**
     * Destructor.
     */
-   	virtual ~CNetworkConfigExtensionHotSpot();
+    virtual ~CNetworkConfigExtensionHotSpot();
 
-	/**
+    /**
     * From CNetworkConfigExtensionBase
     * @since S60 5.0
     * @param aMessage the message
     * @return None
     */
-   	void SendIoctlMessageL( const ESock::RLegacyResponseMsg& aMessage );
+    void SendIoctlMessageL( const ESock::RLegacyResponseMsg& aMessage );
 
+    /**
+    * From CNetworkConfigExtensionBase
+    * @since S60 5.2
+    * @param aCause Specifies what caused the deregistration request 
+    * @return None
+    */
+    void Deregister( TInt aCause );
+       
 protected:
 
     /**
     * C++ default constructor.
     */
-   	CNetworkConfigExtensionHotSpot( MNifIfNotify& aNifIfNotify );
-  	
-  	/**
+       CNetworkConfigExtensionHotSpot( MNifIfNotify& aNifIfNotify );
+      
+    /**
     * By default Symbian 2nd phase constructor is private.
     */
-  	void ConstructL();
-   	
+    void ConstructL();
+       
     /**
-    * From CTimer. Waits for StartLogin() completion from Hotspot Server 
+    * From CNetworkConfigExtensionBase. HotspotFW handling add ons. 
     * @since S60 5.0
     * @return None
     */
-   	virtual void RunL();
-   	
-   	/**
-    * From CTimer. Implements cancel routines.
+    virtual void RunL();
+       
+    /**
+    * From CNetworkConfigExtensionBase. HotspotFW handling add ons. 
     * @since S60 5.0
     * @return None
     */
-   	virtual void DoCancel();
-
-    // Authentication flag  	  		
-	TBool iNotAuthenticated;
-	
-	// Authentication flag  	  		
-	TBool iNotDeregistered;
-	
-	// Flagging if Connect() to Hotspot done successfully
-	TInt iHotspotConnect;
- 	
+    virtual void DoCancel();
+    
 private:
     
-    // Hotspot client interface 
+    // Flag for Authentication              
+    TBool iNotAuthenticated;
+    
+    // Flag for Deregistering              
+    TBool iNotDeregistered;
+    
+    // Defines if StartLogin() is ongoing              
+    TBool iIsStartLoginActive;
+    
+    // Defines if HotspotFW session is created
+    TInt iHotspotConnect;
+    
+    // Handle to HotspotFW client interface 
     RHssInterface iClient;
- 	};
+    
+    };
 
     /**
     * CNetworkConfigExtensionBase - constructor
@@ -104,8 +114,8 @@ private:
     */
     inline CNetworkConfigExtensionHotSpot::CNetworkConfigExtensionHotSpot( MNifIfNotify& aNifIfNotify ) :
     CNetworkConfigExtensionBase( aNifIfNotify )
-	{
-	}
+    {
+    }
 
 #endif
 

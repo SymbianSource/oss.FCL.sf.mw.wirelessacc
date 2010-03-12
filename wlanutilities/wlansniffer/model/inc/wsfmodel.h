@@ -16,6 +16,7 @@
 */
 
 
+
 #ifndef C_WSFMODEL_H
 #define C_WSFMODEL_H
 
@@ -107,7 +108,28 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @return Array of WLANs
         */
         IMPORT_C CWsfWlanInfoArray* GetWlanListL();
+        
+		/**
+        * Asyncronous request to the server to return wlan list size
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetWlanListSize( TPckgBuf<TUint>& aPckg, 
+                                       TRequestStatus& aStatus );
 
+		/**
+        * Asyncronous request to the server to return wlan list
+        * @since S60 5.2
+        * @param aPckg request result
+		* @param aPtr wlan list
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetWlanList( TPckgBuf<TUint>& aPckg, TPtr8& aPtr, 
+                                   TRequestStatus& aStatus );
+        
         /**
         * Store active views UID
         * @since S60 5.0
@@ -144,23 +166,41 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         IMPORT_C int ConnectL( TUint32 aIapId );
         
         /**
-        * Connects to the given WLAN IAP
+        * Asyncronous request to the server to connect to the given WLAN IAP
         * @since S60 5.2
+        * @param aPckg request result
         * @param aIapId WLAN IAP id to connect to.
+        * @param aPersistence The value of the persistence property
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
         */
-        IMPORT_C int ConnectWithoutConnWaiterL( TUint32 aIapId, 
-                                                TBool aTestedAccessPoint );
+        IMPORT_C void ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId, 
+                               TWsfIapPersistence aPersistence,
+                               TRequestStatus& aStatus );
+
         /**
-        * Starts auto-disconnect timer for connected network
+        * Sets connection result
         * @since S60 5.2
+        * @param aResult connection result
+        * @param aIapId WLAN IAP
         */
-        IMPORT_C void FinalizeConnectL();
+        IMPORT_C void SetConnectResultL( TInt aResult, TUint aIapId );
 
         /**
         * Disconnects WLAN
         * @since S60 5.0
         */
         IMPORT_C void DisconnectL();
+        
+        /**
+        * Asyncronous request to the server to disconnect
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void Disconnect( TPckgBuf<TBool>& aPckg, 
+                                  TRequestStatus& aStatus );
         
         /**
         * Check if the engine is refreshing
@@ -259,6 +299,16 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         */
         IMPORT_C TBool RefreshScanL();
         
+		/**
+        * Asyncronous request to the server to make a scan
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void RefreshScan( TPckgBuf<TBool>& aPckg, 
+                                   TRequestStatus& aStatus );
+        
         /**
         * Launches and helper application to create an accesspoint 
         * @since S60 5.0
@@ -301,6 +351,18 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @return ETrue if success, EFalse otherwise.
         */
         IMPORT_C TBool GetConnectedWlanDetailsL( TWsfWlanInfo& aWlanInfo );
+        
+        /**
+        * Asyncronous request to the server to return connected network
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aWlanInfo The wlaninfo object to fill
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetConnectedWlanDetails( TPckgBuf<TBool>& aPckg,
+                                               TWsfWlanInfo& aWlanInfo,
+                                               TRequestStatus& aStatus );
       
         /**
         * Queries whether a connecting process is going on
@@ -351,14 +413,6 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @param aIapId IAP id passed as a parameter
         */
         IMPORT_C void LaunchBrowserL( TUint32 aIapId );
-
-        
-        /**
-        * Cleans up the possibly temporary IAP after user cancelled 
-        * the browser launch
-        * @since S60 5.0
-        */
-        IMPORT_C void CleanUpCancelledLaunchL();
 
         
     public:     // From MWsfBrowserLaunchObserver
@@ -528,6 +582,11 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * Indicates if "Connect" or "Start Web browsing" is selected.
         */
         TBool iConnectOnly;
+        
+		/**
+        * ICT class. Owned.
+        */
+        CIctsClientInterface* iIct;
 
     };
 

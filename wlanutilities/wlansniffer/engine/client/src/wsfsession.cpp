@@ -35,6 +35,11 @@
 */
 static const TInt KIPCSlots = 6;
 
+/**
+* Number of retries to start the server
+*/
+static const TInt KRetries = 3;
+
 
 
 // ---------------------------------------------------------------------------
@@ -110,7 +115,7 @@ EXPORT_C TInt RWsfSession::Connect()
     LOG_ENTERFN( "RWsfSession::Connect" );
     TInt err = StartServer();
     
-    if ( err == KErrNone )
+    for (TInt tries = 0; tries < KRetries; tries++)
         {
         LOG_WRITE( "server started" );
 
@@ -118,15 +123,37 @@ EXPORT_C TInt RWsfSession::Connect()
 
         LOG_WRITEF( "CreateSession() returned %d", err );
         
-        if ( err == KErrNone )
+        if (!err)
             {
+            LOG_WRITE( "connected" );
             TRAP( err, iConnWaiter = new (ELeave) CActiveSchedulerWait() );
+            break; 
             }
+        if (err != KErrNotFound && err != KErrServerTerminated)
+            {
+            LOG_WRITE( "problems session creation - break" );
+            break; 
+            }
+            
+        TInt err = StartServer(); // try to launch the server
+
+        if (!err)
+            {
+            LOG_WRITE( "ok - try to connect again" );
+            continue; 
+            }
+            
+        if (err == KErrAlreadyExists)
+            {
+            LOG_WRITE( "someone else started - try to connect again" );
+            continue; 
+            }
+            
+        LOG_WRITE( "problems - break" );
+        break; 
         }
-    else
-        {
-        LOG_WRITEF( "server starting failed with error %d", err );
-        }
+    
+    LOG_WRITEF( "connect exit value = %d", err );
 
     return err;
     }
@@ -208,6 +235,22 @@ EXPORT_C TBool RWsfSession::GetConnectedWlanDetailsL( TWsfWlanInfo& aWlanInfo )
     CleanupStack::PopAndDestroy( waiter );
 
     return ret();
+    }
+
+
+// ---------------------------------------------------------------------------
+// RWsfSession::GetConnectedWlanDetails
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::GetConnectedWlanDetails( TPckgBuf<TBool>& aPckg,
+                                                    TWsfWlanInfo& aWlanInfo,
+                                                    TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN("RWsfSession::GetConnectedWlanDetails");
+    TPckg<TWsfWlanInfo> package( aWlanInfo );
+
+    SendReceive( ESnifferCmdConnectedDetails, TIpcArgs( &aPckg, &package ), 
+                 aStatus );
     }
 
 
@@ -362,6 +405,28 @@ EXPORT_C void RWsfSession::UpdateWlanListL( CWsfWlanInfoArray* aInfoArray )
 
 
 // ---------------------------------------------------------------------------
+// RWsfSession::GetWlanListSize
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::GetWlanListSize( TPckgBuf<TUint> &aPckg, TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN("RWsfSession::GetWlanListSize");    
+    SendReceive( ESnifferCmdWlanDataSize, TIpcArgs( &aPckg ), aStatus );
+    }
+
+
+// ---------------------------------------------------------------------------
+// RWsfSession::GetWlanList
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::GetWlanList( TPckgBuf<TUint>& aPckg, TPtr8& aPtr, TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN("RWsfSession::GetWlanList");    
+    SendReceive( ESnifferCmdGetWlanInfo, TIpcArgs( &aPckg, &aPtr ), aStatus );
+    }
+
+
+// ---------------------------------------------------------------------------
 // RWsfSession::MonitorAccessPointL
 // ---------------------------------------------------------------------------
 //
@@ -369,18 +434,10 @@ EXPORT_C void RWsfSession::MonitorAccessPointL( TUint32 aMonitoredIap )
     {
     LOG_ENTERFN("RWsfSession::MonitorAccessPointL");
 
-    CWsfActiveWaiter *waiter = CWsfActiveWaiter::NewL();
-    CleanupStack::PushL( waiter );
-
-    SendReceive( ESnifferCmdMonitorAp, TIpcArgs( aMonitoredIap ), 
-                                                            waiter->iStatus );
-    waiter->WaitForRequest();
-    LOG_WRITEF( "message[%d] call returned %d", 
-                ESnifferCmdMonitorAp,
-                waiter->iStatus.Int() );
-    User::LeaveIfError( waiter->iStatus.Int() );
-    
-    CleanupStack::PopAndDestroy( waiter );
+    TInt err = Send( ESnifferCmdMonitorAp, TIpcArgs( aMonitoredIap ));
+    LOG_WRITEF( "message[%d] call returned %d", ESnifferCmdMonitorAp, err );
+        
+    User::LeaveIfError( err );
     }
 
 
@@ -404,6 +461,17 @@ EXPORT_C TBool RWsfSession::RequestScanL()
     User::LeaveIfError( waiter->iStatus.Int() );
     CleanupStack::PopAndDestroy( waiter );
     return pckg();
+    }
+
+
+// ---------------------------------------------------------------------------
+// RWsfSession::RequestScan
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::RequestScan(TPckgBuf<TBool>& aPckg, TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN("RWsfSession::RequestScan");
+    SendReceive( ESnifferCmdRequestScan, TIpcArgs( &aPckg ), aStatus );
     }
 
 
@@ -460,42 +528,39 @@ EXPORT_C TInt RWsfSession::ConnectWlanBearerL( TUint32 aIapId,
 
 
 // ---------------------------------------------------------------------------
-// RWsfSession::ConnectWlanBearerWithoutConnWaiterL
+// RWsfSession::ConnectWlanBearer
 // ---------------------------------------------------------------------------
 //
-EXPORT_C TInt RWsfSession::ConnectWlanBearerWithoutConnWaiterL( TUint32 aIapId, 
-                                              TWsfIapPersistence aPersistence )
+EXPORT_C void RWsfSession::ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
+                                               TUint32 aIapId, 
+                                               TWsfIapPersistence aPersistence,
+                                               TRequestStatus& aStatus )
     {
-    LOG_ENTERFN( "RWsfSession::ConnectWlanBearerWithoutConnWaiterL" );
+    LOG_ENTERFN( "RWsfSession::ConnectWlanBearer" );
     LOG_WRITEF( "IAP id = %d", aIapId );
 
     // mark the beginning of the connection process
     iEventHandler->SetConnecting( ETrue );
 
-    TInt res( KErrNone );
-    TPckgBuf<TInt> pckg;
+    SendReceive( ESnifferCmdConnect, TIpcArgs( &aPckg, aIapId, aPersistence ), 
+                                                aStatus );
+    }
 
-    CWsfActiveWaiter *waiter = CWsfActiveWaiter::NewL();
-    CleanupStack::PushL( waiter );
 
-    SendReceive( ESnifferCmdConnect, TIpcArgs( &pckg, aIapId, aPersistence ), 
-                                                             waiter->iStatus );
-    waiter->WaitForRequest();
-    LOG_WRITEF( "message[%d] call returned %d", 
-                ESnifferCmdConnect,
-                waiter->iStatus.Int() );
-    User::LeaveIfError( waiter->iStatus.Int() );
-    CleanupStack::PopAndDestroy( waiter );
+// ---------------------------------------------------------------------------
+// RWsfSession::SetConnectWlanBearerResult
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::SetConnectWlanBearerResult( TInt aResult )
+    {
+    LOG_ENTERFN( "RWsfSession::SetConnectWlanBearerResult" );
+    LOG_WRITEF( "Result = %d", aResult );
     
-    res = pckg();
-    
-    if ( res != KErrNone )
+    if ( aResult != KErrNone )
         {
         // on any error the flag should be cleared
         iEventHandler->SetConnecting( EFalse );
         }
-        
-    return res;
     }
 
 
@@ -541,6 +606,17 @@ EXPORT_C TBool RWsfSession::DisconnectWlanBearerL()
 
 
 // ---------------------------------------------------------------------------
+// RWsfSession::DisconnectWlanBearer
+// ---------------------------------------------------------------------------
+//
+EXPORT_C void RWsfSession::DisconnectWlanBearer( TPckgBuf<TBool>& aPckg, TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN("RWsfSession::DisconnectWlanBearer");
+    SendReceive( ESnifferCmdDisconnect, TIpcArgs( &aPckg ), aStatus );
+    }
+
+
+// ---------------------------------------------------------------------------
 // RWsfSession::Close
 // ---------------------------------------------------------------------------
 //
@@ -550,6 +626,7 @@ EXPORT_C void RWsfSession::Close()
     delete iEventHandler; iEventHandler = NULL;
     delete iConnWaiter; iConnWaiter = NULL;
     
+    LOG_WRITE( "close session" );
     RSessionBase::Close();
     }
 

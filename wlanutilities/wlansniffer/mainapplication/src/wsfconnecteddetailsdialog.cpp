@@ -30,10 +30,6 @@
 
 // CONSTANTS
 LOCAL_D const TInt KUpdateInterval = 1000000; // in micro seconds (1 sec)
-// Time item's place in the listbox.
-LOCAL_D const TInt  KActiveTimeItem = 1;
-// Transferred data item's place in the listbox.
-LOCAL_D const TInt  KTransferredAmountItem = 2;
 
     
 // ================= MEMBER FUNCTIONS =======================
@@ -159,13 +155,8 @@ void CWsfConnectedDetailsDialog::UpdateListBox( MDesCArray* aItemTextArray )
 
     if ( iList && aItemTextArray->MdcaCount() )
         {
-        iList->Reset();
         iModel->SetItemTextArray( aItemTextArray );
-        iModel->SetOwnershipType( ELbmDoesNotOwnItemArray );
-        // draw updated items
-        iList->DrawItem( KActiveTimeItem );
-        iList->DrawItem( KTransferredAmountItem );
-        
+        iModel->SetOwnershipType( ELbmDoesNotOwnItemArray );        
         DrawNow();
         }
     }

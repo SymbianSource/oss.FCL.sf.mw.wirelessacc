@@ -232,7 +232,7 @@ TGSListboxItemTypes CWlanPlugin::ItemType()
 CGulIcon* CWlanPlugin::CreateIconL( const TUid aIconType )
     {
 
-    CLOG_ENTERFN( "CWlanPlugin::CreateIconL()" );    
+    CLOG_ENTERFN( "CWlanPlugin::CreateIconL()" );  
 
     TFileName iconsFileName;
 
@@ -245,38 +245,49 @@ CGulIcon* CWlanPlugin::CreateIconL( const TUid aIconType )
     TInt pic, picmask;
     TAknsItemID itemid;
     //if the main icon is asked   
-    if( aIconType == KGSIconTypeLbxItem )
+    if ( aIconType == KGSIconTypeLbxItem )
         {
-        if( iWlanState->GetMainIconL( pic, picmask, itemid ) )
+        if ( iWlanState->GetMainIconL( pic, picmask, itemid ) )
             {
-            icon = AknsUtils::CreateGulIconL(
-            AknsUtils::SkinInstance(), 
-            itemid, 
-            iconsFileName,
-            pic,
-            picmask );
+            icon = AknsUtils::CreateGulIconL( AknsUtils::SkinInstance(),
+                                              itemid, 
+                                              iconsFileName, 
+                                              pic, 
+                                              picmask );
             }
         else
             {
             icon = CGSPluginInterface::CreateIconL( aIconType );
             }
         }
-     //if the secondary icon is asked   
-     else if( aIconType == KGSIconTypeDColumn )
+    //if the secondary icon is asked   
+    else if ( aIconType == KGSIconTypeDColumn )
         {
-         //if there should be icon
-         if( iWlanState->GetStrengthIconL( pic, picmask, itemid ) )
+        //if there should be icon
+        if ( iWlanState->GetStrengthIconL( pic, picmask, itemid ) )
             {
-            icon = AknsUtils::CreateGulIconL(
-            AknsUtils::SkinInstance(), 
-            itemid, 
-            iconsFileName,
-            pic,
-            picmask );
+            icon = CGulIcon::NewLC();
+            CFbsBitmap* bitmap;
+            CFbsBitmap* mask;
 
+            // Creates bitmap an icon. 
+            AknsUtils::CreateColorIconL( AknsUtils::SkinInstance(), 
+                                         itemid,
+                                         KAknsIIDQsnIconColors, 
+                                         EAknsCIQsnIconColorsCG13, 
+                                         bitmap,
+                                         mask, 
+                                         iconsFileName, 
+                                         pic, 
+                                         picmask, 
+                                         KRgbBlack );
+
+            icon->SetBitmap( bitmap );
+            icon->SetMask( mask );
+            CleanupStack::Pop( icon );
             }
-         //if there should be no icons
-         else
+        //if there should be no icons
+        else
             {
             icon = CGSPluginInterface::CreateIconL( aIconType );
             }

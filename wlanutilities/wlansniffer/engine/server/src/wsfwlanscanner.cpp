@@ -334,12 +334,13 @@ void CWsfWlanScanner::RunL()
         delete iScanResults;
         iScanResults = results;
 
-        // we may let go the scan array contents...
-        iScanArray->Reset();
-    
 #ifdef _DEBUG
         DumpScanResultsL( iScanArray );
 #endif
+        
+        // we may let go the scan array contents...
+        iScanArray->Reset();
+    
         // notify clients that data is ready
         if ( iObserver )
             {
@@ -476,12 +477,15 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
 //    
 void CWsfWlanScanner::DumpScanResultsL( CWsfWlanInfoArray* aArray )
     {
+    LOG_ENTERFN( "CWsfWlanScanner::DumpScanResultsL" );
     _LIT( Kopen, "open" );
     _LIT( Kwep, "wep" );
     _LIT( Kwpa, "wpa" );
     _LIT( Kwpa2, "wpa2" );        
     _LIT( K802, "802.1x" );
-    const TDesC* secModes[4] = { &Kopen, &Kwep, &K802, &Kwpa };
+    _LIT( KWAPI, "WAPI" );
+    _LIT( KUnknown, "Unknown" );
+
     _LIT( Kpsk, "psk" );
     _LIT( Keap, "eap" );
     _LIT( Khidden, "<hidden>" );
@@ -507,6 +511,13 @@ void CWsfWlanScanner::DumpScanResultsL( CWsfWlanInfoArray* aArray )
                 break;
             case EWlanSecMode802_1x:
                 sm = &K802;
+                break;
+            case EWlanSecModeWAPI:
+                sm = &KWAPI;
+                break;
+            default:
+                sm = &KUnknown;
+                break;
             }
         
         const TDesC* psk = wi->UsesPreSharedKey()? &Kpsk:             

@@ -135,8 +135,8 @@ void CWlanPluginWlanState::ConstructL()
     
     if( iEngine->IsConnectedL() )
         {
-        iConnected = ETrue;
         iEngine->GetConnectedWlanDetailsL( iConnectedWlanInfo );
+        iConnected = iConnectedWlanInfo.Connected();
         }
             
     iDbObserver = CWlanPluginDbObserver::NewL( this );
@@ -173,10 +173,7 @@ void CWlanPluginWlanState::WlanListChangedL()
 // ---------------------------------------------------------
 void CWlanPluginWlanState::NotifyEngineError( TInt /*aError*/ )
     {
-    CLOG_ENTERFN( "CWlanPluginWlanState::NotifyEngineError()" ); 
-    
-    iScanning = EFalse;
-    
+    CLOG_ENTERFN( "CWlanPluginWlanState::NotifyEngineError()" );
     CLOG_LEAVEFN( "CWlanPluginWlanState::NotifyEngineError()" );
     }
 
@@ -188,7 +185,6 @@ void CWlanPluginWlanState::ScanDisabledL()
     CLOG_ENTERFN( "CWlanPluginWlanState::ScanDisabledL()" ); 
     
     iScanning = EFalse;
-    //UpdateWlanListL();
     UpdateParentViewL();
     
     CLOG_LEAVEFN( "CWlanPluginWlanState::ScanDisabledL()" );    
@@ -223,8 +219,8 @@ void CWlanPluginWlanState::WlanConnectionActivatedL(
     {
     CLOG_ENTERFN( "CWlanPluginWlanState::WlanConnectionActivatedL()" );   
     
-    iConnected = ETrue;
     iEngine->GetConnectedWlanDetailsL( iConnectedWlanInfo );
+    iConnected = iConnectedWlanInfo.Connected();
     UpdateParentViewL();
                 
     CLOG_LEAVEFN( "CWlanPluginWlanState::WlanConnectionActivatedL()" );
@@ -700,6 +696,7 @@ void CWlanPluginWlanState::UpdateWlanListL()
     if( iConnected )
         {
         iEngine->GetConnectedWlanDetailsL( iConnectedWlanInfo );
+        iConnected = iConnectedWlanInfo.Connected();
         }
     
     iWlanInfoBranding->LoadFilterDefinitionsL();

@@ -77,8 +77,8 @@ CHssIapSettingsHandler::~CHssIapSettingsHandler()
 // -----------------------------------------------------------------------------
 //    
 void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName, 
-                                         TUint32& aIapId, 
-                                         const TUid aUid )
+                                               TUint32& aIapId, 
+                                               const TDesC& aUid )
     {
     DEBUG("CHssIapSettingsHandler::CreateClientIapL");
 
@@ -106,7 +106,7 @@ void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName,
                 
             plugin.SetStringAttributeL( ECmName, aIapName );
             plugin.SetStringAttributeL( EWlanSSID, aIapName );
-            plugin.SetStringAttributeL( EWlanServiceExtensionTableName, aUid.Name() );
+            plugin.SetStringAttributeL( EWlanServiceExtensionTableName, aUid );
             plugin.SetStringAttributeL( ECmConfigDaemonManagerName, KHotSpotPlugin );
             plugin.SetBoolAttributeL( ECmProtected, ETrue );
             
@@ -234,60 +234,11 @@ void CHssIapSettingsHandler::DeleteIapL( const TUint aIapId )
     CleanupClosePushL( plugin );
 
     cmManager.RemoveAllReferencesL( plugin );
-    CleanupStack::Pop( &plugin );
-
     TBool result = plugin.DeleteL();
-    DEBUG1("CHssIapSettingsHandler:::DeleteIapL result = %d ", result);
-
-    CleanupStack::PopAndDestroy( &cmManager );
-    }
    
-// -----------------------------------------------------------------------------
-// FindClientL
-// -----------------------------------------------------------------------------
-//
-TInt CHssIapSettingsHandler::FindClientL( const TUint aIapId, TUid& aUid, TDes8& aUidText )
-    {   
-    DEBUG("CHssIapSettingsHandler::FindClientL");
-    TInt ret( KErrNone );
-    aUid = TUid::Null();
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapId );
-    CleanupClosePushL( plugin );
-    
-    HBufC* uid = plugin.GetStringAttributeL( EWlanServiceExtensionTableName );
-    
-    TBuf8<KExtensionAPILength> buffer;
-    buffer.Copy( *uid );
-    delete uid;
-    // Find and remove [ and ]. 
-    // If found [ it's known that buffer contains UID
-    TInt indx = buffer.Find( KMark1 );
-         if ( KErrNotFound != indx )
-         {
-         DEBUG("CHssIapSettingsHandler::FindClientL Client is found");
-         buffer.Delete( indx, 1 );
-         indx = buffer.Find( KMark2 );
-         if ( KErrNotFound != indx )
-             {
-             buffer.Delete( indx, 1 );
-             }
-         // Convert TBuf to TUid
-         TLex8 lex( buffer );
-         TUint value( 0 );
-         User::LeaveIfError( lex.Val( value, EHex ) );
-         aUid.iUid = value;
-         aUidText = buffer;
-         }
-    
-    CleanupStack::PopAndDestroy( &plugin ); // Close() called on "plugin"
+    DEBUG1("CHssIapSettingsHandler:::DeleteIapL result = %d ", result);
+    CleanupStack::PopAndDestroy( &plugin );
     CleanupStack::PopAndDestroy( &cmManager );
-    DEBUG("CHssIapSettingsHandler::FindClientL");
-
-    return ret;
     }
 
 // ---------------------------------------------------------

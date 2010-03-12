@@ -535,6 +535,8 @@ void CWsfSession::WriteWlanDataL( const RMessage2& aMessage )
         
     if ( scanData )
         {
+        LOG_WRITEF( "scanData->Length() = %d aMessage.GetDesMaxLength(1) = %d", 
+					scanData->Length(), aMessage.GetDesMaxLength( 1 ) );
         if ( scanData->Length() > aMessage.GetDesMaxLength( 1 ) )
             {
             // the data has changed
@@ -545,6 +547,8 @@ void CWsfSession::WriteWlanDataL( const RMessage2& aMessage )
         else
             {
              // else we have enough buffer... copy the data
+             sizeData() = scanData->Length();
+             aMessage.WriteL( 0, sizeData );
              aMessage.WriteL( 1, *scanData, 0 );
             }
         }

@@ -32,12 +32,10 @@
 			<image id="wizardSecureIcon" class="wizardicon" focusable="false">
 				<property class="WLANWizard/SecureIcon"/>
 				<property class="policy/Content" name="wizardSecureIcon" value="display: block;"/>
-				<property class="policy/emptyContent" name="wizardSecureIcon" value="display: none;"/>
 			</image> 
 			<image id="wizardStrengthIcon" class="wizardicon" focusable="false">
 				<property class="WLANWizard/StrengthIcon"/>
 				<property class="policy/Content" name="wizardStrengthIcon" value="display: block;"/>
-				<property class="policy/emptyContent" name="wizardStrengthIcon" value="display: none;"/>
 			</image>
 		</button> <!-- enf of wizardInfoArea2 -->
 		

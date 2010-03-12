@@ -29,14 +29,14 @@ VENDORID            VID_DEFAULT
 SOURCEPATH          ../src
 SOURCE              wlanplugin.cpp
 SOURCE              wlanpluginimplementationtable.cpp
-SOURCE				wlanpluginwlanstate.cpp
+SOURCE              wlanpluginwlanstate.cpp
 SOURCE              wlanplugindbobserver.cpp
 SOURCE              wlanplugintimeshifter.cpp
 
 USERINCLUDE         ../data
 
 // Component specific internal headers 
-USERINCLUDE			../inc
+USERINCLUDE         ../inc
 SYSTEMINCLUDE       ../../inc
 
 //Macro to /epoc32 headers
@@ -65,17 +65,18 @@ LIBRARY             cone.lib
 LIBRARY             eikcore.lib 
 LIBRARY             commonengine.lib   // RConeResourceLoader
 LIBRARY             aknskins.lib       // AknsUtils.h
+LIBRARY             egul.lib
 LIBRARY             GSEcomPlugin.lib
 LIBRARY             apgrfx.lib
 LIBRARY             apparc.lib
-LIBRARY				ws32.lib
-LIBRARY				wsfwlaninfo.lib
-LIBRARY				wsfmodel.lib
+LIBRARY             ws32.lib
+LIBRARY             wsfwlaninfo.lib
+LIBRARY             wsfmodel.lib
 LIBRARY             wsfwlaninfosorting.lib
 LIBRARY             commonui.lib
 LIBRARY             aknnotify.lib 
 LIBRARY             eiksrv.lib
-LIBRARY     		COMMSDAT.lib
-LIBRARY     		cmmanagerdatabase.lib
+LIBRARY             COMMSDAT.lib
+LIBRARY             cmmanagerdatabase.lib
 DEBUGLIBRARY        flogger.lib
 

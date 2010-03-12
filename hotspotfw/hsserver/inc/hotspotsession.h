@@ -65,16 +65,20 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         */
         static CHotSpotSession* NewL( CHotSpotServer& aServer );
         
-         /**
+        /**
         * Destructor.
         */
         ~CHotSpotSession();
    
-       struct TNotification
-        {
-        TInt id;
-        TBuf8<KHssMaxNotificationLength> data;
-        };
+        /**
+        * Struct for notifications.
+        */
+        struct TNotification
+            {
+            TInt id;
+            TBuf8<KHssMaxNotificationLength> data;
+            };
+       
     public: // Functions from base classes
 
         /**
@@ -116,18 +120,18 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         void LogoutTimeout();
         
         /**
-                * From MWlanMgmtNotifications
-                * @since Series 60 3.0
-                * @param aNewState State of WLAN
-                * @return None
-                */
-                virtual void ConnectionStateChanged( TWlanConnectionMode aNewState );
+        * From MWlanMgmtNotifications
+        * @since Series 60 3.0
+        * @param aNewState State of WLAN
+        * @return None
+        */
+        virtual void ConnectionStateChanged( TWlanConnectionMode aNewState );
         
     public: // New functions
 
  
         /**
-        * Metods for handling passthrough notifications
+        * Methods for handling passthrough notifications
         */
         void HandleCancelNotifications( const RMessage2& aMessage );
         void AddNotification( TInt aNotification, TDes8& aData );
@@ -191,7 +195,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aIapId, IAP id
         * @return KErrNone, if successful, otherwice one of system wide errorcodes.
         */
-       TInt ProcessStartAgain( const TUint aIapId );
+        TInt ProcessStartAgain( const TUint aIapId );
         
         /**
         * Sends WLAN association status to client
@@ -206,7 +210,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aIapId, IAP id
         * @return KErrNone, if successful, otherwice one of system wide errorcodes.
         */
-       TInt ProcessCloseL( const TUint aIapId );
+        TInt ProcessCloseL( const TUint aIapId );
         
         /**
         * Creates client instance through ECom
@@ -234,20 +238,32 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         void AuthenticateL( const TDesC& aString );
         
         /**
-        * Reads EasyWLAN IAP id
-        * @return None 
+        * Removes brackets from the UID
+        * @param aUid, UID of the client
         */
-        void EasyWlanIdL();
+        void ModifyClientUid( TDes& aUid );
+        
+        /**
+        * Convert descriptor to TUid and saves it to member variable
+        * @param aUid, UID of the client
+        */
+        void ConvertTBufToTUid( TDes& aUid );
     
     private:    // Data
     
-        /** List of pending (not sent) notifications. */
+        /** 
+        * List of pending (not sent) notifications. 
+        */
         RArray<TNotification> iPendingNotifications;
         
-        /** The request from the client pending for a notification. */
+        /** 
+        * The request from the client pending for a notification. 
+        */
         RMessagePtr2 iPendingNotificationRequest;
 
-        /** Is there a pending request from the client. */
+        /** 
+        * Is there a pending request from the client. 
+        */
         TBool iIsNotificationRequestPending;
 
 	    /**
@@ -262,11 +278,13 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         CHssClientPlugin* iClient;
 
         /**
-        * handle to MHssSrvNotifications
+        * Handle to MHssSrvNotifications
         */
 		MHssSrvNotifications *iSrvNotifications;
 
-        /** Handle to remove notification. */
+        /** 
+        * Handle to remove notification. 
+        */
         CSessionNotification* iNotificationHandle;
 
 	    /**
@@ -293,12 +311,6 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * handle to HssNotifications
         */
  	    HssNotifications *iNotifications;
-
-
-        /**
-        * statusinformation of Async call
-        */
-		TRequestStatus iStatus;
 
         /**
         * Handler for changing IAP settings
@@ -338,11 +350,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * Flag for indicate if extended HSFW API is used
         */
         TBool iHotspotExtension;
-        
-        /**
-        * Easy WLAN IAP Id
-        */
-        TUint32 iEasyWlanId;
+
 	};
 	
 #endif

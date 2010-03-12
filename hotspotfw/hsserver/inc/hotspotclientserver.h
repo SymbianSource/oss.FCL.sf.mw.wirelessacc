@@ -23,39 +23,17 @@
 #include "hssiapsettings.h"
 
 _LIT(KHotSpotServerExe,         "\\sys\\bin\\HotSpotServer.exe");
-_LIT(KHotSpotServerSemaphore,   "HotSpotServerSemaphore");
 _LIT(KHotSpotDataServerName,    "HotSpotServer");
 
-_LIT( KWlanBearerAgent, "wlanagt.agt" );
-_LIT( KWlanBearerAgent2, "wlanagt2.agt" );
-
 _LIT(KHotSpotServerName,"hotspotserver");
-_LIT(KHotSpotServerImg,"HotSpotServer");		// DLL/EXE name
-
-_LIT(KExePath, "\\sys\\bin\\");
-_LIT(KExe, ".exe");
+_LIT(KHotSpotServerImg,"HotSpotServer");		
 
 _LIT( KHotSpotPlugin, "NetCfgExtnHotSpot" );
 _LIT( KDhcpPlugin, "NetCfgExtnDhcp" );
 const TUint KEasyWlanServiceId = 1;
-
-const TUint KMaxSqlQueryLength = 2048;
-_LIT(KDatabaseName, "c:\\system\\data\\hotspot.dat");
-_LIT(KTableName, "hotspot");
-_LIT(KIapName, "IapName");
-_LIT(KTestStatus, "TestStatus");
-_LIT(KRedirectStatus, "RedirectStatus");
-
-const TInt KAppNameMaxLength = 64;
-const TInt KExePathLength = 14;
-const TInt KExeLength = 4;
 const TUid KHotspotServerUid3={0x10282ECB};
 
-const TInt KMaxHotspotMessage=512;
-const TInt KScanHotspotIapId=0;
-
 const TUint KHssShutdown  = 777;
-
 const TUint8 KHssMacAddressLength = 6;
 
 const TUid KInternetConnectivityUid={0x10282EC5};
@@ -79,10 +57,7 @@ const TUint KHotSpotMinorVersionNumber = 1;
 const TUint KHotSpotBuildVersionNumber = 1;
 
 const TInt KIapNameLength = 128;
-const TUint KConnectivityTestedId = 20;
-const TUint KConnectivityTestNeededId = 30;
-const TUint KNoRedirect = 40;
-const TUint KRedirect = 50;
+const TInt KUidLength = 10;
 
 /**
 * Commands from client to server.

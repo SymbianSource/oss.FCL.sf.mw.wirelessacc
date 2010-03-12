@@ -482,9 +482,12 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
         case EHssSetTimerValues:
             {
             TUid clientUid( TUid::Uid( aMessage.Int0() ) );
+            TBuf<KUidLength> uid;
+            uid.Copy( clientUid.Name() );
+            ModifyClientUid( uid );
             TUint loginTimerValue = aMessage.Int1();
             TUint logoutTimerValue = aMessage.Int2();
-            iServer.SetTimerValues( clientUid, loginTimerValue, logoutTimerValue );
+            iServer.SetTimerValues( uid, loginTimerValue, logoutTimerValue );
             aMessage.Complete( KErrNone );
             break;
             }
@@ -669,16 +672,17 @@ void CHotSpotSession::LoginTimeout()
         iServer.CompleteMessage( indx, KErrCancel );    
         }
         
-    TUid clientUid;
     TBuf8<KExtensionAPILength> extAPI;
-    TRAP_IGNORE( iIapSettingsHandler->FindClientL( iIapId, clientUid, extAPI ) );
-    
-    // 3rd party client was found
-    if ( clientUid != TUid::Null() )
+    TBuf<KUidLength> clientUid;
+    TInt err = iServer.GetClientUid( iIapId, clientUid );
+        
+    if ( err != KErrNotFound )
         {
         DEBUG("CHotSpotSession::LoginTimeout clientUid = CLIENT");
+        ConvertTBufToTUid( clientUid ); 
         TBuf8<KExtensionAPILength> nullBuf;
-        TInt ret = CreateClient( clientUid, nullBuf );
+        
+        TInt ret = CreateClient( iClientUid, nullBuf );
         DEBUG1("CHotSpotSession::LoginTimeout CreateClient ret: %d", ret);
         if ( KErrNone == ret )
             {
@@ -725,14 +729,19 @@ void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
     aMessage.ReadL( 1, iapPckg );
     iapName = iapPckg().IapName();
     
+    TBuf<KIapNameLength> bufUid;
+    bufUid.Copy( clientUid.Name() );
+    ModifyClientUid( bufUid );
+        
     TUint32 iapId( 0 );
     
     TInt ret( KErrNone );
-    TRAP( ret, iIapSettingsHandler->CreateClientIapL( iapName, iapId, clientUid ));
+    TRAP( ret, iIapSettingsHandler->CreateClientIapL( iapName, iapId, bufUid ));
     DEBUG1( "CHotSpotSession::EHssRegister iapId: %d", iapId );
     DEBUG1( "CHotSpotSession::EHssRegister ret: %d", ret );
     if ( KErrNone == ret )
         {
+        iServer.SetClientIap( iapId, bufUid );
         aMessage.Complete( iapId );
         }
 
@@ -756,10 +765,10 @@ void CHotSpotSession::ProcessUnRegisterL( const RMessage2& aMessage )
 
     // Read message
     TInt iapId = ( TInt )aMessage.Int0();
-    
+    iServer.RemoveClientIap( iapId );
     // Check that this is not Easy WLAN
-    TRAP_IGNORE( EasyWlanIdL() );
-    if ( iEasyWlanId != iapId  )
+    TInt easyWlan = iServer.GetEasyWlanId();
+    if ( easyWlan != iapId  )
         {
         TRAPD( err, iIapSettingsHandler->DeleteIapL( iapId ) );
         // return KErrGeneral if IAP removal is not successful
@@ -784,13 +793,12 @@ TInt CHotSpotSession::ProcessStartLoginL( const TUint aIapId, const TUint aNetId
     {
     DEBUG("CHotSpotSession::ProcessStartLogin");
     TInt ret( KErrNotFound );
-    TUid clientUid;
     TBuf8<KExtensionAPILength> extAPI;
     iIapId = aIapId;
     
     // Check if Easy WLAN.
-    TRAP_IGNORE( EasyWlanIdL() );
-    if ( iEasyWlanId == aIapId )
+    TInt easyWlan = iServer.GetEasyWlanId();
+    if ( easyWlan == aIapId )
         {
          DEBUG("CHotSpotSession::ProcessStartLogin Easy WLAN detected");
         // Just test internet connectivity and complete message later
@@ -799,14 +807,16 @@ TInt CHotSpotSession::ProcessStartLoginL( const TUint aIapId, const TUint aNetId
         return ret;
         }
     
-    iIapSettingsHandler->FindClientL( aIapId, clientUid, extAPI );
+    TBuf<KUidLength> clientUid;
+    TInt err = iServer.GetClientUid( aIapId, clientUid );
     
-    // 3rd party client was found
-    if ( clientUid != TUid::Null() )
+    if ( err != KErrNotFound )
         {
         DEBUG("CHotSpotSession::ProcessStartLogin clientUid = CLIENT");
+        ConvertTBufToTUid( clientUid ); 
         TBuf8<KExtensionAPILength> nullBuf;
-        ret = CreateClient( clientUid, nullBuf );
+        
+        ret = CreateClient( iClientUid, nullBuf );
         
         if ( KErrNone == ret && iServer.GetLoginFlagValue() )
             {
@@ -834,9 +844,10 @@ TInt CHotSpotSession::ProcessStartL( const TUint aIapId )
     
     TInt ret( KErrNone );
     TBuf8<KExtensionAPILength> extAPI;
+    TBuf<KUidLength> clientUid;
     
-    iIapSettingsHandler->FindClientL( aIapId, iClientUid, extAPI );
-    if ( iClientUid == TUid::Null() )
+    TInt err = iServer.GetClientUid( aIapId, clientUid );
+    if ( err != KErrNone )
         {
         DEBUG("CHotSpotSession::ProcessStartL clientUid = EMPTY");
         
@@ -845,6 +856,8 @@ TInt CHotSpotSession::ProcessStartL( const TUint aIapId )
     else
         {
         DEBUG("CHotSpotSession::ProcessStartL clientUid = CLIENT");
+        ConvertTBufToTUid( clientUid ); 
+        TBuf8<KExtensionAPILength> nullBuf;
         
         // Try first with API extension defined
         ret = CreateClient( iClientUid, extAPI );
@@ -880,7 +893,7 @@ TInt CHotSpotSession::ProcessStartAgain( const TUint aIapId )
     // Client exists if StartAgain is called.
     if ( iClient == NULL )
         {    
-           TBuf8<KExtensionAPILength> nullBuf;
+        TBuf8<KExtensionAPILength> nullBuf;
         ret = CreateClient( iClientUid, nullBuf );
         }
     
@@ -947,11 +960,11 @@ TInt CHotSpotSession::ProcessCloseL( const TUint aIapId )
     {
     DEBUG("CHotSpotSession::ProcessCloseL");
     TInt ret( KErrNone );
-    TUid clientUid;
     TBuf8<KExtensionAPILength> extAPI;
-  
-    iIapSettingsHandler->FindClientL( aIapId, clientUid, extAPI );
-    if ( clientUid == TUid::Null() )
+    TBuf<KUidLength> clientUid;
+    
+    TInt err = iServer.GetClientUid( aIapId, clientUid );
+    if ( err != KErrNone )
         {
         DEBUG("CHotSpotSession::ProcessCloseL clientUid = EMPTY");
         // do nothing
@@ -962,8 +975,15 @@ TInt CHotSpotSession::ProcessCloseL( const TUint aIapId )
         DEBUG("CHotSpotSession::ProcessCloseL clientUid = CLIENT");
         if ( iClient == NULL )
             {
+            //Convert TBuf to TUid
+            TLex lex( clientUid );
+            TUint value( 0 );
+            lex.Val( value, EHex );
+            iClientUid = TUid::Null();
+            iClientUid.iUid = value;
             TBuf8<KExtensionAPILength> nullBuf;
-            ret = CreateClient( clientUid, nullBuf );
+
+            ret = CreateClient( iClientUid, nullBuf );
             }
         else
             {
@@ -1111,22 +1131,36 @@ void CHotSpotSession::AuthenticateL( const TDesC& aString )
     }
 
 // -----------------------------------------------------------------------------
-// EasyWlanIdL
+// ModifyClientUid
 // -----------------------------------------------------------------------------
 //
-void CHotSpotSession::EasyWlanIdL()
+void CHotSpotSession::ModifyClientUid( TDes& aUid )
     {
-    DEBUG("CHotSpotSession::EasyWlanIdL()");
-    // Set to default value just in case
-    iEasyWlanId = KEasyWlanServiceId; 
-    
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    iEasyWlanId = cmManager.EasyWlanIdL();
-    DEBUG1("CHotSpotSession::EasyWlanIdL() ret: % d", iEasyWlanId);
-    CleanupStack::PopAndDestroy( &cmManager );
+    DEBUG("CHotSpotSession::ModifyClientUid");
+    TInt indx = aUid.Find( KMark1 );
+    if ( KErrNotFound != indx )
+        {
+        aUid.Delete( indx, 1 );
+        indx = aUid.Find( KMark2 );
+        if ( KErrNotFound != indx )
+            {
+            aUid.Delete( indx, 1 );
+            }
+        }
+    }
+
+// -----------------------------------------------------------------------------
+// ConvertTBufToTUid
+// -----------------------------------------------------------------------------
+//
+void CHotSpotSession::ConvertTBufToTUid( TDes& aUid )
+    {
+    DEBUG("CHotSpotSession::ConvertTBufToTUid");
+    TLex lex( aUid );
+    TUint value( 0 );
+    lex.Val( value, EHex );
+    iClientUid = TUid::Null();
+    iClientUid.iUid = value;
     }
 
 // -----------------------------------------------------------------------------
@@ -1137,32 +1171,32 @@ void CHotSpotSession::ConnectionStateChanged( TWlanConnectionMode  aNewState )
     {
     DEBUG1( "CHotSpotSession::ConnectionStateChanged() aNewState=%d", aNewState );
     switch ( aNewState )
+        {
+        case EWlanConnectionModeSearching:
             {
-            case EWlanConnectionModeSearching:
-                {
-                break;
-                }
-            case EWlanConnectionModeInfrastructure:
-            case EWlanConnectionModeSecureInfra:
-                {
-                iMgtClient->CancelNotifications();
-                ProcessAssociationStatus( iIapId, ETrue );
-                break;
-                }
-            case EWlanConnectionModeAdhoc:
-            case EWlanConnectionModeNotConnected:
-                {
-                iMgtClient->CancelNotifications();
-                iServer.SetAssociationFlag( EFalse );
-                break;
-                }
-            default:
-                {
-                iMgtClient->CancelNotifications();
-                iServer.SetAssociationFlag( EFalse );
-                }
+            break;
             }
-    
+        case EWlanConnectionModeInfrastructure:
+        case EWlanConnectionModeSecureInfra:
+            {
+            iMgtClient->CancelNotifications();
+            ProcessAssociationStatus( iIapId, ETrue );
+            break;
+            }
+        case EWlanConnectionModeAdhoc:
+        case EWlanConnectionModeNotConnected:
+            {
+            iMgtClient->CancelNotifications();
+            iServer.SetAssociationFlag( EFalse );
+            break;
+            }
+        default:
+            {
+            iMgtClient->CancelNotifications();
+            iServer.SetAssociationFlag( EFalse );
+            }
+        }
+
     }
 
 // end of file

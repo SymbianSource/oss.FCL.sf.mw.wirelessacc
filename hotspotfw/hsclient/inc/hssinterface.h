@@ -279,13 +279,7 @@ NONSHARABLE_CLASS( RHssInterface ) : public RSessionBase
         * @return KErrNone if successful otherwise another of the system wide error codes.
         */
         TInt StartServer();
-        
-        /**
-        * Server startup continues.
-        * @return KErrNone if successful otherwise another of the system wide error codes.
-        */
-        TInt CreateServerProcess();
-        
+               
     private: // Methods
     
         /**

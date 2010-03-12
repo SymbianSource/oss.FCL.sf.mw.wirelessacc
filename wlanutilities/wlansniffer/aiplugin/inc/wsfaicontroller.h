@@ -35,6 +35,7 @@ class MWsfAiUiObserver;
 class TWsfWlanInfo;
 class CWsfWlanInfoArray;
 class CWsfDbObserver;
+class CWsfActiveWrappers;
 
 
 /**
@@ -66,11 +67,13 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         /**
         * PreInitialization for this class (set the models references)
         * @since S60 5.0
-        * @param aModel appicaton level model reference
+        * @param aModel applicaton level model reference
         * @param aAiModel model reference of AiPlugin
+        * @param aActiveWrappers reference of wrappers holder
         */
         void InitializeL( CWsfModel* aModel, CWsfAiModel* aAiModel,
-        		           CWsfDbObserver* aObserver );
+                CWsfDbObserver* aObserver, 
+        		CWsfActiveWrappers* aActiveWrappers );
         
         /**
         * Set the UI for the controller
@@ -99,11 +102,18 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         void DisableScanL();
         
         /**
-         * Propagates the connected network data from the sniffer model
+         * Start initial refresh
          * to the AI model
          * @since S60 5.0
          */
-        void StartupRefreshL();
+        void StartupRefresh();
+        
+		/**
+         * Propagates the network data from the engine
+         * to the AI model
+         * @since S60 5.0
+         */
+        void StartupRefreshDataReadyL();
 
         /**
         * Dismisses the AI menu/other dialogs if there was any open
@@ -122,6 +132,13 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         * @since S60 5.2
         */
         void RefreshConnectingL();
+        
+		/**
+         * Propagates the network data from the engine
+         * to the AI model
+         * @since S60 5.0
+         */
+        void WlanListDataReadyL();
         
 
     public:     // From MWsfStateChangeObserver
@@ -269,11 +286,6 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         *  Refreshes the current ui when the ui changes
         */ 
         void RefreshUiL();
-        
-        /*
-        *  Disconnect active wlan connections
-        */ 
-        void DisconnectL();
 
         /**
         * Handle error event
@@ -359,6 +371,12 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
          * Indicates whether access point needs testing
          */
         TBool iTestAccessPoint;
+        
+		/**
+        * A pointer to CWsfActiveWrappers
+        */
+        CWsfActiveWrappers* iActiveWrappers;
+        
     };
 
 #endif      //  T_WSFAICONTROLLER_H

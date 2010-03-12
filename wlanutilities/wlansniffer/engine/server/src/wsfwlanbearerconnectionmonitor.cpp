@@ -18,6 +18,8 @@
 
 
 //  EXTERNAL INCLUDES
+#include <w32std.h> 
+#include <apgtask.h>
 #include <utf.h>
 #include <cmpluginwlandef.h>
 #include <commdbconnpref.h>
@@ -83,6 +85,11 @@ static const TUid KTrivialClientUids[KTrivialClientCount] =
     { 0x10281CAB },         // Sniffer server (wsfserver.exe)
     { 0x101fD9C5 }          // DHCP server (dhcpserv.exe)
     };
+
+/**
+* Browser UID
+*/
+const TUid KCRUidBrowser   = {0x10008D39};
 
 
 
@@ -730,49 +737,72 @@ void CWsfWlanBearerConnectionMonitor::CheckClientCountL()
     {
     LOG_ENTERFN( "CWsfWlanBearerConnectionMonitor::CheckClientCountL" );
     
-    CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewL();
-    
-    TConnMonClientEnumBuf clientInfo;
-
-    iMonitor.GetPckgAttribute( iConnectionId, 0, 
-                               KClientInfo, 
-                               clientInfo, 
-                               waiter->iStatus );
-    waiter->WaitForRequest();
-    delete waiter;
-    
-    // get the client count
-    iClientCount = clientInfo().iCount;
-    
-    // decrease count by each trivial client (Sniffer server, DHCP etc)
-    for ( TInt i( 0 ); i < clientInfo().iCount; ++i )
+    RWsSession wsSession;
+    if ( KErrNone == wsSession.Connect() )
         {
-        for ( TInt j( 0 ); j < KTrivialClientCount; ++j )
+        LOG_WRITE( "Find browser task" );
+        TApaTaskList taskList( wsSession );
+        TApaTask task = taskList.FindApp( KCRUidBrowser );
+        if ( task.Exists() )
             {
-            if ( clientInfo().iUid[i] == KTrivialClientUids[j] )
-                {
-                --iClientCount;
-                LOG_WRITEF( "trivial client [0x%08X] discarded", 
-                            clientInfo().iUid[i].iUid );                
-                break;
-                }
+            LOG_WRITE( "Browser is running - auto disconnect to false" );
+            iAutoDisconnect = EFalse;
+            iInactivityStart.UniversalTime();
             }
+        else
+            {
+            LOG_WRITE( "Browser is not running - auto disconnect to true" );
+            iAutoDisconnect = ETrue;
+            }
+        wsSession.Close();
+        }
+    else
+        {
+        LOG_WRITE( "Session connect failed" );
         }
     
-    
-    LOG_WRITEF( "iClientCount = %d (trivial clients:%d)", 
-                iClientCount,
-                clientInfo().iCount - iClientCount );
-
     if ( iAutoDisconnect )
         {
+        CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewL();
+        
+        TConnMonClientEnumBuf clientInfo;
+    
+        iMonitor.GetPckgAttribute( iConnectionId, 0, 
+                                   KClientInfo, 
+                                   clientInfo, 
+                                   waiter->iStatus );
+        waiter->WaitForRequest();
+        delete waiter;
+    
+        // get the client count
+        iClientCount = clientInfo().iCount;
+        
+        // decrease count by each trivial client (Sniffer server, DHCP etc)
+        for ( TInt i( 0 ); i < clientInfo().iCount; ++i )
+            {
+            for ( TInt j( 0 ); j < KTrivialClientCount; ++j )
+                {
+                if ( clientInfo().iUid[i] == KTrivialClientUids[j] )
+                    {
+                    --iClientCount;
+                    LOG_WRITEF( "trivial client [0x%08X] discarded", 
+                                clientInfo().iUid[i].iUid );                
+                    break;
+                    }
+                }
+            }
+        
+        LOG_WRITEF( "iClientCount = %d (trivial clients:%d)", 
+                    iClientCount,
+                    clientInfo().iCount - iClientCount );
+    
         if ( iClientCount )
             {
+            LOG_WRITE( "reset the inactivity start time to current time" );
             // there are more clients than the default ones ->
             // connection is considered active ->
             // reset the inactivity start time to current time
             iInactivityStart.UniversalTime();
-            
             }
         else
             {
@@ -789,10 +819,11 @@ void CWsfWlanBearerConnectionMonitor::CheckClientCountL()
                 LOG_WRITE( "inactivity threshold reached, disconnecting..." );
                 DisconnectBearer();
                 }
+            
             }
         
         }
-
+    
     }
 
 
@@ -947,9 +978,6 @@ void CWsfWlanBearerConnectionMonitor::RunL()
         {
         case ECsNotConnected:
             {
-#ifdef __WINSCW__
-            User::After(5000000);
-#endif
             LOG_WRITE( "<ENotConnected>" );
 
             TInt err( KErrNone );

@@ -96,6 +96,19 @@ EXPORT_C CWsfModel* CWsfModel::NewLC( MWsfStateChangeObserver& aObserver,
 //
 EXPORT_C CWsfModel::~CWsfModel()
     {
+    LOG_ENTERFN( "CWsfModel::~CWsfModel" );
+    if ( iIct )
+        {
+        LOG_WRITE( "ict cancel" );
+        TRAP_IGNORE( iIct->CancelStartL() );
+        delete iIct;
+        iIct = NULL;
+        }
+    if ( iIctWait.IsStarted() )
+        {
+        LOG_WRITE( "ict wait cancel" );
+        iIctWait.AsyncStop();
+        }
     iSession.CancelNotifyEvent();
     iSession.Close();
     delete iScreenSaverWatcher;
@@ -143,6 +156,7 @@ void CWsfModel::ConstructL( MWsfStateChangeObserver& aObserver,
 //
 EXPORT_C void CWsfModel::SetEngineObserver( MWsfModelObserver* aObserver )
     {
+    LOG_ENTERFN( "CWsfModel::SetEngineObserver" );
     iObserver = aObserver;
     }
 
@@ -157,6 +171,30 @@ EXPORT_C CWsfWlanInfoArray* CWsfModel::GetWlanListL()
     iArray->Reset();
     iSession.UpdateWlanListL( iArray );
     return iArray;
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfModel::GetWlanListSize
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::GetWlanListSize( TPckgBuf<TUint>& aPckg, 
+                                           TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN( "CWsfModel::GetWlanListSize" );
+    iSession.GetWlanListSize( aPckg, aStatus );
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfModel::GetWlanList
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::GetWlanList( TPckgBuf<TUint>& aPckg, TPtr8& aPtr, 
+                                       TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN( "CWsfModel::GetWlanList" );
+    iSession.GetWlanList( aPckg, aPtr, aStatus );
     }
 
 
@@ -234,16 +272,6 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
         {
         iObserver->ConnectingFinishedL( err );
         }
-
-    TBool timerStarted( EFalse );
-    timerStarted = iSession.ControlDisconnectTimerL( 
-                                         EAdcStartTimer | EAdcTimerReset );
-    
-    if ( !timerStarted )
-        {
-        LOG_WRITE( "auto-disconnect timer couldn't be started!" );
-        }
-    
     
     iRefreshing = iSession.RequestScanL();   
     
@@ -252,46 +280,36 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
 
 
 // ----------------------------------------------------------------------------
-// CWsfModel::ConnectWithoutConnWaiterL
+// CWsfModel::ConnectL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C int CWsfModel::ConnectWithoutConnWaiterL( TUint32 aIapId, 
-                                                   TBool aTestedAccessPoint )
+EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId, 
+                                  TWsfIapPersistence aPersistence,
+                                  TRequestStatus& aStatus )
     {
-    LOG_ENTERFN( "CWsfModel::ConnectWithoutConnWaiterL" );
+    LOG_ENTERFN( "CWsfModel::ConnectL" );
     
     if ( iObserver )
         {
         iObserver->ConnectingL( aIapId );
         }
-    if ( aTestedAccessPoint )
-        {
-        return iSession.ConnectWlanBearerWithoutConnWaiterL( aIapId, 
-                                                       EIapPersistent );
-        }
-    else
-        {
-        return iSession.ConnectWlanBearerWithoutConnWaiterL( aIapId, 
-                                                       EIapExpireOnDisconnect );
-        }
+    
+    iSession.ConnectWlanBearer( aPckg, aIapId, aPersistence, aStatus );
     }
 
-
 // ----------------------------------------------------------------------------
-// CWsfModel::FinalizeConnectL
+// CWsfModel::SetConnectResultL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C void CWsfModel::FinalizeConnectL()
+EXPORT_C void CWsfModel::SetConnectResultL( TInt aResult, TUint /*aIapId*/ )
     {
-    LOG_ENTERFN( "CWsfModel::FinalizeConnectL" );
+    LOG_ENTERFN( "CWsfModel::SetConnectResultL" );
     
-    TBool timerStarted( EFalse );
-    timerStarted = iSession.ControlDisconnectTimerL( 
-                                              EAdcStartTimer | EAdcTimerReset );
+    iSession.SetConnectWlanBearerResult( aResult );
     
-    if ( !timerStarted )
+    if ( iObserver && aResult != KErrNone )
         {
-        LOG_WRITE( "auto-disconnect timer couldn't be started!" );
+        iObserver->ConnectingFinishedL( aResult );
         }
     }
 
@@ -307,7 +325,21 @@ EXPORT_C void CWsfModel::DisconnectL()
     iConnectedIapId = 0;
     iConnectedNetId = 0;
     iConnectOnly = EFalse;
-    iRefreshing = iSession.RequestScanL();    
+	iRefreshing = iSession.RequestScanL(); 
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfModel::Disconnect
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::Disconnect( TPckgBuf<TBool>& aPckg, TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN( "CWsfModel::Disconnect" );
+    iSession.DisconnectWlanBearer( aPckg, aStatus );
+    iConnectedIapId = 0;
+    iConnectedNetId = 0;
+    iConnectOnly = EFalse;
     }
 
 
@@ -387,8 +419,6 @@ EXPORT_C void CWsfModel::LaunchBrowserL( TUint32 aIapId )
         {
         LOG_WRITE( "launching browser..." );
         iConnectedIapId = aIapId;        
-        iSession.MonitorAccessPointL( aIapId );
-        iSession.ControlDisconnectTimerL( EAdcStopTimer );
         iBrowserLauncher->LaunchBrowserL( *this, aIapId );
         }
     else if ( iBrowserLauncher->BrowserIap() == aIapId ) 
@@ -397,17 +427,6 @@ EXPORT_C void CWsfModel::LaunchBrowserL( TUint32 aIapId )
         ContinueBrowsingL();
         }
         
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::CleanUpCancelledLaunchL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C void CWsfModel::CleanUpCancelledLaunchL()
-    {
-    LOG_ENTERFN( "CWsfModel::CleanUpCancelledLaunchL" );
-    iSession.SetIapPersistenceL( EIapForcedExpiry );
     }
     
 
@@ -498,19 +517,6 @@ void CWsfModel::ConnectivityObserver( TIctsTestResult aResult,
             LOG_WRITEF( "MakeIctIapPersistentL leaved with error = %d", err );
             }
         }
-
-    if ( iKeepConnection )
-        {
-        // trigger the auto-disconnect timer as well
-        TBool timerStarted( EFalse );
-        TRAP_IGNORE( timerStarted = iSession.ControlDisconnectTimerL( 
-                                          EAdcStartTimer | EAdcTimerReset ) );
-        
-        if ( !timerStarted )
-            {
-            LOG_WRITE( "auto-disconnect timer couldn't be started!" );
-            }
-        }
         
     LOG_WRITE( "before AsyncStop" );
     // finally stop blocking the caller
@@ -519,9 +525,8 @@ void CWsfModel::ConnectivityObserver( TIctsTestResult aResult,
         {
         LOG_WRITE( "ICT: AsyncStop" );
         iIctWait.AsyncStop();
-        } 
-     
-
+        }
+    
     }
 
 // -----------------------------------------------------------------------------
@@ -797,14 +802,6 @@ EXPORT_C TInt CWsfModel::TestAccessPointL( TWsfWlanInfo& aWlan,
     if ( err == KErrNone && ictTestPermission == EIctsNeverRun )
         {
         LOG_WRITE( "ICT is set to never run, IAP remains temporary" );
-        
-        if ( !iKeepConnection )
-            {
-            //get the engine monitor the IAP
-            iSession.MonitorAccessPointL( iIctWlanInfo.iIapId );
-            iSession.SetIapPersistenceL( EIapExpireOnShutdown );
-            iSession.MonitorAccessPointL( iIctWlanInfo.iIapId );
-            }
 
         ConnectivityObserver( EConnectionNotOk, KNullDesC );
         }
@@ -856,13 +853,19 @@ EXPORT_C TInt CWsfModel::TestConnectedAccessPointL( TWsfWlanInfo& aWlan,
         CleanupStack::PopAndDestroy( &cmManager );
 
         LOG_WRITE( "starting ICT test..." );
-        CIctsClientInterface* ict = CIctsClientInterface::NewL( 
-                                                    iConnectedIapId, 
-                                                    iConnectedNetId,
-                                                    *this );
+        
+        if ( iIct )
+            {
+            iIct->CancelStartL();
+            delete iIct;
+            iIct = NULL;
+            }
+        
+        iIct = CIctsClientInterface::NewL( iConnectedIapId, 
+                                           iConnectedNetId,
+                                           *this );
         LOG_WRITE( "ICT created" );
-        CleanupStack::PushL( ict );
-        ict->StartL();
+        iIct->StartL();
         LOG_WRITE( "ICT: started" );
         
         // enter a waitloop since ICT is a kind of asynchronous service
@@ -871,9 +874,8 @@ EXPORT_C TInt CWsfModel::TestConnectedAccessPointL( TWsfWlanInfo& aWlan,
             LOG_WRITE( "ICT: iIctWait started" );
             iIctWait.Start();
             }
-            
+        
         iIctEnded = EFalse;
-        CleanupStack::PopAndDestroy( ict );
         LOG_WRITE( "ICT test done." );
         }
 
@@ -897,6 +899,18 @@ EXPORT_C TBool CWsfModel::RefreshScanL()
     iRefreshing = iSession.RequestScanL();
     LOG_WRITEF( "iRefreshing = %d", iRefreshing );
     return iRefreshing;
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfModel::RefreshScan
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::RefreshScan( TPckgBuf<TBool>& aPckg, 
+                                       TRequestStatus& aStatus )
+    {
+    LOG_ENTERFN( "CWsfModel::RefreshScan" );
+    iSession.RequestScan( aPckg, aStatus );
     }
     
 
@@ -978,12 +992,6 @@ void CWsfModel::BrowserLaunchFailed( TInt aError )
     LOG_ENTERFN( "CWsfModel::BrowserLaunchFailed" );
     LOG_WRITEF( "error = %d", aError );
     
-    // do the cleanup if necessary
-    TRAP_IGNORE( 
-        iSession.SetIapPersistenceL( EIapForcedExpiry );
-        iSession.ControlDisconnectTimerL( EAdcStartTimer | EAdcTimerReset );
-    );
-    
     if ( iObserver )
         {
         iObserver->BrowserLaunchFailed( aError );    
@@ -999,6 +1007,8 @@ void CWsfModel::BrowserLaunchCompleteL()
     {
     LOG_ENTERFN( "CWsfModel::BrowserLaunchCompleteL" );
 
+    iSession.MonitorAccessPointL( iConnectedIapId  );
+    
     if ( iObserver )
         {
         iObserver->BrowserLaunchCompleteL();    
@@ -1016,7 +1026,6 @@ void CWsfModel::BrowserExitL()
     
     // browser has been terminated, do the cleanup if necessary
     iSession.SetIapPersistenceL( EIapForcedExpiry );
-    iSession.ControlDisconnectTimerL( EAdcStartTimer | EAdcTimerReset );
     
     if ( iObserver )
         {
@@ -1062,6 +1071,17 @@ EXPORT_C TBool CWsfModel::IsConnectedL()
 EXPORT_C TBool CWsfModel::GetConnectedWlanDetailsL( TWsfWlanInfo& aWlanInfo )
     {
     return iSession.GetConnectedWlanDetailsL( aWlanInfo );
+    }
+
+// ----------------------------------------------------------------------------
+// CWsfModel::GetConnectedWlanDetails
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfModel::GetConnectedWlanDetails( TPckgBuf<TBool>& aPckg,
+                                                   TWsfWlanInfo& aWlanInfo,
+                                                   TRequestStatus& aStatus )
+    {
+    iSession.GetConnectedWlanDetails( aPckg, aWlanInfo, aStatus );
     }
 
 

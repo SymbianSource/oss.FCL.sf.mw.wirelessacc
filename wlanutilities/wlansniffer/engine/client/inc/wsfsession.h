@@ -120,6 +120,28 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         * @param aInfoArray Array for the scan results. Ownership not changed.
         */ 
         IMPORT_C void UpdateWlanListL( CWsfWlanInfoArray* aInfoArray );
+        
+        /**
+        * Asyncronous request to the server to return wlan list size
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetWlanListSize( TPckgBuf<TUint>& aPckg, 
+                                       TRequestStatus& aStatus );
+
+        
+        /**
+        * Asyncronous request to the server to return wlan list
+        * @since S60 5.2
+        * @param aPckg request result
+		* @param aPtr wlan list
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetWlanList( TPckgBuf<TUint>& aPckg, TPtr8& aPtr, 
+                                   TRequestStatus& aStatus );
 
         /**
         * Cancel all pending tasks.
@@ -143,6 +165,18 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         IMPORT_C TBool GetConnectedWlanDetailsL( TWsfWlanInfo& aWlanInfo );
         
         /**
+        * Asyncronous request to the server to return connected wlan network
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aWlanInfo The wlaninfo object to fill
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void GetConnectedWlanDetails( TPckgBuf<TBool>& aPckg,
+                                               TWsfWlanInfo& aWlanInfo,
+                                               TRequestStatus& aStatus );
+        
+        /**
         * Start monitoring events for the specified access point
         * @since S60 5.0
         * @param aMonitoredIap The id of the IAP to be monitored
@@ -161,15 +195,25 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
                            TWsfIapPersistence aPersistence = EIapPersistent );
         
         /**
-        * Connect to the given WLAN IAP. The function requests connection from 
-        * server without waiting the connection process to finish
+         * Asyncronous request to the server to connect
+         * @since S60 5.2
+         * @param aPckg request result
+         * @param aIapId The id of the IAP to connect to
+         * @param aPersistence The value of the persistence property
+         * @param aStatus The request status object used to contain 
+         *        the completion status of the request.
+         */
+        IMPORT_C void ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
+                                         TUint32 aIapId, 
+                                         TWsfIapPersistence aPersistence,
+                                         TRequestStatus& aStatus );
+        
+        /**
+        * Sets connection result
         * @since S60 5.2
-        * @param aIapId The id of the IAP to connect to
-        * @param aPersistence The value of the persistence property
-        * @return KErrNone if connection request is succesfully sent to server
+        * @param aResult The connection request result
         */
-        IMPORT_C TInt ConnectWlanBearerWithoutConnWaiterL( TUint32 aIapId, 
-                           TWsfIapPersistence aPersistence = EIapPersistent );
+        IMPORT_C void SetConnectWlanBearerResult( TInt aResult );
 
         /**
         * Sets the persistence property of the currently monitored IAP
@@ -188,11 +232,31 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         IMPORT_C TBool DisconnectWlanBearerL();
         
         /**
+        * Asyncronous request to the server to disconnect
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void DisconnectWlanBearer( TPckgBuf<TBool>& aPckg, 
+                                            TRequestStatus& aStatus );
+        
+        /**
         * Request the server to make a forced scan
         * @since S60 5.0
         * @return ETrue on success
         */
         IMPORT_C TBool RequestScanL();
+        
+		/**
+        * Asyncronous request to the server to make a scan
+        * @since S60 5.2
+        * @param aPckg request result
+        * @param aStatus The request status object used to contain 
+        *        the completion status of the request.
+        */
+        IMPORT_C void RequestScan( TPckgBuf<TBool>& aPckg, 
+                                   TRequestStatus& aStatus );
         
         /**
         * Queries if there is an active WLAN connection.

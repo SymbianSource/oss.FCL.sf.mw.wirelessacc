@@ -11,12 +11,9 @@
 *
 * Contributors:
 *
-* Description:       Implementation of HotSpot Plugin Server
+* Description:       Implementation of HotSpot Server
 *
 */
-
-
-
 
 
 
@@ -49,11 +46,8 @@ using namespace CMManager;
 // CONSTANTS
 // Panic codes for HotSpot server
 const TInt KHotSpotPanicCleanupStackCreationFailed  = 1;
-const TInt KHotSpotPanicOpenSemaforeFailed          = 2;
-const TInt KHotSpotPanicCreationOfSchedulerFailed   = 3;
 
 // Default timeout values
-
 const TUint KMillion = 1000000;
 const TUint KHssDefaultLoginTimeMicroSecs = 180 * KMillion;  // 180 seconds (3 mins)
 const TUint KHssMinLoginTime =      5;   // 5 seconds
@@ -73,39 +67,24 @@ _LIT( KHotSpotModuleName, "HOTSPOTSRV" );
 // 
 static void RunServerL()
     {
-    User::LeaveIfError( User::RenameThread( KHotSpotServerName ) );
-
-    CActiveScheduler* s=new(ELeave) CActiveScheduler;
-    if ( !s )
-        {
-        User::Panic( KHotSpotModuleName, KHotSpotPanicCreationOfSchedulerFailed );
-        }
-    CleanupStack::PushL(s);
-    CActiveScheduler::Install(s);
-
-    CHotSpotServer::NewLC(); // Is NewLC: Server was pushed into cleanup stack.
-
-    RSemaphore started;
-    TInt err = started.CreateGlobal( KHotSpotServerSemaphore, 0 );
-    if ( err != KErrNone )
-        {
-        err = started.OpenGlobal( KHotSpotServerSemaphore );
-        }
+    // Create and install the active scheduler
+    CActiveScheduler *scheduler = new (ELeave) CActiveScheduler;
+    CleanupStack::PushL( scheduler );
+    CActiveScheduler::Install( scheduler );
+     
+    // Create server
+    CHotSpotServer::NewLC(); 
+     
+    // Initialisation complete, now signal the client
+    User::LeaveIfError( RThread().RenameMe( KHotSpotServerName ) );
+    RProcess::Rendezvous( KErrNone );
     
-    __ASSERT_ALWAYS(
-        err == KErrNone, 
-        User::Panic( KHotSpotModuleName, KHotSpotPanicOpenSemaforeFailed )
-        );
-        
-    // lets everyone know that the thread is ready to deal with requests            
-    RProcess::Rendezvous(KErrNone);
-        
-    started.Signal();
-    started.Close();
-
+    // Ready to run
     DEBUG("**** HotspotServer: server fully running");
     CActiveScheduler::Start();
-    CleanupStack::PopAndDestroy( 2, s ); // Cleanup both server and scheduler
+     
+    // Cleanup the server and scheduler
+    CleanupStack::PopAndDestroy( 2, scheduler );
     REComSession::FinalClose();
     }
 
@@ -149,11 +128,12 @@ CHotSpotServer* CHotSpotServer::NewLC()
 //
 CHotSpotServer::~CHotSpotServer()
     {
-    DEBUG("**** HotSpotServer: CHotSpotServer::~CHotSpotServer");
+    DEBUG( "**** HotSpotServer: CHotSpotServer::~CHotSpotServer" );
     
     iMap.Close();
     iNotificationArray.Close();
     iLoginLogoutTimerArray.Close();
+    iClientIaps.Close();
     
      if ( iMgtClient != NULL )
         {
@@ -170,17 +150,20 @@ CHotSpotServer::~CHotSpotServer()
 //
 void CHotSpotServer::ConstructL()
     {
-    DEBUG("**** HotSpotServer: CHotSpotServer::ConstructL");
+    DEBUG( "**** HotSpotServer: CHotSpotServer::ConstructL" );
     StartL( KHotSpotServerName );
 
     iIapCheckValue = EFalse;
     iLogoutSent = EFalse;
     iLoginValue = ETrue;
     iAssociationValue = EFalse;
-    
+    iClientIapsChecked = KErrNone;
+    iEasyWlanId = KEasyWlanServiceId; // Set to default value just in case
+
+    TRAP( iClientIapsChecked, FindClientIapsL() );
+ 
     // Activate notifications for IAP check purposes. Done with every server startup.
-    // When EWlanConnectionModeNotConnected is received we can cancel this and 
-    // we know that it safe to go through IAPs.
+    // When EWlanConnectionModeNotConnected is received we can cancel this.
     iMgtClient = CWlanMgmtClient::NewL();
 #ifndef __WINS__
     iMgtClient->ActivateNotificationsL( *this );
@@ -202,13 +185,69 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
             iMgtClient->CancelNotifications();
 #endif
             }
-        
-         TRAPD(err, CheckIapsL());
-         if ( err != KErrNone )
-             {
-             DEBUG1("CHotSpotServer::ConnectionStateChanged(): %d", err);
-             }
+        if ( iClientIapsChecked != KErrNone )
+            {
+            TRAP_IGNORE( FindClientIapsL() );
+            }
+        TRAPD(err, CheckIapsL());
+        if ( err != KErrNone )
+            {
+            DEBUG1("CHotSpotServer::ConnectionStateChanged(): %d", err);
+            }
         }
+    }
+
+// -----------------------------------------------------------------------------
+// FindClientIapsL
+// -----------------------------------------------------------------------------
+//
+void CHotSpotServer::FindClientIapsL()
+    {
+    DEBUG("CHotSpotServer::FindClientIapsL()");
+    RCmManagerExt cmManager;
+    cmManager.OpenL();
+    CleanupClosePushL(cmManager);
+           
+    RArray<TUint32> cmArray;
+    CleanupClosePushL( cmArray );
+    TBool supportedBearersOnly = ETrue;
+    TBool legacyCmsOnly = EFalse;
+    
+    cmManager.ConnectionMethodL( cmArray, supportedBearersOnly, legacyCmsOnly );
+    DEBUG1("CHotSpotServer::FindClientIapsL count: %d", cmArray.Count());  
+    
+    for( TInt i = 0; i < cmArray.Count(); i++ )
+        {
+        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( cmArray[i] );
+        CleanupClosePushL( cm );
+        HBufC* daemonName = cm.GetStringAttributeL( 
+                                                ECmConfigDaemonManagerName );
+        CleanupStack::PushL( daemonName );
+        if ( daemonName )
+            {
+            if ( daemonName->Compare( KHotSpotPlugin ) == 0 )
+                {
+                DEBUG("CHotSpotServer::FindClientIapsL() Client found");
+                TBuf<KIapNameLength> clientUid;
+                TUid uid(TUid::Null());
+                TUint iapId = cm.GetIntAttributeL( ECmIapId  );
+                HBufC* client = cm.GetStringAttributeL( 
+                                            EWlanServiceExtensionTableName );
+                clientUid.Copy( client->Des() );
+                delete client;
+                SetClientIap( iapId, clientUid );
+                DEBUG1("CHotSpotServer::FindClientIapsL() iapId: %d", iapId );
+                }
+            }
+        CleanupStack::PopAndDestroy( daemonName );
+        CleanupStack::PopAndDestroy( &cm );
+        }
+    CleanupStack::PopAndDestroy( &cmArray );
+    
+    // Read Easy WLAN IAP ID
+    iEasyWlanId = cmManager.EasyWlanIdL();
+    CleanupStack::PopAndDestroy( &cmManager );
+    DEBUG1("CHotSpotServer::FindClientIapsL() iEasyWlanId: % d", iEasyWlanId);
     }
 
 // -----------------------------------------------------------------------------
@@ -218,78 +257,47 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
 void CHotSpotServer::CheckIapsL()
     {
     DEBUG("CHotSpotServer::CheckIapsL");
-          
-     _LIT(KMarkFirst, "[" );
-     _LIT(KMarkLast, "]" );
-     // This is needed to be checked only once per boot
-    if ( iIapCheckValue == EFalse )
+    // This is needed to be checked only once per boot
+    iIapCheckValue = ETrue;
+    TInt count = iClientIaps.Count();
+
+    // Check the array. Not supposed to be many elements.
+    for( TInt i = 0; i < count; i++ )
         {
-        iIapCheckValue = ETrue;
+        TLex lex( iClientIaps[i].iClientUid );
+        TUint value( 0 );
+        lex.Val( value, EHex );
+        TUid client = TUid::Null();
+        client.iUid = value;
         
-        RCmManagerExt cmManager;
-        cmManager.OpenL();
-        CleanupClosePushL(cmManager);
+        // Try to find if plugin exists
+        CHssClientPlugin* plugin(NULL);
+        TBuf8<KExtensionAPILength> nullBuf;
+        TRAPD( error, plugin = CHssClientPlugin::NewL( client, nullBuf ) );
+        delete plugin;
 
-        TBool supportedBearersOnly = ETrue;
-        TBool legacyCmsOnly = EFalse;
-        
-        RArray<TUint32> cmArray;
-        CleanupClosePushL( cmArray );
-        
-        cmManager.ConnectionMethodL( cmArray, supportedBearersOnly, legacyCmsOnly );
-        DEBUG1("CHotSpotServer::CheckIapsL count: %d", cmArray.Count());  
-        for( TInt i = 0; i < cmArray.Count(); i++ )
+        DEBUG1("CHotSpotServer::CheckIapsL find client error: %d", error );
+        if ( error == KErrNotFound )
             {
+            // Remove from database
+            RCmManagerExt cmManager;
+            cmManager.OpenL();
+            CleanupClosePushL(cmManager);
+            
             RCmConnectionMethodExt cm;
-            TRAPD( err, cm = cmManager.ConnectionMethodL( cmArray[i] ) );
-            DEBUG1("CHotSpotServer::CheckIapsL: err %d", err ); 
-            if ( KErrNone == err )
-                {
-                HBufC* client( NULL );
-                TRAPD( errr, client = cm.GetStringAttributeL( EWlanServiceExtensionTableName ));
-                DEBUG1("CHotSpotServer::CheckIapsL: errr %d", errr );  
-                if( KErrNone == errr )
-                    {
-                    TBuf<KIapNameLength> clientUid;
-                    TUid uid(TUid::Null());
-                    
-                    clientUid.Copy( client->Des() );
-                    delete client;
-                    TInt indx = clientUid.Find( KMarkFirst );
-                    if ( KErrNotFound != indx )
-                        {
-                        DEBUG("CHotSpotServer::CheckIapsL Client is found");
-                        clientUid.Delete( indx, 1 );
-                        indx = clientUid.Find( KMarkLast );
-                        if ( KErrNotFound != indx )
-                            {
-                            clientUid.Delete( indx, 1 );
-                            }
-                        // Convert TBuf to TUid
-                        TLex lex( clientUid );
-                        TUint value( 0 );
-                        User::LeaveIfError( lex.Val( value, EHex ) );
-                        uid.iUid = value; 
-                                        
-                        // Try to find if 3rd party client exists.
-                        // Delete IAP if no client.
-                        CHssClientPlugin* plugin(NULL);
-                        TBuf8<KExtensionAPILength> nullBuf;
-                        TRAPD( error, plugin = CHssClientPlugin::NewL( uid, nullBuf ) );
-                        delete plugin;
-
-                        DEBUG1("CHotSpotServer::CheckIapsL find client error: %d", error );
-                        if ( error == KErrNotFound )
-                            {
-                            cm.DeleteL();
-                            }
-                           }
-                    }
-                }
-            DEBUG("CHotSpotServer::CheckIapsLOK");
+            cm = cmManager.ConnectionMethodL( iClientIaps[i].iIapId );
+            CleanupClosePushL( cm );
+            cmManager.RemoveAllReferencesL( cm );
+            cm.DeleteL();
+            
+            CleanupStack::PopAndDestroy( &cm );
+            CleanupStack::PopAndDestroy( &cmManager );
+            
+            // Remove from array
+            RemoveClientIap( iClientIaps[i].iIapId );
+            count--;
+            i--;
             }
-        CleanupStack::PopAndDestroy( &cmArray );
-        CleanupStack::PopAndDestroy( &cmManager );
         }
     DEBUG("CHotSpotServer::CheckIapsL Done");
     }
@@ -472,33 +480,14 @@ TBool CHotSpotServer::GetAssociationFlagValue()
     DEBUG("HotspotServer::GetAssociationFlagValue()");
     return iAssociationValue;
     }
-
-// -----------------------------------------------------------------------------
-// SetServiceId
-// -----------------------------------------------------------------------------
-//
-void CHotSpotServer::SetServiceId( TInt aServiceId )
-    {
-    DEBUG("HotspotServer::SetServiceId");
-    iCurrentServiceIdInUse = aServiceId;
-    }
-    
-// -----------------------------------------------------------------------------
-// GetServiceId
-// -----------------------------------------------------------------------------
-//
-TInt CHotSpotServer::GetServiceId()
-    {
-    DEBUG("HotspotServer::GetServiceId()");
-    return iCurrentServiceIdInUse;
-    }
-    
+  
 // -----------------------------------------------------------------------------
 // RunError
 // -----------------------------------------------------------------------------
 //
 TInt CHotSpotServer::RunError( TInt aError )
     {
+    DEBUG1( "HotspotServer::RunError = %d", aError );
     // error from CHotSpotSession::ServiceL
     Message().Complete( aError );
     // Continue  reading client requests
@@ -510,16 +499,17 @@ TInt CHotSpotServer::RunError( TInt aError )
 // GetLoginTimerMicroSecs
 // -----------------------------------------------------------------------------
 //
-TUint CHotSpotServer::GetLoginTimeMicroSecs( TUid aClientUid )
+TUint CHotSpotServer::GetLoginTimeMicroSecs( TDes& aClientUid )
     {
+    DEBUG("HotspotServer::GetLoginTimeMicroSecs()");
     // Default timer value will be returned if matching client UID isn't found.
     TUint retval = KHssDefaultLoginTimeMicroSecs ;
     
-    TInt ret = CHotSpotServer::FindClientUid( aClientUid );
+    TInt ret = FindClientUid( aClientUid );
     if (ret != KErrNotFound)
         {
         // ret is the matching element's index.
-        retval = iLoginLogoutTimerArray[ret].loginTimeMicroSecs;
+        retval = iLoginLogoutTimerArray[ret].iLoginTimeMicroSecs;
         }
 
     return retval;
@@ -529,16 +519,17 @@ TUint CHotSpotServer::GetLoginTimeMicroSecs( TUid aClientUid )
 // GetLogoutTimerMicroSecs
 // -----------------------------------------------------------------------------
 //
-TUint CHotSpotServer::GetLogoutTimeMicroSecs( TUid aClientUid )
+TUint CHotSpotServer::GetLogoutTimeMicroSecs( TDes& aClientUid )
     {
+    DEBUG("HotspotServer::GetLogoutTimeMicroSecs()");
     // Default timer value will be returned if matching client UID isn't found.
     TUint retval = KHssDefaultLogoutTimeMicroSecs ;
     
-    TInt ret = CHotSpotServer::FindClientUid( aClientUid );
+    TInt ret = FindClientUid( aClientUid );
     if (ret != KErrNotFound)
         {
         // ret is the matching element's index.
-        retval = iLoginLogoutTimerArray[ret].logoutTimeMicroSecs;
+        retval = iLoginLogoutTimerArray[ret].iLogoutTimeMicroSecs;
         }
 
     return retval;
@@ -549,11 +540,12 @@ TUint CHotSpotServer::GetLogoutTimeMicroSecs( TUid aClientUid )
 // -----------------------------------------------------------------------------
 //
 void CHotSpotServer::SetTimerValues(
-        TUid aClientUid,
+        TDes& aClientUid,
         TUint aLoginTimerValue,   // in seconds
         TUint aLogoutTimerValue ) // in seconds
     {    
-    TInt ret = CHotSpotServer::FindClientUid( aClientUid );
+    DEBUG("HotspotServer::SetTimerValues()");
+    TInt ret = FindClientUid( aClientUid );
     TUint loginTimeMicroSecs = KHssDefaultLoginTimeMicroSecs ;
     TUint logoutTimeMicroSecs = KHssDefaultLogoutTimeMicroSecs ;
     
@@ -574,8 +566,8 @@ void CHotSpotServer::SetTimerValues(
         {
         DEBUG("CHotSpotServer::SetTimerValues(): Existing client modified.");
         // ret is the matching element's index.
-        iLoginLogoutTimerArray[ret].loginTimeMicroSecs = loginTimeMicroSecs;
-        iLoginLogoutTimerArray[ret].logoutTimeMicroSecs = logoutTimeMicroSecs;
+        iLoginLogoutTimerArray[ret].iLoginTimeMicroSecs = loginTimeMicroSecs;
+        iLoginLogoutTimerArray[ret].iLogoutTimeMicroSecs = logoutTimeMicroSecs;
         }
     else
         {
@@ -593,16 +585,18 @@ void CHotSpotServer::SetTimerValues(
 // FindClientUid
 // -----------------------------------------------------------------------------
 //
-TInt CHotSpotServer::FindClientUid( TUid aClientUid )
+TInt CHotSpotServer::FindClientUid( TDes& aClientUid )
     {
+    DEBUG("CHotspotServer::FindClientUid()");
     TInt count = iLoginLogoutTimerArray.Count();
     TInt i = 0;
     TInt ret = KErrNotFound;
     
-    while (i < count)
+    while ( i < count )
         {
-        if (aClientUid == iLoginLogoutTimerArray[i].clientUid)
+        if ( aClientUid.Compare( iLoginLogoutTimerArray[i].iClientUid ) == 0 )
             {
+            DEBUG("CHotspotServer::FindClientUid() FOUND");
             ret = i;
             break;
             }
@@ -610,6 +604,75 @@ TInt CHotSpotServer::FindClientUid( TUid aClientUid )
         }
 
     return ret;    
+    }
+
+// -----------------------------------------------------------------------------
+// GetClientUid
+// -----------------------------------------------------------------------------
+//
+TInt CHotSpotServer::GetClientUid( TUint aIapId,  TDes& aUid )
+    {
+    DEBUG("CHotspotServer::GetClientUid()");
+    TInt ret( KErrNotFound );
+    TInt count = iClientIaps.Count();
+    TInt i = 0;
+    
+    while ( i < count )
+        {
+        if ( aIapId == iClientIaps[i].iIapId )
+            {
+            DEBUG("CHotspotServer::GetClientUid() FOUND");
+            aUid = iClientIaps[i].iClientUid;
+            ret = KErrNone;
+            break;
+            }
+        i++;
+        }   
+      
+    return ret;
+    }
+
+// -----------------------------------------------------------------------------
+// SetClientIap
+// -----------------------------------------------------------------------------
+//
+void CHotSpotServer::SetClientIap( TUint aIapId, TDes& aUid )
+    {
+    DEBUG("CHotspotServer::SetClientIap()");
+    SClientIaps clientElement = { aIapId, aUid };
+    iClientIaps.Append( clientElement );
+    }
+
+// -----------------------------------------------------------------------------
+// RemoveClientIap
+// -----------------------------------------------------------------------------
+//
+void CHotSpotServer::RemoveClientIap( TUint aIapId )
+    {
+    DEBUG("CHotspotServer::RemoveClientIap()");
+    TInt count = iClientIaps.Count();
+    TInt i = 0;
+    
+    while ( i < count )
+        {
+        if ( aIapId == iClientIaps[i].iIapId )
+            {
+            DEBUG("CHotspotServer:::RemoveClientIap() FOUND");
+            iClientIaps.Remove( i );
+            break;
+            }
+        i++;
+        }
+    }
+
+// -----------------------------------------------------------------------------
+// GetEasyWlanId
+// -----------------------------------------------------------------------------
+//
+TInt CHotSpotServer::GetEasyWlanId()
+    {
+    DEBUG("CHotspotServer::GetEasyWlanId()");
+    return iEasyWlanId;
     }
 
 // ========================== OTHER EXPORTED FUNCTIONS =========================

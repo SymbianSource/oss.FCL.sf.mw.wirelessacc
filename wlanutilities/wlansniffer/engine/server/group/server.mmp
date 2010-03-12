@@ -60,6 +60,8 @@ MW_LAYER_SYSTEMINCLUDE
 
 
 // Used system libraries
+LIBRARY     ws32.lib 
+LIBRARY     apgrfx.lib
 LIBRARY     euser.lib
 LIBRARY     bafl.lib 
 LIBRARY     estor.lib 
