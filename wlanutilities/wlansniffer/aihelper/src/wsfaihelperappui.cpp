@@ -398,8 +398,7 @@ void CWsfAiHelperAppUi::ScanEnabledL()
 // CWsfAiHelperAppUi::WlanConnectionActivatedL
 // ---------------------------------------------------------------------------
 //
-void CWsfAiHelperAppUi::WlanConnectionActivatedL( 
-                                          const TDesC& /*aAccessPointName*/ )
+void CWsfAiHelperAppUi::WlanConnectionActivatedL()
     {
     // no implementation required
     }

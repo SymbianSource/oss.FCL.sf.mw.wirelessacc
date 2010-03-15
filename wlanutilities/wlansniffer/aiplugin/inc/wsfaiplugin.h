@@ -22,6 +22,7 @@
 //  EXTERNAL INCLUDES
 #include <hscontentpublisher.h>
 #include <e32cmn.h>
+#include <eikenv.h>
 
 //  INTERNAL INCLUDES
 #include "wsfaicontroller.h"
@@ -254,6 +255,11 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
 
         
     private: // Data
+        
+        /**
+        * Handle to Eikon environment.
+        */
+        CEikonEnv* iEnv;
     
         /**
         * Array of content observers

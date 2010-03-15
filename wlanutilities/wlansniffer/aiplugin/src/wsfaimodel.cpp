@@ -145,41 +145,44 @@ void CWsfAiModel::ConstructL()
 CDesCArrayFlat* CWsfAiModel::FormatWlanListL( CWsfWlanInfoArray* aWlanList, const TBool aUIPrioritySort )
     {
     LOG_ENTERFN( "CWsfAiModel::FormatWlanListL" );
+    HBufC* item = HBufC::NewLC( KListBoxItemMaxLength );
+    TPtr ptr( item->Des() ); 
+    iFormattedWlanList->Reset();
     
     // Function expects that items in list are already in proper order
     iWlanInfoArray = aWlanList;
-
-    if ( aUIPrioritySort )
+    
+    if ( iWlanInfoArray )
         {
-        iWlanInfoArray->SetUIPrioritySort( ETrue );
-        iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
-        // Sort Array with default sort
-        // this sets the highest UI priority networks on top
-        iWlanInfoArray->SortArrayL( );
-        iWlanInfoArray->SetUIPrioritySort( EFalse );
-        }
-    else
-        {
-        iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
-        }
-
-    iFormattedWlanList->Reset();
-    HBufC* item = HBufC::NewLC( KListBoxItemMaxLength );
-    TPtr ptr( item->Des() );           
-    for (TInt i = 0; i < aWlanList->Count(); ++i )
-        {
-        TWsfWlanInfo* wlanInfo = aWlanList->At(i);
-
-        // Hidden WLAN item is appended later for unknown hidden networks
-        if ( wlanInfo->Hidden() && !wlanInfo->iIapId )
+        if ( aUIPrioritySort )
             {
-            continue;
+            iWlanInfoArray->SetUIPrioritySort( ETrue );
+            iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
+            // Sort Array with default sort
+            // this sets the highest UI priority networks on top
+            iWlanInfoArray->SortArrayL( );
+            iWlanInfoArray->SetUIPrioritySort( EFalse );
             }
+        else
+            {
+            iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
+            }
+               
+        for (TInt i = 0; i < iWlanInfoArray->Count(); ++i )
+            {
+            TWsfWlanInfo* wlanInfo = iWlanInfoArray->At(i);
         
-        // known hidden wlans are also "visible"
-        ptr.Zero();
-        FormatWlanSingleLineL( *wlanInfo, ptr, EFalse );
-        iFormattedWlanList->AppendL( ptr );
+            // Hidden WLAN item is appended later for unknown hidden networks
+            if ( !wlanInfo || ( wlanInfo->Hidden() && !wlanInfo->iIapId ) )
+                {
+                continue;
+                }
+            
+            // known hidden wlans are also "visible"
+            ptr.Zero();
+            FormatWlanSingleLineL( *wlanInfo, ptr, EFalse );
+            iFormattedWlanList->AppendL( ptr );
+            }
         }
 
     // now add "Other (unlisted)..." for hidden networks (always visible)
@@ -226,13 +229,17 @@ CDesCArrayFlat* CWsfAiModel::FormatSingleLineWlanListL(
     {
     LOG_ENTERFN( "CWsfAiModel::FormatSingleLineWlanListL" );
     iWlanInfoArray = aWlanList;
-    iWlanInfoArray->SetUIPrioritySort( ETrue );
-    iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
     
-    // Sort Array with default sort
-    // this sets the highest UI priority networks on top
-    iWlanInfoArray->SortArrayL();
-    iWlanInfoArray->SetUIPrioritySort( EFalse );
+    if ( iWlanInfoArray )
+        {
+        iWlanInfoArray->SetUIPrioritySort( ETrue );
+        iWlanInfoArray->SortArrayL( *iWlanInfoBranding );
+        
+        // Sort Array with default sort
+        // this sets the highest UI priority networks on top
+        iWlanInfoArray->SortArrayL();
+        iWlanInfoArray->SetUIPrioritySort( EFalse );
+        }
       
     iFormattedWlanList->Reset();
             
@@ -256,7 +263,7 @@ CDesCArrayFlat* CWsfAiModel::FormatSingleLineWlanListL(
     // if there's wlans avail
     else if ( iWlanInfoArray && iWlanInfoArray->Count() )
         {
-        CheckWlansL( aWlanList, ptr );
+        CheckWlansL( iWlanInfoArray, ptr );
         iFormattedWlanList->AppendL( ptr );
         }
     else 
@@ -375,10 +382,11 @@ void CWsfAiModel::FormatStatusOffL( TPtr& aItem )
                 R_QTN_SNIFFER_PLUG_IN_SCANNING_OFF );
         }
 
-        aItem.Format( KListItemFormat, EWlanOffIcon, 
-                                   iStatusScanningOff,
-                                   ETransparentIcon, 
-                                   ETransparentIcon );         
+        aItem.Format( KListItemFormat, 
+                      EWlanOffIcon, 
+                      iStatusScanningOff,
+                      ETransparentIcon, 
+                      ETransparentIcon );         
     }
 
 
@@ -396,11 +404,11 @@ void CWsfAiModel::FormatNoWlansAvailableL( TPtr& aItem )
                 R_QTN_STATUS_NO_WLANS_AVAILABLE );
         }
    
-        aItem.Format( KListItemFormat, ScanningOn()? 
-                                   EWlanOnIcon: EWlanOffIcon, 
-                                   iNoWLANsAvailable,
-                                   ETransparentIcon, 
-                                   ETransparentIcon );  
+        aItem.Format( KListItemFormat, 
+                      ScanningOn()? EWlanOnIcon: EWlanOffIcon, 
+                      iNoWLANsAvailable,
+                      ETransparentIcon, 
+                      ETransparentIcon );  
     }
 
 

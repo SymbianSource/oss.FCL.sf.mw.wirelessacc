@@ -23,12 +23,8 @@
 #include <apgcli.h>
 #include <centralrepository.h>
 #include <browseruisdkcrkeys.h>
-#include <bldvariant.hrh>
-#include <featmgr.h>
 #include <cmmanager.h>
-#include <cmmanagerext.h>
 #include <cmconnectionmethod.h>
-#include <cmconnectionmethodext.h>
  
 //  CLASS HEADER
 #include "wsfapplauncher.h"
@@ -36,7 +32,6 @@
 //  INTERNAL INCLUDES
 #include "wsfbrowserlaunchobserver.h"
 #include "wsflogger.h"
-#include "wsfactivewaiter.h"
 
 
 //  LOCAL DEFINITIONS
@@ -53,7 +48,8 @@ static const TUint32 KBrowserNGHomepageURL = 0x00000030;
 
 #ifdef _DEBUG
     _LIT( KBrowserLauncherPanic, "CWsfAppLauncher" );
-    #define _ASSERTD( cond ) __ASSERT_DEBUG( (cond),  User::Panic( KBrowserLauncherPanic, __LINE__) )
+    #define _ASSERTD( cond ) __ASSERT_DEBUG( (cond), \
+            User::Panic( KBrowserLauncherPanic, __LINE__) )
 #else
     #define _ASSERTD( cond ) {}
 #endif //_DEBUG
@@ -103,12 +99,9 @@ CWsfAppLauncher::~CWsfAppLauncher()
 // ---------------------------------------------------------------------------
 //
 CWsfAppLauncher::CWsfAppLauncher(): 
-    CActive( CActive::EPriorityLow ),
+    CActive( CActive::EPriorityStandard ),
     iIapId( 0 ), 
-    iWapId( 0 ),
     iLaunchState( EIdle ),
-    iRestoreSelectionMode( EFalse ),
-    iRestoreAccessPoint( EFalse ),
     iLaunchBookMarks( EFalse )
     {
     }
@@ -142,16 +135,13 @@ void CWsfAppLauncher::ConstructL()
 //
 void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver, 
                                       TUint aIapId,
-                                      TUint aWapId,
                                       const TDesC& aURL )
     {
     LOG_ENTERFN( "CWsfAppLauncher::LaunchBrowserL_3" );
     Cancel();
-    SetAccessPoint( aWapId );
     LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_3 -->> afer cancel" );
     iObserver = &aObserver;  
     iIapId = aIapId;
-    iWapId = aWapId;
     HBufC* url = aURL.AllocL();
     delete iURL;
     iURL = url;
@@ -191,11 +181,6 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
     LOG_WRITEF( "CWsfAppLauncher::LaunchBrowserL_2 -->> iIapid %d", aIapId );
     plugin = cmManager.ConnectionMethodL( aIapId );
     LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> cm after open" );
-
-    // Browser uses WAP id instead of IAP id so 
-    // we need to pass wap id to browser
-    TUint wapId = plugin.GetIntAttributeL( CMManager::ECmWapId );
-    LOG_WRITEF( "CWsfAppLauncher::LaunchBrowserL_2 -->> ECmWapId %d", wapId );
     
     // do we have start page for Access Point?
     HBufC* apHomepage = NULL;
@@ -214,7 +199,8 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
         // launch bookmarks view
         if ( err || url->Length() == 0 )
             {
-            LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> err in url length" );
+            LOG_WRITE( 
+                   "CWsfAppLauncher::LaunchBrowserL_2 -->> err in url length" );
             iLaunchBookMarks = ETrue;
             }
         }
@@ -223,18 +209,8 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
         LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> hplength>0" );
         url->Des().Copy( *apHomepage );
         }
-
-    if ( ApSelectionMode() !=0 )
-        {
-        // Set AP selection mode to user defined
-        LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> ap selection mode" );
-        SetApSelectionMode( 0 );  
-        iRestoreSelectionMode = ETrue;
-        }
-    LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> before setAP" );
-    SetAccessPoint( wapId );
     
-    LaunchBrowserL( aObserver, aIapId, wapId, *url );
+    LaunchBrowserL( aObserver, aIapId, *url );
     
     LOG_WRITE( "CWsfAppLauncher::LaunchBrowserL_2 -->> after launch _3" );
     CleanupStack::PopAndDestroy( apHomepage );
@@ -251,7 +227,7 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
 void CWsfAppLauncher::DoLaunchBrowserL()
     {
     LOG_ENTERFN( "CWsfAppLauncher::DoLaunchBrowserL" );
-    _LIT( KFormatCommand, "%d %S %d" );
+    _LIT( KFormatCommand, "%d %S" );
     const TInt KBrowserFirstParamUrlFollows = 4;
     
     iLaunchState = EStartingUp;    
@@ -264,7 +240,7 @@ void CWsfAppLauncher::DoLaunchBrowserL()
         {
         param = HBufC::NewLC( KFormatCommand().Length() + iURL->Length() );
         param->Des().Format( KFormatCommand, 
-                             KBrowserFirstParamUrlFollows, iURL, iWapId );
+                             KBrowserFirstParamUrlFollows, iURL );
         }
         
     RApaLsSession appArcSession;
@@ -434,96 +410,6 @@ TUint32 CWsfAppLauncher::BrowserIap() const
 
 
 // ---------------------------------------------------------------------------
-// CWsfAppLauncher::ApSelectionModeL
-// ---------------------------------------------------------------------------
-//
-TInt CWsfAppLauncher::ApSelectionMode()
-    {
-    LOG_ENTERFN( "CWsfAppLauncher::ApSelectionMode" );
-    TInt currentState = 0;
-    iRepository->Get( KBrowserAccessPointSelectionMode, currentState );
-    return currentState;      
-    }
-
-
-// ---------------------------------------------------------------------------
-// CWsfAppLauncher::SetApSelectionModeL
-// ---------------------------------------------------------------------------
-//
-void CWsfAppLauncher::SetApSelectionMode( TInt aApSelectionMode  )
-    {
-    LOG_ENTERFN( "CWsfAppLauncher::SetApSelectionMode" );  
-    // Valid values: 0 = User Defined, 1 = Always Ask, 2=Destination
-    if ( !iRestoreSelectionMode )
-        {
-        //Store original setting
-        TInt OriginalApSelectionMode = 0;
-        iRepository->Get( KBrowserAccessPointSelectionMode, 
-                OriginalApSelectionMode );
-        iOriginalApSelectionMode = OriginalApSelectionMode;
-        }
-    iRepository->Set( KBrowserAccessPointSelectionMode, aApSelectionMode );  
-    }
-
-
-// ---------------------------------------------------------------------------
-// CWsfAppLauncher::RestoreApSelectionMode
-// ---------------------------------------------------------------------------
-// 
-void CWsfAppLauncher::RestoreApSelectionMode()
-    {
-    LOG_ENTERFN( "CWsfAppLauncher::RestoreApSelectionMode" ); 
-    if ( iRestoreSelectionMode )
-        {
-        SetApSelectionMode( iOriginalApSelectionMode );       
-        iRestoreSelectionMode = EFalse;
-        } 
-    }
-
-// ---------------------------------------------------------------------------
-// CWsfAppLauncher::SetAccessPoint
-// ---------------------------------------------------------------------------
-//
-void CWsfAppLauncher::SetAccessPoint( TUint aAccessPointId )
-    {
-    LOG_ENTERFN( "CWsfAppLauncher::SetAccessPoint" );
-    LOG_WRITEF( "aAccessPointId %d", aAccessPointId );
-    CRepository* repository( iRepository );
-    TUint defaultAccessPointUid = KBrowserDefaultAccessPoint;
-
-    if ( !iRestoreAccessPoint )
-        {
-        // Store Access point so it can be restored after the launch
-        TInt id( 0 );
-        TInt err = repository->Get( defaultAccessPointUid, id );       
-        if ( err != KErrNotFound )
-            {            
-            iOriginalApId = (TUint)id; 
-            iRestoreAccessPoint = ETrue;
-            }
-        }
-
-    repository->Set( defaultAccessPointUid, (TInt)aAccessPointId );  
-    repository = NULL;
-    }
-    
-    
-// ---------------------------------------------------------------------------
-// CWsfAppLauncher::RestoreAccessPoint
-// ---------------------------------------------------------------------------
-// 
-void CWsfAppLauncher::RestoreAccessPoint()
-    {
-    LOG_ENTERFN( "CWsfAppLauncher::RestoreAccessPoint" ); 
-    if ( iRestoreAccessPoint )
-        {
-        SetAccessPoint( iOriginalApId );       
-        iRestoreAccessPoint = EFalse;
-        } 
-    }
-
-
-// ---------------------------------------------------------------------------
 // CWsfAppLauncher::DoCancel
 // ---------------------------------------------------------------------------
 //
@@ -534,8 +420,6 @@ void CWsfAppLauncher::DoCancel()
     
     iThread.Close();
     iTimer.Cancel();
-    RestoreApSelectionMode();
-    RestoreAccessPoint();
     iLaunchState = EIdle;
     }
 
@@ -591,9 +475,7 @@ void CWsfAppLauncher::RunL()
         case EFinished:  //Browser exists, notify observer about completion
             {
             LOG_WRITE( "CWsfAppLauncher::RunL -->> EFinished" );
-            iObserver->BrowserExitL(); 
-            RestoreAccessPoint();         
-            RestoreApSelectionMode();   
+            iObserver->BrowserExitL();  
             iLaunchState = EIdle;
             break;    
             }
@@ -619,9 +501,7 @@ TInt CWsfAppLauncher::RunError( TInt aError )
         case EShuttingDown: // Shuttind down existing browser failed
         case EStartingUp:   // Starting up new browser failed
         case ECompleted:   // Starting up new browser failed
-            {
-            RestoreApSelectionMode();    
-            RestoreAccessPoint();       
+            {   
             iObserver->BrowserLaunchFailed( aError );
             break;    
             }
@@ -634,4 +514,5 @@ TInt CWsfAppLauncher::RunError( TInt aError )
     iLaunchState = EIdle;
     return aError;
     }
+
 

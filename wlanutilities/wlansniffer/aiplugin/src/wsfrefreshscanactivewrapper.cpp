@@ -118,21 +118,28 @@ void CWsfRefreshScanActiveWrapper::Start()
 void CWsfRefreshScanActiveWrapper::RunL()
     {
     LOG_ENTERFN( "CWsfRefreshScanActiveWrapper::RunL" );
-    if (iState == EUninitialized)
-        {
-        LOG_WRITE( "request scan" );
-        iModel->RefreshScan( iPckg, iStatus );
-        iState = EInitialized;
-        SetActive(); // Tell scheduler a request is active
-        }
-    else if (iState == EInitialized )
-        {
-        LOG_WRITEF( "request result = %d", iPckg() );
-        iModel->SetRefreshState( iPckg() );
-        }
+    if (iStatus == KErrNone)
+       {
+        if (iState == EUninitialized)
+            {
+            LOG_WRITE( "request scan" );
+            iModel->RefreshScan( iPckg, iStatus );
+            iState = EInitialized;
+            SetActive(); // Tell scheduler a request is active
+            }
+        else if (iState == EInitialized )
+            {
+            LOG_WRITEF( "request result = %d", iPckg() );
+            iModel->SetRefreshState( iPckg() );
+            }
+        else
+            {
+            LOG_WRITEF( "iState = %d", iState );
+            }
+       }
     else
         {
-        LOG_WRITEF( "iState = %d", iState );
+        LOG_WRITEF( "RefreshScanActiveWrapper iStatus = %d", iStatus.Int() );
         }
     }
 

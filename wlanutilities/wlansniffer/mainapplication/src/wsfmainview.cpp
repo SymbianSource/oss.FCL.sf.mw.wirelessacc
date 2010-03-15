@@ -248,9 +248,19 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
             aMenuPane->SetItemDimmed( ESnifferCmdContinueBrowsing, ETrue );
             aMenuPane->SetItemDimmed( ESnifferCmdConnect, EFalse );
             aMenuPane->SetItemDimmed( ESnifferCmdDisconnect, ETrue );
-            aMenuPane->SetItemDimmed( ESnifferCmdRefresh, connecting ); 
+            aMenuPane->SetItemDimmed( ESnifferCmdRefresh, connecting );
+			 
+            // dim filtering if connecting or there are no WLAN networks 
+			// in coverage or there is only one network which is connected, 
+			// and the filtering list does not contain any networks marked
+			// to be filtered out.
             aMenuPane->SetItemDimmed( ESnifferCmdFilterWlans, 
-                                  connecting || !infoArray || blacklistEmpty );
+                                      connecting ||
+                                      !infoArray ||
+                                      ( blacklistEmpty && 
+                                        ( !infoArray->Count() || 
+                                          ( infoArray->Count() == 1 && 
+                                          (*infoArray)[0]->Connected() ) ) ) );
             aMenuPane->SetItemDimmed( ESnifferCmdDetails, ETrue );
             aMenuPane->SetItemDimmed( ESnifferCmdSettings, connecting );
             return;
@@ -286,8 +296,10 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
         
         aMenuPane->SetItemDimmed( ESnifferCmdRefresh, connecting ); 
       
-        // dim filtering if no scan has been performed 
-        // or there is nothing to filter
+        // dim filtering if connecting or there are no WLAN networks 
+		// in coverage or there is only one network which is connected, 
+		// and the filtering list does not contain any networks marked
+		// to be filtered out.
         aMenuPane->SetItemDimmed( ESnifferCmdFilterWlans, 
                                   connecting ||
                                   !infoArray ||
@@ -351,7 +363,6 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
         aMenuPane->SetItemDimmed( ESnifferCmdDetails, 
                                   connecting || hidden && !known );
         }
-    
     }
 
 
@@ -434,6 +445,7 @@ TBool CWsfMainView::IsBrowserUsingWlanL()
             {
             RConnectionMonitor connectionMonitor;
             connectionMonitor.ConnectL();
+            CleanupClosePushL( connectionMonitor );
             // We have to check if the Browser using the selected 
             // connection.
             // We have get the connectiond ID first.
@@ -474,7 +486,6 @@ TBool CWsfMainView::IsBrowserUsingWlanL()
             // Now we have the connectiond ID.
             LOG_WRITEF( "connectionId: %d", connectionId );
             
-            TInt count( 0 );
             TConnMonClientEnumBuf clientBuf;
                 
             connectionMonitor.GetPckgAttribute( connectionId,
@@ -483,19 +494,20 @@ TBool CWsfMainView::IsBrowserUsingWlanL()
                                                 clientBuf,
                                                 waiter->iStatus );
             waiter->WaitForRequest();
+            TInt count( 0 );
             if ( !waiter->iStatus.Int() )
                 {
                 count = clientBuf().iCount;
                 }
-            
+
             RApaLsSession appSess;
             TApaAppInfo appInfo;
-            
+
             // The connection could be shared by several applications
             User::LeaveIfError( appSess.Connect() );
-            
-            TUint i;
-            for ( i = 0; i < count; i++ )
+            // No need for CleanupClosePushL(appSess) cause nothing leaves.
+
+            for ( TInt i = 0; i < count; i++ )
                 {
                 appInfo.iCaption.Zero();
                 TInt result = appSess.GetAppInfo( appInfo, 
@@ -509,10 +521,11 @@ TBool CWsfMainView::IsBrowserUsingWlanL()
                     {
                     isBrowserRunning = ETrue;
                     }
-                }
-            CleanupStack::PopAndDestroy( waiter );
+                }           
             appSess.Close();
-            connectionMonitor.Close();
+            
+            CleanupStack::PopAndDestroy( waiter );
+            CleanupStack::PopAndDestroy( &connectionMonitor );
             }                
         }
     else 

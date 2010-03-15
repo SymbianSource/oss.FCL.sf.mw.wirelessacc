@@ -95,7 +95,6 @@ CWsfConnectActiveWrapper::~CWsfConnectActiveWrapper()
 void CWsfConnectActiveWrapper::DoCancel()
     {
     LOG_ENTERFN( "CWsfConnectActiveWrapper::DoCancel" );
-    TRAP_IGNORE( iModel->AbortConnectingL() );
     }
 
 
@@ -123,21 +122,28 @@ void CWsfConnectActiveWrapper::Start(TUint aIapID, TWsfIapPersistence aPersisten
 void CWsfConnectActiveWrapper::RunL()
     {
     LOG_ENTERFN( "CWsfConnectActiveWrapper::RunL" );
-    if (iState == EUninitialized)
+    if ( iStatus == KErrNone )
         {
-        LOG_WRITE( "Start connect" );
-        iModel->ConnectL( iPckg, iIapID, iPersistence, iStatus );
-        iState = EInitialized;
-        SetActive(); // Tell scheduler a request is active
+        if ( iState == EUninitialized )
+            {
+            LOG_WRITE( "Start connect" );
+            iModel->ConnectL( iPckg, iIapID, iPersistence, iStatus );
+            iState = EInitialized;
+            SetActive(); // Tell scheduler a request is active
+            }
+        else if ( iState == EInitialized )
+            {
+            LOG_WRITEF( "request result = %d", iPckg() );
+            iModel->SetConnectResultL( iPckg(), iIapID );
+            }
+        else
+            {
+            LOG_WRITEF( "iState = %d", iState );
+            }
         }
-    else if (iState == EInitialized )
-        {
-        LOG_WRITEF( "request result = %d", iPckg() );
-        iModel->SetConnectResultL(iPckg(), iIapID );
-        } 
     else
         {
-        LOG_WRITEF( "iState = %d", iState );
+        LOG_WRITEF( "ConnectActiveWrapper iStatus = %d", iStatus.Int() );
         }
     }
 

@@ -111,11 +111,7 @@ void CWsfEventHandler::DoRunL()
             if ( !iBlockConnectedEvent )
                 {
                 // if the event wasn't blocked, notify the observer
-                // get the connection name
-                HBufC* accessPointName = iSession->ConnectedAccountNameL();
-                CleanupStack::PushL( accessPointName );
-                iObserver->WlanConnectionActivatedL( *accessPointName );
-                CleanupStack::PopAndDestroy( accessPointName );
+                iObserver->WlanConnectionActivatedL();
                 }
             else
                 {

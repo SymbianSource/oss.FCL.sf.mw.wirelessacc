@@ -200,7 +200,7 @@ void CWsfAppUi::HandleCommandL( TInt aCommand )
             {
             // launch settings dialog
             CWlanSettingsUi* wlanSettings = 
-                                 CWlanSettingsUi::NewL( *CEikonEnv::Static() );
+                                 CWlanSettingsUi::NewL( *iEikonEnv );
             CleanupStack::PushL( wlanSettings );
             iForeground = EFalse;
             wlanSettings->RunSettingsL();

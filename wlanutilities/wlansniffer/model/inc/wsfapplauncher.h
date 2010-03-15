@@ -26,7 +26,6 @@
 
 class MWsfBrowserLaunchObserver;
 class CRepository;
-class CMDBSession;
 
 
 /**
@@ -107,12 +106,10 @@ NONSHARABLE_CLASS( CWsfAppLauncher ): public CActive
         * @since S60 5.0
         * @param aObserver Observer to be notified about launch completion
         * @param aIapId IAP id passed as a parameter
-        * @param aWapId WAP id passed as a parameter
         * @param aURL User defined WWW address to be used as start-up page    
         */
         void LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver, 
                              TUint aIapId,
-                             TUint aWapId,
                              const TDesC& aURL ); 
 
         /**
@@ -176,40 +173,6 @@ NONSHARABLE_CLASS( CWsfAppLauncher ): public CActive
         *         not defined
         */
         TInt BrowserHomepage( TDes& aHomePageURL );
-
-        /**
-        * Gets the access point selection mode
-        * @since S60 5.0
-        * @return 0=User defined, 1=Always ask, 2=Destination
-        */
-        TInt ApSelectionMode();
-
-        /**
-        * Defines the access point selection mode
-        * @since S60 5.0
-        * @param aEnable Selection mode: 0=User defined, 1=Always ask,  
-        *                2=Destination
-        */
-        void SetApSelectionMode( TInt aApSelectionMode );
-        
-        /**
-        * Restores Access Point selection mode
-        * @since S60 5.0
-        */   
-        void RestoreApSelectionMode();
-
-        /**
-        * Configures browser access point using central repository
-        * @since S60 5.0
-        * @param aAccessPointId Access Point's IAP id
-        */   
-        void SetAccessPoint( TUint aAccessPointId );
-        
-        /*
-        * Restores original accesspoint id if one is set
-        * @since S60 5.0
-        */
-        void RestoreAccessPoint();
         
 
     private:    // From CActive
@@ -251,31 +214,11 @@ NONSHARABLE_CLASS( CWsfAppLauncher ): public CActive
         * IAP id to use
         */
         TUint iIapId;
-        
-        /**
-        * WAP id for browser's default connection id
-        */
-        TUint iWapId; 
 
         /**
         * State of browser launching
         */
         TWsfLaunchState iLaunchState;  
-
-        /**
-        * Stored original selection mode
-        */
-        TBool iRestoreSelectionMode;
-
-        /**
-        * Indicates whether to restore access point
-        */
-        TBool iRestoreAccessPoint;
-
-        /**
-        * The original IAP id used by the browser
-        */
-        TUint iOriginalApId;
 
         /**
         * Indicates whether to launch bookmarks page 
@@ -307,11 +250,6 @@ NONSHARABLE_CLASS( CWsfAppLauncher ): public CActive
         * Timer to wait for browser startup etc.
         */
         RTimer iTimer;     
-
-        /**
-        * Indicates which AP selection mode was originally used.
-        */
-        TUint iOriginalApSelectionMode;
 
         /**
         * Browser's cenrep key number for the homepage

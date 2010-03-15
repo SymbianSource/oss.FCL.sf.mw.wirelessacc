@@ -253,7 +253,9 @@ void TWsfMainController::WlanListChangedL()
         }
     
     if ( iModel->Refreshing() )
-        {          
+        {
+        // Make sure if leave occures that we don't block ourselves for retry
+        CleanupStack::PushL( TCleanupItem( RestoreRefreshState, this ) );
         iModel->SetRefreshState( EFalse );
         if ( iAppUi )
             {            
@@ -265,6 +267,8 @@ void TWsfMainController::WlanListChangedL()
                 }
             UpdateViewL();        
             }
+        // pop cleanup item RestoreRefreshState
+        CleanupStack::Pop();
         }
     }
     
@@ -311,8 +315,7 @@ void TWsfMainController::ScanEnabledL()
 // TWsfMainController::WlanConnectionActivatedL
 // ---------------------------------------------------------------------------
 // 
-void TWsfMainController::WlanConnectionActivatedL( 
-                                                const TDesC& aAccessPointName )
+void TWsfMainController::WlanConnectionActivatedL()
     {
     LOG_ENTERFN( "TWsfMainController::WlanConnectionActivatedL" ); 
     
@@ -339,12 +342,10 @@ void TWsfMainController::WlanConnectionActivatedL(
 
         if ( !found )
             {
-            // find the entry for aAccessPointName
+            // find the entry 
             // mark it connected - sort the array and refresh
-            TBuf8<KWlanMaxSsidLength> ssid;
-            CnvUtfConverter::ConvertFromUnicodeToUtf8( ssid, aAccessPointName );
-            
-            TWsfWlanInfo* temp = iInfoArray->Match( ssid, iInfoArray->Count() );
+            TWsfWlanInfo* temp = iInfoArray->Match( info.iSsid, 
+                                                    iInfoArray->Count() );
             if ( temp )
                 {
                 temp->iConnectionState = EConnected;
@@ -477,7 +478,7 @@ void TWsfMainController::StartBrowsingL()
         if ( iModel->CreateAccessPointL( info, EFalse ) )
             {
             // update iapID to list
-            UpdateIapIdToInfoArray( info );
+            UpdateIapIdToInfoArrayL( info );
             
             // on success, test it and save it as well
             result = iModel->TestAccessPointL( info, ETrue, EFalse );
@@ -563,7 +564,7 @@ void TWsfMainController::ConnectL()
         if ( iModel->CreateAccessPointL( info, EFalse ) )
             {
             // update iapID to list
-            UpdateIapIdToInfoArray( info );
+            UpdateIapIdToInfoArrayL( info );
 
             // on success, test it and save it as well
             // (testing actually creates the connection)
@@ -587,12 +588,12 @@ void TWsfMainController::ConnectL()
     }
 
 // ---------------------------------------------------------------------------
-// TWsfMainController::UpdateIapIdToInfoArray
+// TWsfMainController::UpdateIapIdToInfoArrayL
 // ---------------------------------------------------------------------------
 //
-void TWsfMainController::UpdateIapIdToInfoArray( TWsfWlanInfo& aInfo )
+void TWsfMainController::UpdateIapIdToInfoArrayL( TWsfWlanInfo& aInfo )
     {
-    LOG_ENTERFN( "TWsfMainController::UpdateIapIdToInfoArray" ); 
+    LOG_ENTERFN( "TWsfMainController::UpdateIapIdToInfoArrayL" ); 
     TWsfWlanInfo* temp = iInfoArray->Match( aInfo.iSsid, iInfoArray->Count() );
     if ( temp && !aInfo.Hidden() )
         {
@@ -896,6 +897,18 @@ void TWsfMainController::ReleaseSuppressingKeyEvents( TAny* aPtr )
     self->iAppUi->SetSuppressingKeyEvents( EFalse );
     self->iModel->SetConnecting( EFalse );
     TRAP_IGNORE( self->iModel->RefreshScanL() );
+    }
+
+// ---------------------------------------------------------------------------
+// TWsfMainController::RestoreRefreshState
+// ---------------------------------------------------------------------------
+//
+void TWsfMainController::RestoreRefreshState( TAny* aPtr )
+    {
+    TWsfMainController* self = 
+                        static_cast<TWsfMainController*>( aPtr );
+    LOG_WRITE( "Restore refresh state")
+    self->iModel->SetRefreshState( ETrue );
     }
       
 // End of file

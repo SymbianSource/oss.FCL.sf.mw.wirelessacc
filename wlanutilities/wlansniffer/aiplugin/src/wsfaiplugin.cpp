@@ -122,7 +122,7 @@ CWsfAiPlugin::~CWsfAiPlugin()
         delete iKnownNetworkFound;
         }
     
-    CCoeEnv::Static()->DeleteResourceFile( iResourceFileOffset );
+    iEnv->DeleteResourceFile( iResourceFileOffset );
 
     iObservers.Close();
 
@@ -137,6 +137,7 @@ CWsfAiPlugin::~CWsfAiPlugin()
 //
 CWsfAiPlugin::CWsfAiPlugin()
     {
+    iEnv = CEikonEnv::Static();
     }
 
 
@@ -160,13 +161,13 @@ void CWsfAiPlugin::ConstructL()
     iAiModel = CWsfAiModel::NewL();
     iUi = CWsfAiView::NewL( *this );
     
-    iDbObserver = CWsfDbObserver::NewL();
-    
     iActiveWrappers = CWsfActiveWrappers::NewL( iModel, iController );
+    
+    iDbObserver = CWsfDbObserver::NewL();
     
     iController.SetUi( *static_cast<CWsfAiView*>( iUi ) );
     
-    iController.InitializeL( iModel, iAiModel, iDbObserver, 
+    iController.InitializeL( iEnv, iModel, iAiModel, iDbObserver, 
 							 iActiveWrappers );
     }
 
@@ -393,21 +394,13 @@ void CWsfAiPlugin::AllocateResourcesL()
     {
     LOG_ENTERFN( "CWsfAiPlugin::AllocateResourcesL" );
     // create resourcefile 
-    CCoeEnv* env = CCoeEnv::Static();
-    TFindFile finder( env->FsSession() );
-    CDir* fileEntries;
-    User::LeaveIfError( finder.FindWildByDir( KResourceFile, 
-                                              KDC_RESOURCE_FILES_DIR, 
-                                              fileEntries ) );
-    
-    TParse pathParse;
-    pathParse.Set( (*fileEntries)[0].iName, &finder.File(), NULL ); 
-    
-    TFileName resourceFile = pathParse.FullName();
-    delete fileEntries;
+    TFileName resourceFile;
+    resourceFile.Append( KResourceDrive );
+    resourceFile.Append( KDC_RESOURCE_FILES_DIR );
+    resourceFile.Append( KResourceFile );
 
-    BaflUtils::NearestLanguageFile( env->FsSession(), resourceFile );
-    iResourceFileOffset = env->AddResourceFileL( resourceFile );    
+    BaflUtils::NearestLanguageFile( iEnv->FsSession(), resourceFile );
+    iResourceFileOffset = iEnv->AddResourceFileL( resourceFile );    
     }
 
 // --------------------------------------------------------------------------
@@ -730,7 +723,7 @@ void CWsfAiPlugin::LaunchApplicationL()
 
     // check if the app is already running ... and brings it to foreground.
     TUid id( TUid::Uid( KUidSnifferApp.iUid ) );
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TApaTaskList taskList( iEnv->WsSession() );
     TApaTask task = taskList.FindApp( id );
 
     if ( task.Exists() )

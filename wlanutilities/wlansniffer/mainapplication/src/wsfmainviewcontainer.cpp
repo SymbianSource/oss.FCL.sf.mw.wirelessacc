@@ -215,7 +215,6 @@ TKeyResponse CWsfMainViewContainer::OfferKeyEventL(
             {
             result = iListBox->OfferKeyEventL( aKeyEvent, aType );
 
-            
             if( aKeyEvent.iCode == EKeyUpArrow )
                 {
                 if( iPartner )
@@ -236,9 +235,8 @@ TKeyResponse CWsfMainViewContainer::OfferKeyEventL(
                     {
                     iPartner->HandleSelectionKeyPressedL();
                     }
-  
                 }
-           }
+            }
         }
     return result;
     }
@@ -470,7 +468,7 @@ void CWsfMainViewContainer::UpdateHotSpotsL( MDesCArray* aItemTextArray,
     
     if ( aItemTextArray->MdcaCount() )
         {
-        TUint lastIndex = aItemTextArray->MdcaCount() -1;
+        TInt lastIndex = aItemTextArray->MdcaCount() -1;
         if ( aCurrentItem <= lastIndex )
             {
             iListBox->SetCurrentItemIndex( aCurrentItem );            

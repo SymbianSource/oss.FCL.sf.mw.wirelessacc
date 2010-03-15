@@ -321,11 +321,15 @@ EXPORT_C void CWsfModel::SetConnectResultL( TInt aResult, TUint /*aIapId*/ )
 EXPORT_C void CWsfModel::DisconnectL()
     {
     LOG_ENTERFN( "CWsfModel::DisconnectL" );
-    iSession.DisconnectWlanBearerL();
+    TBool disconnected = iSession.DisconnectWlanBearerL();
+    LOG_WRITEF( "disconnected = %d", disconnected );
     iConnectedIapId = 0;
     iConnectedNetId = 0;
     iConnectOnly = EFalse;
-	iRefreshing = iSession.RequestScanL(); 
+    if ( !disconnected )
+        {
+        iRefreshing = iSession.RequestScanL(); 
+        }
     }
 
 
@@ -942,7 +946,7 @@ EXPORT_C void CWsfModel::LaunchHelperApplicationL( TWsfWlanInfo &aWlanInfo,
 
     // check if the app is already running ... and kill it.
     TUid id( TUid::Uid( KHelperApUid.iUid ) );
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TApaTaskList taskList( iEikEnv->WsSession() );
     TApaTask task = taskList.FindApp( id );
 
     if ( task.Exists() )

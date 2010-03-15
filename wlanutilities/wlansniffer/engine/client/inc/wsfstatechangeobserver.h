@@ -66,10 +66,8 @@ class MWsfStateChangeObserver
         /**
         * A WLAN connection has been established
         * @since S60 5.0
-        * @param aAccesspointName The name of the active connection
         */
-        virtual void WlanConnectionActivatedL( 
-                                          const TDesC& aAccessPointName ) = 0;
+        virtual void WlanConnectionActivatedL() = 0;
 
         /**
         * A WLAN connection has been closed

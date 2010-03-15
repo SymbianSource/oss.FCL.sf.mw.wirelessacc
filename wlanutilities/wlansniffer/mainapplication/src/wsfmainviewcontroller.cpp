@@ -155,8 +155,13 @@ void TWsfMainViewController::UpdateSelectedItemL()
     TInt selectedItem = iContainer->SelectedItem();
     CWsfWlanInfoArray* array = iModel->GetInfoArray();
     if ( array )
-        {       
-        TWsfWlanInfo* item = array->At( selectedItem );
+        {
+        TWsfWlanInfo* item = NULL;
+        if ( selectedItem < array->Count() )
+            {
+            item = array->At( selectedItem );
+            }
+        
         if ( item )
             {
             iSelectedItem = *item;

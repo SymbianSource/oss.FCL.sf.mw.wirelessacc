@@ -83,24 +83,23 @@ CGulIcon* LoadSkinnableIconLC( const TAknsItemID aAknItemId,
                                const TInt aIconId,
                                const TFileName aBitmapFile )
     {
-      CGulIcon* icon = CGulIcon::NewLC();
-      CFbsBitmap* bitmap;
-      CFbsBitmap* mask;
+    CGulIcon* icon = CGulIcon::NewLC();
+    CFbsBitmap* bitmap;
+    CFbsBitmap* mask;
 
-      // Creates bitmap an icon.
+    // Creates bitmap an icon.
+    AknsUtils::CreateIconL( AknsUtils::SkinInstance(), 
+                            aAknItemId, 
+                            bitmap,
+                            mask, 
+                            aBitmapFile, 
+                            aIconId, 
+                            aIconId + 1 );
 
-      AknsUtils::CreateIconL( AknsUtils::SkinInstance(),
-                              aAknItemId,
-                              bitmap,
-                              mask,
-                              aBitmapFile,
-                              aIconId,
-                              aIconId+1 );
-
-      icon->SetBitmap( bitmap );
-      icon->SetMask( mask );
-      return icon;
-      }
+    icon->SetBitmap(bitmap);
+    icon->SetMask(mask);
+    return icon;
+    }
       
 // ---------------------------------------------------------
 // LoadSkinnableBlackIconLC
@@ -115,16 +114,16 @@ CGulIcon* LoadSkinnableBlackIconLC( const TAknsItemID aAknItemId,
     CFbsBitmap* mask;
 
     // Creates bitmap an icon.
-    
     AknsUtils::CreateColorIconL( AknsUtils::SkinInstance(), 
-                            aAknItemId, 
-                            KAknsIIDQsnIconColors, EAknsCIQsnIconColorsCG13, 
-                            bitmap, 
-                            mask, 
-                            aBitmapFile,
-                            aIconId, 
-                            aIconId+1,
-                            KRgbBlack );
+                                 aAknItemId, 
+                                 KAknsIIDQsnIconColors, 
+                                 EAknsCIQsnIconColorsCG13, 
+                                 bitmap, 
+                                 mask, 
+                                 aBitmapFile,
+                                 aIconId, 
+                                 aIconId+1,
+                                 KRgbBlack );
 
     icon->SetBitmap( bitmap );
     icon->SetMask( mask );
@@ -135,13 +134,12 @@ CGulIcon* LoadSkinnableBlackIconLC( const TAknsItemID aAknItemId,
 // CWsfIconArrayCreator::CreateArrayL
 // --------------------------------------------------------------------------
 //
-CAknIconArray* CWsfIconArrayCreator::CreateArrayL( )
+CAknIconArray* CWsfIconArrayCreator::CreateArrayL()
     {
-    // try to locate the resorce file
-    TFindFile finder( CEikonEnv::Static()->FsSession() );
-    User::LeaveIfError( finder.FindByDir( 
-            KBitmapFile, KDC_APP_BITMAP_DIR ) );
-    TFileName bitmapFileName = finder.File();
+    // Used bitmap file name
+    TFileName bitmapFileName;
+    bitmapFileName.Append( KDC_APP_BITMAP_DIR );
+    bitmapFileName.Append( KBitmapFile );
 
     CAknIconArray* icons = new(ELeave) CAknIconArray( 
             KAIShortcutPluginGranularity );
@@ -248,12 +246,10 @@ CAknIconArray* CWsfIconArrayCreator::CreateArrayL( )
 //
 CGulIcon* CWsfIconArrayCreator::GetIconLC( TInt aIconId )
     {
-
-    // try to locate the resorce file
-    TFindFile finder( CEikonEnv::Static()->FsSession() );
-    User::LeaveIfError( finder.FindByDir( KBitmapFile, 
-            KDC_APP_BITMAP_DIR ) );
-    TFileName bitmapFileName = finder.File();
+    // Used bitmap file name
+    TFileName bitmapFileName;
+    bitmapFileName.Append( KDC_APP_BITMAP_DIR );
+    bitmapFileName.Append( KBitmapFile );
     TAknsItemID localAknItemId( KAknsIIDQgnMenuWlanSniffer );
     TInt iconId( EMbmWsficonsQgn_menu_wlan_sniffer );
 

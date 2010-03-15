@@ -21,6 +21,7 @@
 //  EXTERNAL INCLUDES
 #include <e32def.h>
 #include <e32property.h>
+#include <eikenv.h>
 
 //  INTERNAL INCLUDES
 #include "wsfwlaninfo.h"
@@ -71,9 +72,9 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         * @param aAiModel model reference of AiPlugin
         * @param aActiveWrappers reference of wrappers holder
         */
-        void InitializeL( CWsfModel* aModel, CWsfAiModel* aAiModel,
-                CWsfDbObserver* aObserver, 
-        		CWsfActiveWrappers* aActiveWrappers );
+        void InitializeL( CEikonEnv* aEnv, CWsfModel* aModel, 
+                          CWsfAiModel* aAiModel, CWsfDbObserver* aObserver, 
+                          CWsfActiveWrappers* aActiveWrappers );
         
         /**
         * Set the UI for the controller
@@ -111,7 +112,7 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
 		/**
          * Propagates the network data from the engine
          * to the AI model
-         * @since S60 5.0
+         * @since S60 5.2
          */
         void StartupRefreshDataReadyL();
 
@@ -136,7 +137,7 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
 		/**
          * Propagates the network data from the engine
          * to the AI model
-         * @since S60 5.0
+         * @since S60 5.2
          */
         void WlanListDataReadyL();
         
@@ -171,9 +172,8 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         /**
         * A WLAN connection has been established
         * @since S60 5.0
-        * @param aAccesspointName The name of the active connection
         */
-        void WlanConnectionActivatedL( const TDesC& aAccessPointName );
+        void WlanConnectionActivatedL();
         
         /**
         * A WLAN connection has been closed
@@ -329,7 +329,16 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         
             
     private: // data
+        
+        /**
+        * Handle to Eikon environment.
+        * Own.
+        */
+        CEikonEnv* iEnv;
 
+        /**
+        * Cache of the used info
+        */
         TWsfWlanInfo iUsedInfo;
 
         /**

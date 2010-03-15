@@ -155,103 +155,110 @@ TWsfWlanInfo CWsfWLANListActiveWrapper::GetConnectedWLANNetwork()
 void CWsfWLANListActiveWrapper::RunL()
     {
     LOG_ENTERFN( "CWsfWLANListActiveWrapper::RunL" );
-    if ( iState == EUninitialized )
+    if (iStatus == KErrNone)
         {
-        LOG_WRITE( "Get WLAN list size" );
-        iModel->GetWlanListSize( iPckgNeededSize, iStatus );
-        iState = EInitialized;
-        SetActive(); // Tell scheduler a request is active
-        }
-    else if ( iState == EInitialized )
-        {
-        LOG_WRITEF( "WLAN data buffer size = %d", iPckgNeededSize() );
-
-        if ( !iPckgNeededSize() )
+        if ( iState == EUninitialized )
             {
-            LOG_WRITE( "no data.." );
-            iState = EProcessWLANListData;
-            SetActive();
-            TRequestStatus* status = &iStatus;
-            User::RequestComplete(status, KErrNone);
-            }
-        else
-            {
-			// alloc the required size buffer...
-            delete iBuffer;
-            iBuffer = NULL;
-            iBuffer = HBufC8::NewL( iPckgNeededSize() );
-            iPtr.Set( iBuffer->Des() );
-        
-            LOG_WRITE( "Get WLAN list" );
-            iModel->GetWlanList( iPckgAllocatedSize, iPtr, iStatus );
-            iState = EProcessWLANListData;
+            LOG_WRITE( "Get WLAN list size" );
+            iModel->GetWlanListSize( iPckgNeededSize, iStatus );
+            iState = EInitialized;
             SetActive(); // Tell scheduler a request is active
             }
-        }
-    else if ( iState == EProcessWLANListData )
-        {
-        LOG_WRITEF( "actual bytes occupied = %d", iPckgAllocatedSize() );
-
-        if ( iPckgNeededSize() != iPckgAllocatedSize() )
+        else if ( iState == EInitialized )
             {
-            // the buffer is not long enough... stop 
-            if ( iRetriesLeft > 0 )
+            LOG_WRITEF( "WLAN data buffer size = %d", iPckgNeededSize() );
+        
+            if ( !iPckgNeededSize() )
                 {
-                LOG_WRITEF( "iRetriesLeft = %d", iRetriesLeft );
-                iRetriesLeft--;
-                iState = EUninitialized;
+                LOG_WRITE( "no data.." );
+                iState = EProcessWLANListData;
                 SetActive();
                 TRequestStatus* status = &iStatus;
-                User::RequestComplete( status, KErrNone );
-                return;
+                User::RequestComplete(status, KErrNone);
                 }
             else
                 {
-                // no more retries
-                User::Leave( KErrOverflow );
+                // alloc the required size buffer...
+                delete iBuffer;
+                iBuffer = NULL;
+                iBuffer = HBufC8::NewL( iPckgNeededSize() );
+                iPtr.Set( iBuffer->Des() );
+            
+                LOG_WRITE( "Get WLAN list" );
+                iModel->GetWlanList( iPckgAllocatedSize, iPtr, iStatus );
+                iState = EProcessWLANListData;
+                SetActive(); // Tell scheduler a request is active
                 }
             }
-        
-        iArray->Reset();
-        
-        if ( iPckgAllocatedSize() )
+        else if ( iState == EProcessWLANListData )
             {
-            iArray->AppendFromStreamBufferL( iPtr );
+            LOG_WRITEF( "actual bytes occupied = %d", iPckgAllocatedSize() );
+        
+            if ( iPckgNeededSize() != iPckgAllocatedSize() )
+                {
+                // the buffer is not long enough... stop 
+                if ( iRetriesLeft > 0 )
+                    {
+                    LOG_WRITEF( "iRetriesLeft = %d", iRetriesLeft );
+                    iRetriesLeft--;
+                    iState = EUninitialized;
+                    SetActive();
+                    TRequestStatus* status = &iStatus;
+                    User::RequestComplete( status, KErrNone );
+                    return;
+                    }
+                else
+                    {
+                    // no more retries
+                    User::Leave( KErrOverflow );
+                    }
+                }
+            
+            iArray->Reset();
+            
+            if ( iPckgAllocatedSize() )
+                {
+                iArray->AppendFromStreamBufferL( iPtr );
+                }
+            
+            LOG_WRITEF( "Array count=%d startup=%d", iArray->Count(), iStartUp );
+            
+            iModel->GetConnectedWlanDetails( iPckg, iConnectedWlan, iStatus );
+            iState = EGetConnectedNetwork;
+            SetActive(); // Tell scheduler a request is active
             }
-        
-        LOG_WRITEF( "Array count=%d startup=%d", iArray->Count(), iStartUp );
-        
-        iModel->GetConnectedWlanDetails( iPckg, iConnectedWlan, iStatus );
-        iState = EGetConnectedNetwork;
-        SetActive(); // Tell scheduler a request is active
-        }
-    else if ( iState == EGetConnectedNetwork )
-        {
-        LOG_WRITEF( "request result = %d", iPckg() );
-        
-        if ( !iPckg() )
+        else if ( iState == EGetConnectedNetwork )
             {
-            LOG_WRITE( "result is false, so wlaninfo is marked not connected" );
-            iConnectedWlan.iConnectionState = ENotConnected;
-            }
-        
-        LOG_WRITEF( "Connected = %d", iConnectedWlan.Connected() );
-        
-        LOG_WRITEF( "iConnectedWlan state = %d", 
-                                            iConnectedWlan.iConnectionState );
-        
-        if ( iStartUp )
-            {
-            iController->StartupRefreshDataReadyL();
+            LOG_WRITEF( "request result = %d", iPckg() );
+            
+            if ( !iPckg() )
+                {
+                LOG_WRITE( "result is false, so wlaninfo is marked not connected" );
+                iConnectedWlan.iConnectionState = ENotConnected;
+                }
+            
+            LOG_WRITEF( "Connected = %d", iConnectedWlan.Connected() );
+            
+            LOG_WRITEF( "iConnectedWlan state = %d", 
+                                                iConnectedWlan.iConnectionState );
+            
+            if ( iStartUp )
+                {
+                iController->StartupRefreshDataReadyL();
+                }
+            else
+                {
+                iController->WlanListDataReadyL();
+                }
             }
         else
             {
-            iController->WlanListDataReadyL();
+            LOG_WRITEF( "iState = %d", iState );
             }
         }
     else
         {
-        LOG_WRITEF( "iState = %d", iState );
+        LOG_WRITEF( "WLANListActiveWrapper iStatus = %d", iStatus.Int() );
         }
     }
 

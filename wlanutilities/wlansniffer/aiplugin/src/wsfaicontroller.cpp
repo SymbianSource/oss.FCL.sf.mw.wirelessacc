@@ -107,11 +107,13 @@ void TWsfAiController::DeInitializeL()
 // TWsfAiController::Initialize
 // --------------------------------------------------------------------------
 //
-void TWsfAiController::InitializeL( CWsfModel* aModel, CWsfAiModel* aAiModel,
-                   					CWsfDbObserver* aObserver, 
+void TWsfAiController::InitializeL( CEikonEnv* aEnv, CWsfModel* aModel, 
+                                    CWsfAiModel* aAiModel, 
+                                    CWsfDbObserver* aObserver, 
                    					CWsfActiveWrappers* aActiveWrappers )
     {
     LOG_ENTERFN( "TWsfAiController::InitializeL" );
+    iEnv = aEnv;
     iModel = aModel;
     iAiModel = aAiModel;
     iDbObserver = aObserver;
@@ -286,7 +288,6 @@ void TWsfAiController::HandleSelectionKeyL()
                 }
             }
         }
-
     }
 
 
@@ -300,7 +301,7 @@ void TWsfAiController::DismissDialogsL()
     TKeyEvent key;
     key.iCode = EKeyEscape;
     key.iModifiers = 0;
-    CEikonEnv::Static()->SimulateKeyEventL( key, EEventKey );
+    iEnv->SimulateKeyEventL( key, EEventKey );
     }
 
 
@@ -390,7 +391,6 @@ void TWsfAiController::WlanListDataReadyL()
         }
     
     iUi->UpdateHotSpotsL( data, index );
-
     }
 
 
@@ -433,8 +433,7 @@ void TWsfAiController::ScanEnabledL()
 // TWsfAiController::WlanConnectionActivatedL
 // --------------------------------------------------------------------------
 //
-void TWsfAiController::WlanConnectionActivatedL( 
-                                            const TDesC& /*aAccessPointName*/ )
+void TWsfAiController::WlanConnectionActivatedL()
     {
     LOG_ENTERFN( "TWsfAiController::WlanConnectionActivatedL" );
     iModel->SetConnecting( EFalse );
@@ -463,7 +462,6 @@ void TWsfAiController::WlanConnectionClosedL()
         {
         iUi->DisplayEngineOffL();
         }
-        
     }
 
 
@@ -767,11 +765,12 @@ TBool TWsfAiController::LaunchSearchDialogL( TWsfWlanInfo& aInfo )
             }
         else
             {
+            CWsfWlanInfoArray* wlanArray = iAiModel->GetInfoArray(); 
             // check that the model still has the entry
-            if ( selectedWlan < iAiModel->GetInfoArray()->Count() )
+            if ( wlanArray && selectedWlan < wlanArray->Count() )
                 {
                 // get wlan info
-                aInfo = *iAiModel->GetInfoArray()->At( selectedWlan );
+                aInfo = *wlanArray->At( selectedWlan );
                 }
             else
                 {
@@ -907,7 +906,7 @@ void TWsfAiController::DoHandleEngineErrorL( TInt aError )
     _ASS_D( iAiModel );
 
     // show error to user...
-    CEikonEnv::Static()->ResolveError( aError );
+    iEnv->ResolveError( aError );
     }
 
 
@@ -925,7 +924,7 @@ TBool TWsfAiController::IsWlanUsedByBrowserL()
     TUid id( TUid::Uid( KBrowserUid ) );
     
     // Check if the Browser application is already running.
-    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TApaTaskList taskList( iEnv->WsSession() );
     TApaTask task = taskList.FindApp( id );
     TBool isWlanUsed( EFalse );
     
@@ -1057,13 +1056,12 @@ void TWsfAiController::HandleMskIfOfflineL()
     
     CWsfWlanInfoArray* wlanArray = iAiModel->GetInfoArray(); 
     
-    
     switch ( selectedMode )
         {
         case EAiOfflineStartBrowsing:
             {
             // Start web browsing was selected
-            if ( !wlanArray->Count() ||
+            if ( !wlanArray || !wlanArray->Count() ||
                  !wlanArray->At( KFirstItemArrayIndex )->Known() )
                 {
                 // no known networks, let the user choose one
@@ -1086,7 +1084,7 @@ void TWsfAiController::HandleMskIfOfflineL()
         case EAiOfflineConnect:
             {
             // Connect was selected
-            if ( !wlanArray->Count() ||
+            if ( !wlanArray || !wlanArray->Count() ||
                  !wlanArray->At( KFirstItemArrayIndex )->Known() )
                 {
                 // no known networks, let the user choose one
@@ -1138,7 +1136,6 @@ void TWsfAiController::HandleMskIfOfflineL()
         default:
             {
             }
-
         }
     }
 

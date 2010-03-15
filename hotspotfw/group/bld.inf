@@ -24,6 +24,8 @@ DEFAULT
 PRJ_EXPORTS
 ../rom/hotspot.iby                      CORE_MW_LAYER_IBY_EXPORT_PATH(hotspot.iby)
 ../rom/hotspotResources.iby             LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(hotspotResources.iby)
+../rom/hotspotfwstub.sis               /epoc32/data/z/system/install/hotspotfwstub.sis
+../rom/ictsstub.sis                    /epoc32/data/z/system/install/ictsstub.sis
 
 // Localisation files of whole Hotspot localised here
 ../hsbrowser/loc/hsbrowser.loc          MW_LAYER_LOC_EXPORT_PATH(hsbrowser.loc)

@@ -179,8 +179,9 @@ NONSHARABLE_CLASS( CWsfWlanBearerConnectionMonitor ): public CActive,
         /**
         * Aborts the currently ongoing connecting process
         * @since S60 5.0
+        * @return KErrNone on success, error code otherwise
         */
-        void AbortConnecting();
+        TInt AbortConnecting();
     
         /**
         * Controls the auto-disconnect timer in the server 

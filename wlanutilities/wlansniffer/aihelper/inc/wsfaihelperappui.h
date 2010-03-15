@@ -175,9 +175,8 @@ NONSHARABLE_CLASS( CWsfAiHelperAppUi ): public CAknViewAppUi,
         /**
         * A WLAN connection has been established
         * @since S60 5.0
-        * @param aAccesspointName The name of the active connection
         */
-        void WlanConnectionActivatedL( const TDesC& aAccessPointName );
+        void WlanConnectionActivatedL();
 
         /**
         * A WLAN connection has been closed

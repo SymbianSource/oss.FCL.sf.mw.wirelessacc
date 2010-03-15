@@ -50,7 +50,8 @@ EXPORT_C TWsfWlanInfo::TWsfWlanInfo():
     iFilterFlags( 0 ),
     iBrandId( 0 ),
     iNetworkName( KNullDesC8 ),
-    iPriority ( 0 )
+    iPriority ( 0 ),
+    iRawSsid ( KNullDesC8 )
     {
     }
 
@@ -78,7 +79,8 @@ EXPORT_C TWsfWlanInfo::TWsfWlanInfo( TDesC8& aSsid,
     iConnectionState( ENotConnected ),
     iFilterFlags( 0 ),
     iBrandId( 0 ),
-    iPriority( 0 )
+    iPriority( 0 ),
+    iRawSsid ( KNullDesC8 )
     {
     }
 

@@ -25,7 +25,7 @@
 // the drive letter
 _LIT( KResourceDrive, "z:" );
 // resource file
-_LIT( KResourceFile, "wsfaipluginrsc.r*" );
+_LIT( KResourceFile, "wsfaipluginrsc.rsc" );
 // icons
 _LIT( KBitmapFile, "wsficons.mif" );
 

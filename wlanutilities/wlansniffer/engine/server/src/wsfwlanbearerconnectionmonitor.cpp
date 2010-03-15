@@ -476,9 +476,10 @@ TBool CWsfWlanBearerConnectionMonitor::DisconnectBearer()
 // CWsfWlanBearerConnectionMonitor::AbortConnecting
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanBearerConnectionMonitor::AbortConnecting()
+TInt CWsfWlanBearerConnectionMonitor::AbortConnecting()
     {
     LOG_ENTERFN( "CWsfWlanBearerConnectionMonitor::AbortConnecting" );
+    TInt result = KErrGeneral;
     
     if ( iConnectingState != ECsIdle )
         {
@@ -488,9 +489,10 @@ void CWsfWlanBearerConnectionMonitor::AbortConnecting()
         if ( IsActive() && iConnectingState == ECsSocketOpened )
             {
             LOG_WRITE( "forcing connection to stop" );
-            iConnection.Stop();
+            result = iConnection.Stop();
             }
         }
+    return result;
     }
     
 
@@ -518,7 +520,7 @@ TBool CWsfWlanBearerConnectionMonitor::ConnectedWlanConnectionDetailsL(
     LOG_WRITEF( "Monitor iConnectingState =%d and iConnectionId = %d", 
                          iConnectingState, iConnectionId );
     
-    if ( iConnectingState == ECsIdle )
+    if ( iConnectingState == ECsIdle && iConnectionId == KNoConnection )
         {
         // Make sure that we have connection id
         FindWlanBearerConnectedL();

@@ -22,6 +22,7 @@
 //  EXTERNAL INCLUDES
 #include <e32base.h>
 
+
 //  FORWARD DECLARATIONS
 class CAknIconArray;
 class CGulIcon;

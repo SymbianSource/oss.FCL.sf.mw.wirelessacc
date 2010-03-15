@@ -148,10 +148,8 @@ class CWlanPluginWlanState : public CBase,
 
         /*
         * Wlan bearer opened using accesspoint
-        * @param TDesC aAccesspointName.
         */
-        virtual void WlanConnectionActivatedL( const 
-                                       TDesC& aAccessPointName );
+        virtual void WlanConnectionActivatedL();
 
         /*
         * wlan bearer has been closed

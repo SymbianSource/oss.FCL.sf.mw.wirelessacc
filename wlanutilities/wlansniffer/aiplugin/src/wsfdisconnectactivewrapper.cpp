@@ -118,20 +118,27 @@ void CWsfDisconnectActiveWrapper::Start()
 void CWsfDisconnectActiveWrapper::RunL()
     {
     LOG_ENTERFN( "CWsfDisconnectActiveWrapper::RunL" );
-    if (iState == EUninitialized)
+    if ( iStatus == KErrNone )
         {
-        LOG_WRITE( "disconnect" );
-        iModel->Disconnect( iPckg, iStatus );
-        iState = EInitialized;
-        SetActive(); // Tell scheduler a request is active
-        }
-    else if (iState == EInitialized )
-        {
-        LOG_WRITEF( "request result = %d", iPckg() );
+        if (iState == EUninitialized)
+            {
+            LOG_WRITE( "disconnect" );
+            iModel->Disconnect( iPckg, iStatus );
+            iState = EInitialized;
+            SetActive(); // Tell scheduler a request is active
+            }
+        else if (iState == EInitialized )
+            {
+            LOG_WRITEF( "request result = %d", iPckg() );
+            }
+        else
+            {
+            LOG_WRITEF( "iState = %d", iState );
+            }
         }
     else
         {
-        LOG_WRITEF( "iState = %d", iState );
+        LOG_WRITEF( "DisconnectActiveWrapper iStatus = %d", iStatus.Int() );
         }
     }
 

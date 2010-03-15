@@ -253,9 +253,8 @@ class TWsfMainController: public MWsfMainUiObserver,
         /**
         * A WLAN connection has been established
         * @since S60 5.0
-        * @param aAccesspointName The name of the active connection
         */
-        void WlanConnectionActivatedL( const TDesC& aAccessPointName );
+        void WlanConnectionActivatedL();
         
         /**
         * A WLAN connection has been closed
@@ -280,11 +279,18 @@ class TWsfMainController: public MWsfMainUiObserver,
         static void ReleaseSuppressingKeyEvents( TAny* aPtr );
         
         /**
+        * Cleanup function to restore refresh state
+        * @since S60 5.2
+        * @param aPtr Pointer for this class
+        */
+        static void RestoreRefreshState( TAny* aPtr );
+        
+        /**
         * Updates iap id to wlan list
         * @since S60 5.2
         * @param aInfo reference of TWsfWlanInfo class
         */
-        void UpdateIapIdToInfoArray( TWsfWlanInfo & aInfo );
+        void UpdateIapIdToInfoArrayL( TWsfWlanInfo & aInfo );
         
     private:    // Data
 

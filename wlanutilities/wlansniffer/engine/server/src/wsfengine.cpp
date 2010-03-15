@@ -611,9 +611,11 @@ void CWsfEngine::AbortConnectingL()
     {
     LOG_ENTERFN("CWsfEngine::AbortConnectingL");
 
-    iWlanBearerMonitor->AbortConnecting();
+    TInt result = iWlanBearerMonitor->AbortConnecting();
     
-    if ( iMonitoredIap )
+    LOG_WRITEF( "abort connection result = %d", result );
+    
+    if ( result == KErrNone && iMonitoredIap )
         {
         if ( iIapPersistence == EIapExpireOnDisconnect )
             {

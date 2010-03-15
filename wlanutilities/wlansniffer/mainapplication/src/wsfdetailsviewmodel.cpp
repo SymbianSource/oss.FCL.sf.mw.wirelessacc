@@ -127,12 +127,12 @@ CDesCArrayFlat* CWsfDetailsViewModel::FormatWlanInfoL(
     iWlanArray = aWlanArray;
     iFormattedWlanInfo->Reset();
     
-    // If Wlan if suppilied && arrays has items
-    if ( aWlanInfo && VisibleWlans( *iWlanArray ) )
+    TInt visibleWlans = VisibleWlans( *iWlanArray );
+    if ( aWlanInfo && visibleWlans )
         {
         iWlanInfo = *aWlanInfo;
         TWsfWlanInfo* temp = iWlanArray->Match( aWlanInfo->iSsid, 
-                                                VisibleWlans( *iWlanArray ) );
+                                                visibleWlans );
         if ( temp )
             {
             iIndex = iWlanArray->GetArrayIndex( temp );
@@ -178,21 +178,25 @@ CDesCArrayFlat* CWsfDetailsViewModel::FormatNextWlanInfoL()
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::FormatNextWlanInfoL" );
     _ASSERTD( iWlanArray );
+    
+    TInt visibleWlans = VisibleWlans( *iWlanArray );
         
-    if( iIndex < VisibleWlans( *iWlanArray ) - 1 )
+    if( iIndex < visibleWlans - 1 )
         {
         iFormattedWlanInfo->Reset();
         iIndex++;
         
-        if( iIndex >= VisibleWlans( *iWlanArray ) -1 )
+        if( iIndex >= visibleWlans - 1 )
             {
-            iIndex = VisibleWlans( *iWlanArray ) -1;
+            // Set the index to point to the last visible in the array.
+            iIndex = visibleWlans - 1;
             }
         else if ( iWlanInfo.SignalStrength() == ENoSignal )
             {
             iIndex = 0;
             }
             
+        // (Array bounds check is done in the first if sentence.)
         iWlanInfo = *(iWlanArray->At( iIndex ) );
         FormatAndAppenWlanIapNameL();
         FormatAndAppenWlanSsidL();
@@ -217,8 +221,7 @@ CDesCArrayFlat* CWsfDetailsViewModel::FormatPreviousWlanInfoL()
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::FormatPreviousWlanInfoL" );
     _ASSERTD( iWlanArray );
-    
-  
+
     if( VisibleWlans( *iWlanArray )  )
         {
         iFormattedWlanInfo->Reset();
@@ -228,7 +231,12 @@ CDesCArrayFlat* CWsfDetailsViewModel::FormatPreviousWlanInfoL()
             {
             iIndex = 0;
             }
-                       
+        
+        // Just in case the iIndex would somehow point out of iWlanArray...
+        if( iIndex >= (TInt)iWlanArray->Count() )
+            {
+            iIndex = 0;
+            }
         iWlanInfo = *(iWlanArray->At( iIndex ) );
         FormatAndAppenWlanIapNameL();
         FormatAndAppenWlanSsidL();
@@ -248,6 +256,7 @@ CDesCArrayFlat* CWsfDetailsViewModel::FormatPreviousWlanInfoL()
 HBufC* CWsfDetailsViewModel::FormatPaneTextLC()
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::FormatPaneTextLC" );
+
     HBufC* paneText = NULL;
     
     if ( iWlanInfo.SignalStrength() == ENoSignal )
@@ -256,7 +265,8 @@ HBufC* CWsfDetailsViewModel::FormatPaneTextLC()
         }
     else
         {
-        if( VisibleWlans( *iWlanArray ) )
+        TInt visibleWlans = VisibleWlans( *iWlanArray );
+        if( visibleWlans )
             {
             paneText = HBufC::NewLC( KPaneFormater().Length() + 
                                      KNumberLegth + 
@@ -267,8 +277,7 @@ HBufC* CWsfDetailsViewModel::FormatPaneTextLC()
             // Format string ( KListItemFormat = %i/%i )
             paneTextPrt.Format( KPaneFormater, 
                                 iIndex + 1, 
-                                ( iWlanArray ) ? 
-                                    VisibleWlans( *iWlanArray ) : 0 );
+                                visibleWlans );
             }
         else
             {
@@ -304,7 +313,7 @@ TBool CWsfDetailsViewModel::FormatRightScrollButton()
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::FormatRightScrollButton" );
     TBool rightButton( EFalse );
-    TUint count = iWlanArray->Count();
+    TInt count = iWlanArray->Count();
     
     if ( iIndex + 1 >= count )
         {
@@ -669,24 +678,21 @@ HBufC* CWsfDetailsViewModel::FormatSpeedLC()
 TInt CWsfDetailsViewModel::VisibleWlans( CWsfWlanInfoArray& aArray )
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::VisibleWlans" );
-    TInt i = 0;
-    TBool hiddenFound = EFalse;
+    TUint i = 0;
     TWsfWlanInfo* wlanInfo;
     LOG_WRITEF( "Number of Wlans: %d", aArray.Count() );
-    while ( i < aArray.Count() && !hiddenFound )
+    // The hidden WLAN should be in the end of the aArray.
+    while ( i < aArray.Count() )
         {
         wlanInfo = aArray[i];
         if ( wlanInfo->Hidden() && !wlanInfo->Known() )
             {
-            hiddenFound = ETrue;
+            break; // Hidden was found. Break to exit the while-loop.
             }
-        else
-            {
-            ++i;                
-            }
+        ++i;                
         }
     
-    LOG_WRITEF( "VisibleWlans: %d", aArray.Count() );
+    LOG_WRITEF( "VisibleWlans: %d", i );
     return i;
     }      
 

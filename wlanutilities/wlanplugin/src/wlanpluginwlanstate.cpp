@@ -214,8 +214,7 @@ void CWlanPluginWlanState::ScanEnabledL()
 // ---------------------------------------------------------
 // CWlanPluginWlanState::WlanConnectionActivatedL
 // ---------------------------------------------------------    
-void CWlanPluginWlanState::WlanConnectionActivatedL( 
-                                const TDesC& /*aAccessPointName*/ )
+void CWlanPluginWlanState::WlanConnectionActivatedL()
     {
     CLOG_ENTERFN( "CWlanPluginWlanState::WlanConnectionActivatedL()" );   
     
