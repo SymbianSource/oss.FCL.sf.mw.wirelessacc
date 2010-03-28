@@ -252,7 +252,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aLoginTimerValue, set login timer value,
         * @param aLogoutTimerValue, set logout timer value.
         */        
-        void CHotSpotServer::SetTimerValues(
+        void SetTimerValues(
                 TUid aClientUid,
                 TUint aLoginTimerValue,
                 TUint aLogoutTimerValue );
@@ -264,7 +264,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aClientUid, client UID to find.
         * @return matching index if UID was found, otherwise KErrNotFound.
         */        
-        TInt CHotSpotServer::FindClientUid( TUid aClientUid );
+        TInt FindClientUid( TUid aClientUid );
         
     public: // Functions from base classes
 
