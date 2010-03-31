@@ -12,7 +12,7 @@
 * Contributors:
 *
 * Description: 
-*        Header file for CWlanPluginDbObserver class.
+*        Header file for CWsfDbObserver class.
 *
 */
 
@@ -39,15 +39,13 @@ NONSHARABLE_CLASS( CWsfDbObserver ) : public CActive
     public:
         /**
         * The Constructor.
-        * @param aState Pointer to the WLAN State object.
         */
-    	CWsfDbObserver(  );
+    	CWsfDbObserver();
         
         /**
         * First phase of two phased construction.
-        * @param aState Pointer to the WLAN State object.
         */
-        static CWsfDbObserver* NewL(  );
+        static CWsfDbObserver* NewL();
         
         /**
         * This function activates this object as an active object.
@@ -86,6 +84,11 @@ NONSHARABLE_CLASS( CWsfDbObserver ) : public CActive
         * is called.
         */
         void DoCancel();
+        
+        /**
+         * @see CActive
+         */
+        TInt RunError( TInt aError );
  
     private:
         /**
@@ -99,12 +102,6 @@ NONSHARABLE_CLASS( CWsfDbObserver ) : public CActive
         TInt DefaultScanIntervalL();
 
     private:  
-        /**
-        * @var Pointer to the WLAN state object to ask and set scanning
-        * state.
-        */ 
-        //CWlanPluginWlanState * iWlanState;
-        
         /**
         * A CommsDat session fod database access.
         */

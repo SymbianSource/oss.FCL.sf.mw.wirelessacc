@@ -490,7 +490,7 @@ void CWsfDetailsViewModel::FormatAndAppenCoverageL()
 void CWsfDetailsViewModel::FormatAndAppenSpeedL()
     {
     LOG_ENTERFN( "CWsfDetailsViewModel::FormatAndAppenSpeedL" );
-    HBufC* speed = FormatSpeedLC();
+    HBufC* speed = FormatTechnologyLC();
     HBufC* listBoxItem = FormatListBoxItemLC( 
                                 R_QTN_SNIFFER_HEADING_WLAN_NW_MAX_RATE, 
                                 *speed );
@@ -651,24 +651,45 @@ HBufC* CWsfDetailsViewModel::FormatCoverageLC()
         }
     }
 
-// ---------------------------------------------------------------------------
-// CWsfDetailsViewModel::FormatSpeedLC
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------
+// CWsfDetailsViewModel::FormatTechnologyLC
+// ---------------------------------------------------------
 //
-HBufC* CWsfDetailsViewModel::FormatSpeedLC()
+HBufC* CWsfDetailsViewModel::FormatTechnologyLC()
     {
-    LOG_ENTERFN( "CWsfDetailsViewModel::FormatSpeedLC" );
-    //if data rate is allowed to be a fraction, 
-    //rewrite this format string
-    _LIT( KRateFmt, "%d" );
-
-    const TInt KMaxRateStringWidth = 8;
-    TBuf<KMaxRateStringWidth> rate;
-    rate.Format( KRateFmt, iWlanInfo.iTransferRate );   
-    AknTextUtils::DisplayTextLanguageSpecificNumberConversion( rate );
+    LOG_ENTERFN( "CWsfDetailsViewModel::FormatTechnologyLC" );
+    TInt resourceId( 0 );
     
-    return StringLoader::LoadLC( R_QTN_SNIFFER_WLAN_MAX_DATA_RATE, 
-                                 rate, iCoeEnv );
+    switch( iWlanInfo.iTransferRate )
+        {
+        
+        case 1:
+            {
+            resourceId = R_QTN_SNIFFER_WLAN_SETT_TECHNOLOGY_802_11B;
+            break;
+            }
+        case 2:
+            {
+            resourceId = R_QTN_SNIFFER_WLAN_SETT_TECHNOLOGY_802_11G;
+            break;
+            }
+        case 4:
+            {
+            resourceId = R_QTN_SNIFFER_WLAN_SETT_TECHNOLOGY_802_11BG;
+            break;
+            }
+        case 8:
+            {
+            resourceId = R_QTN_SNIFFER_WLAN_SETT_TECHNOLOGY_802_11N;
+            break;
+            }
+        default:
+            {
+            return KNullDesC().AllocLC();
+            }
+        }
+
+    return StringLoader::LoadLC( resourceId );
     }
 
 // ---------------------------------------------------------------------------

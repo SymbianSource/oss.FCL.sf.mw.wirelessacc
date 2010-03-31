@@ -642,6 +642,8 @@ TBool CWsfWlanScanner::RestartScanning()
     LOG_ENTERFN( "CWsfWlanScanner::RestartScanning" );
 
     TBool restarted( EFalse );
+    LOG_WRITEF( "iScanState = %d isActive = %d iShowAvailability = %d",
+               iScanState, IsActive(), iShowAvailability );
     
     if ( iScanState == EIdle && ( IsActive() || iShowAvailability ) )
         {
@@ -656,6 +658,7 @@ TBool CWsfWlanScanner::RestartScanning()
         restarted = ETrue;
         }
     
+    LOG_WRITEF( "restarted = %d", restarted );
     return restarted;
     }
 
@@ -862,7 +865,7 @@ void CWsfWlanScanner::ProcessDirectScanResultL()
                 TWsfWlanInfo* temp = matchArray[i];
                 ++temp->iCoverage;
                 RefreshSignalStrength( *temp );
-                RefreshMaxRate( *temp );
+                RefreshTechnology( *temp );
              	}
             }
         // Close() for matchArray
@@ -1035,7 +1038,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
             // not hidden
             RefreshNetworkMode( *wlanInfo );
             RefreshSecurityMode( *wlanInfo );
-            RefreshMaxRate( *wlanInfo );
+            RefreshTechnology( *wlanInfo );
 
             // check if we already have an entry/entries corresponding to a scan result
             // (multiple entries for one scan result possible if GetAvailableIaps()
@@ -1052,7 +1055,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
                 {
                 wlanInfo->iCoverage = 1;
                 RefreshSignalStrength( *wlanInfo );
-                RefreshMaxRate( *wlanInfo );
+                RefreshTechnology( *wlanInfo );
                 ++nElem; // new entry, inc index in array
                 }
             else // if found inc coverage and refresh signal strength and rate
@@ -1062,7 +1065,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
                     TWsfWlanInfo* temp = matchArray[i];
                     ++temp->iCoverage;
                     RefreshSignalStrength( *temp );
-                    RefreshMaxRate( *temp );
+                    RefreshTechnology( *temp );
 
                     if ( temp->iIapId )
                         {
@@ -1576,56 +1579,154 @@ void CWsfWlanScanner::RefreshSecurityMode( TWsfWlanInfo& aWlanInfo )
     }
 
 
+// -----------------------------------------------------------------------------
+// CWsfWlanScanner::ConvertTxRateToTxRateEnum
+// -----------------------------------------------------------------------------
+//
+core_tx_rate_e CWsfWlanScanner::ConvertTxRateToTxRateEnum( TUint8 aRate )
+    {
+    LOG_ENTERFN( "CWsfWlanScanner::ConvertTxRateToTxRateEnum" );
+
+    switch ( aRate )
+        {
+        case core_tx_rate_value_1mbit:
+            return core_tx_rate_1mbit;
+        case core_tx_rate_value_2mbit:
+            return core_tx_rate_2mbit;
+        case core_tx_rate_value_5p5mbit:
+            return core_tx_rate_5p5mbit;
+        case core_tx_rate_value_6mbit:
+            return core_tx_rate_6mbit;
+        case core_tx_rate_value_9mbit:
+            return core_tx_rate_9mbit;
+        case core_tx_rate_value_11mbit:
+            return core_tx_rate_11mbit;
+        case core_tx_rate_value_12mbit:
+            return core_tx_rate_12mbit;
+        case core_tx_rate_value_18mbit:
+            return core_tx_rate_18mbit;
+        case core_tx_rate_value_22mbit:
+            return core_tx_rate_22mbit;
+        case core_tx_rate_value_24mbit:
+            return core_tx_rate_24mbit;
+        case core_tx_rate_value_33mbit:
+            return core_tx_rate_33mbit;
+        case core_tx_rate_value_36mbit:
+            return core_tx_rate_36mbit;
+        case core_tx_rate_value_48mbit:
+            return core_tx_rate_48mbit;
+        case core_tx_rate_value_54mbit:
+            return core_tx_rate_54mbit;
+        default:
+            return core_tx_rate_none;
+        }
+    }
+
+
 // ---------------------------------------------------------------------------
-// CWsfWlanScanner::RefreshMaxRate
+// CWsfWlanScanner::RefreshTechnology
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanScanner::RefreshMaxRate( TWsfWlanInfo& aWlanInfo )
+void CWsfWlanScanner::RefreshTechnology( TWsfWlanInfo& aWlanInfo )
     {
-    LOG_ENTERFN( "CWsfWlanScanner::RefreshMaxRate" );
+    LOG_ENTERFN( "CWsfWlanScanner::RefreshTechnology" );
 
-    TUint8 ieLen( 0 );
+    TUint8 ieLen(0);
     const TUint8* ieData;
     TUint8 dataRates[KMaxNumberOfRates];
-    TUint8 maxDataRate( aWlanInfo.iTransferRate * 2 );
 
-    Mem::FillZ( &dataRates[0], sizeof( dataRates ) );
-
-    // Supported Rates
-    iScanInfo->InformationElement( E802Dot11SupportedRatesIE, ieLen, &ieData );
-
-    Mem::Copy( dataRates, ieData, ieLen );
-
-    for ( TInt a = 0; a < ieLen; a++ )
+    if ( iScanInfo->InformationElement( E802Dot11HtCapabilitiesIE, ieLen,
+            &ieData ) == 0 )
         {
-        // ignore the highest bit
-        dataRates[a] &= 0x7f;
-        if ( maxDataRate < dataRates[a] )
-            {
-            maxDataRate = dataRates[a];
-            }
+        // 802.11n supported
+        aWlanInfo.iTransferRate = 0x8;
         }
-
-    // Extended Supported Rates
-    Mem::FillZ( &dataRates[0], sizeof( dataRates ) );
-
-    iScanInfo->InformationElement( E802Dot11ExtendedRatesIE, ieLen, &ieData );
-
-    Mem::Copy( dataRates, ieData, ieLen );
-
-    if ( ieData )
+    else
         {
+        Mem::FillZ( &dataRates[0], sizeof( dataRates ) );
+        core_tx_rate_e rate( core_tx_rate_none );
+        TUint32 basic_rates( 0 );
+        TUint32 supported_rates( 0 );
+
+        // Supported Rates
+        iScanInfo->InformationElement( E802Dot11SupportedRatesIE, ieLen,
+                &ieData );
+
+        Mem::Copy( dataRates, ieData, ieLen );
+
+        TUint32 temp_basic_rates( 0 );
+        TUint32 temp_supported_rates( 0 );
+
         for ( TInt a = 0; a < ieLen; a++ )
             {
-            dataRates[a] &= 0x7f;
-            if ( maxDataRate < dataRates[a] )
+            rate = ConvertTxRateToTxRateEnum( dataRates[a]
+                    & ~TX_RATE_BASIC_MASK );
+
+            temp_supported_rates |= rate;
+
+            if ( dataRates[a] & TX_RATE_BASIC_MASK )
                 {
-                maxDataRate = dataRates[a];
+                /**
+                 * The highest bit is enabled, the rate is both a basic rate
+                 * and a supported rate.
+                 */
+                temp_basic_rates |= rate;
                 }
             }
+
+        basic_rates |= temp_basic_rates;
+        supported_rates |= temp_supported_rates;
+
+        // Extended Supported Rates
+        Mem::FillZ( &dataRates[0], sizeof( dataRates ) );
+
+        iScanInfo->InformationElement( E802Dot11ExtendedRatesIE, ieLen,
+                &ieData );
+
+        Mem::Copy( dataRates, ieData, ieLen );
+
+        if ( ieData )
+            {
+            temp_basic_rates = 0;
+            temp_supported_rates = 0;
+
+            for ( TInt a = 0; a < ieLen; a++ )
+                {
+                rate = ConvertTxRateToTxRateEnum( dataRates[a]
+                        & ~TX_RATE_BASIC_MASK );
+
+                temp_supported_rates |= rate;
+
+                if ( dataRates[a] & TX_RATE_BASIC_MASK )
+                    {
+                    /**
+                     * The highest bit is enabled, the rate is both a basic rate
+                     * and a supported rate.
+                     */
+                    temp_basic_rates |= rate;
+                    }
+                }
+
+            basic_rates |= temp_basic_rates;
+            supported_rates |= temp_supported_rates;
+            }
+
+        aWlanInfo.iTransferRate = 0x4; // 802.11bg
+
+        // AP is 802.11b only if only 802.11b rates 
+        // are advertised as supported rates.
+        if ( !( supported_rates & ~CORE_TX_RATES_802P11B ) )
+            {
+            aWlanInfo.iTransferRate = 0x1; // 802.11b
+            }
+        // AP is 802.11g only if any of the 802.11g rates is a basic rate.
+        else if ( basic_rates & CORE_TX_RATES_802P11G )
+            {
+            aWlanInfo.iTransferRate = 0x2; // 802.11g
+            }
         }
-    aWlanInfo.iTransferRate = maxDataRate / 2;
-    LOG_WRITEF( "maxRate = %d", aWlanInfo.iTransferRate );
+
+    LOG_WRITEF( "technology = %d", aWlanInfo.iTransferRate );
     }
 
 

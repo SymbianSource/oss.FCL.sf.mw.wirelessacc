@@ -163,14 +163,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
                               CEikLabel* aText1 );
         
         /**
-        * Sets signal strenght and the security string
-        * @since S60 5.0  
-        * @param aStrength siganl strength string
-        * @param aSecure security string
-        */
-        void SetStrengthAndSecure( TDesC* aStrength, TDesC* aSecure );
-        
-        /**
         * Sets Scanning status on/off.
         * @since S60 5.0
         * @param aScanState Scanning satus flag
@@ -309,7 +301,7 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         CWsfAiView* iUi;
    
         /**
-        * The database observer obseving changes in
+        * The database observer observing changes in
         * show WLAN availablity
         */
         CWsfDbObserver* iDbObserver;
@@ -318,24 +310,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         * The resource file offset
         */
         TInt iResourceFileOffset;
-    
-        /**
-        * Constants for Signal Strength text
-        * Own.
-        */
-        HBufC* iCurrentSignalStrength;
-    
-        /**
-        * Constants for Secure Information text
-        * Own.
-        */
-        HBufC* iCurrentSecureInfo;
-    
-        /**
-        * Constants for Title text
-        * Own.
-        */
-        HBufC* iWlanTitle;
     
         /**
         * Constants for MSK activate text

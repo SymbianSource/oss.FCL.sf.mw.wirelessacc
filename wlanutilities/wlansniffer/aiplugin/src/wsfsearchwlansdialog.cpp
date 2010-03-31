@@ -16,6 +16,7 @@
 */
 
 
+
 //  EXTERNAL INCLUDES
 #include <badesca.h>
 #include <coemain.h>
@@ -24,8 +25,10 @@
 #include <eikclb.h>
 #include <AknIconArray.h>
 #include <wsfaipluginrsc.rsg>
+
 //  INTERNAL INCLUDES
 #include "wsfsearchwlansdialog.h"
+#include "wsflogger.h"
 
 //  MACROS
 #ifdef _DEBUG    
@@ -48,7 +51,8 @@ CWsfSearchWlansDialog* CWsfSearchWlansDialog::NewL( TInt &aSelectedItem )
     CleanupStack::Pop( thisPtr );
     return thisPtr;
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::NewLC
 // --------------------------------------------------------------------------
@@ -62,6 +66,7 @@ CWsfSearchWlansDialog* CWsfSearchWlansDialog::NewLC( TInt &aSelectedItem )
     return thisPtr;
     }
 
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::~CWsfSearchWlansDialog
 // --------------------------------------------------------------------------
@@ -69,7 +74,8 @@ CWsfSearchWlansDialog* CWsfSearchWlansDialog::NewLC( TInt &aSelectedItem )
 CWsfSearchWlansDialog::~CWsfSearchWlansDialog()
     {
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::CWsfSearchWlansDialog
 // --------------------------------------------------------------------------
@@ -79,7 +85,8 @@ CWsfSearchWlansDialog::CWsfSearchWlansDialog( TInt &aSelectedItem ) :
     iSelectedItem( &aSelectedItem )
     {
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::ConstructL
 // --------------------------------------------------------------------------
@@ -88,16 +95,19 @@ void CWsfSearchWlansDialog::ConstructL()
     {
     // nothing at the moment...
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::ProcessCommandL
 // --------------------------------------------------------------------------
 //    
 void CWsfSearchWlansDialog::ProcessCommandL( TInt aCommandId )
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::ProcessCommandL" );
     CAknListQueryDialog::ProcessCommandL( aCommandId );    
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::UpdateHotSpotsL
 // --------------------------------------------------------------------------
@@ -105,6 +115,7 @@ void CWsfSearchWlansDialog::ProcessCommandL( TInt aCommandId )
 void CWsfSearchWlansDialog::UpdateHotSpotsL( MDesCArray* aItemTextArray,
                                              TInt aCurrentItem )
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::UpdateHotSpotsL" );
     _ASS_D( ListBox() );
     
     SetItemTextArray( aItemTextArray );
@@ -119,25 +130,30 @@ void CWsfSearchWlansDialog::UpdateHotSpotsL( MDesCArray* aItemTextArray,
         ListBox()->SetCurrentItemIndex( aCurrentItem );     
         }    
     }
-    
+
+
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::SelectedItem
 // --------------------------------------------------------------------------
 //    
 TInt CWsfSearchWlansDialog::SelectedItem()
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::SelectedItem" );
     _ASS_D( ListBox() );
 
     return ListBox()->CurrentItemIndex();
     }
 
+
 // --------------------------------------------------------------------------
-// CWsfAiPlugin::StartConnectingAnimationL
+// CWsfSearchWlansDialog::StartConnectingAnimationL
 // --------------------------------------------------------------------------
 //
 void CWsfSearchWlansDialog::StartConnectingAnimationL()
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::StartConnectingAnimationL" );
     }
+
 
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::ForceRefreshingL
@@ -145,6 +161,7 @@ void CWsfSearchWlansDialog::StartConnectingAnimationL()
 //    
 void CWsfSearchWlansDialog::ForceRefreshingL()
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::ForceRefreshingL" );
     }
 
 
@@ -153,10 +170,11 @@ void CWsfSearchWlansDialog::ForceRefreshingL()
 // --------------------------------------------------------------------------
 //
 TBool CWsfSearchWlansDialog::MultilineControl() 
-    { 
+    {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::MultilineControl" );
     return ETrue; 
     }
-      
+
 
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::UpdateViewL
@@ -164,7 +182,9 @@ TBool CWsfSearchWlansDialog::MultilineControl()
 //    
 void CWsfSearchWlansDialog::UpdateViewL( MDesCArray* /*aItemTextArray*/ )
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::UpdateViewL" );
     }
+
 
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::DisplayEngineOffL
@@ -172,16 +192,17 @@ void CWsfSearchWlansDialog::UpdateViewL( MDesCArray* /*aItemTextArray*/ )
 //    
 void CWsfSearchWlansDialog::DisplayEngineOffL()
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::DisplayEngineOffL" );
     }
 
 
-    
 // --------------------------------------------------------------------------
 // CWsfSearchWlansDialog::PreLayoutDynInitL
 // --------------------------------------------------------------------------
 //    
 void CWsfSearchWlansDialog::PreLayoutDynInitL()
     {
+    LOG_ENTERFN( "CWsfSearchWlansDialog::PreLayoutDynInitL" );
     _ASS_D( ListBox() );
     // add the empty text here....
     HBufC* noWlansAvailable = iCoeEnv->AllocReadResourceLC( 

@@ -30,17 +30,18 @@ EXPORTS
 	_ZN9CWsfModel18CreateAccessPointLER12TWsfWlanInfoi @ 29 NONAME
 	_ZN9CWsfModel18IctsTestPermissionEv @ 30 NONAME
 	_ZN9CWsfModel20RequestNotifyEventsLER23MWsfStateChangeObserver @ 31 NONAME
-	_ZN9CWsfModel24GetConnectedWlanDetailsLER12TWsfWlanInfo @ 32 NONAME
-	_ZN9CWsfModel24LaunchHelperApplicationLER12TWsfWlanInfoii @ 33 NONAME
-	_ZN9CWsfModel25TestConnectedAccessPointLER12TWsfWlanInfoi @ 34 NONAME
-	_ZN9CWsfModel4NewLER23MWsfStateChangeObserveri @ 35 NONAME
-	_ZN9CWsfModel5NewLCER23MWsfStateChangeObserveri @ 36 NONAME
-	_ZN9CWsfModel8ConnectLER8TPckgBufIiEm18TWsfIapPersistenceR14TRequestStatus @ 37 NONAME
-	_ZN9CWsfModel8ConnectLEm @ 38 NONAME
-	_ZN9CWsfModelD0Ev @ 39 NONAME
-	_ZN9CWsfModelD1Ev @ 40 NONAME
-	_ZN9CWsfModelD2Ev @ 41 NONAME
-	_ZNK9CWsfModel18CheckIsIapIdValidLEj @ 42 NONAME
-	_ZThn12_N9CWsfModel14LaunchBrowserLEm @ 43 NONAME
-	_ZN9CWsfModel23GetConnectedWlanDetailsER8TPckgBufIiER12TWsfWlanInfoR14TRequestStatus @ 44 NONAME
+	_ZN9CWsfModel22CloseHelperApplicationEv @ 32 NONAME
+	_ZN9CWsfModel23GetConnectedWlanDetailsER8TPckgBufIiER12TWsfWlanInfoR14TRequestStatus @ 33 NONAME
+	_ZN9CWsfModel24GetConnectedWlanDetailsLER12TWsfWlanInfo @ 34 NONAME
+	_ZN9CWsfModel24LaunchHelperApplicationLER12TWsfWlanInfo @ 35 NONAME
+	_ZN9CWsfModel25TestConnectedAccessPointLER12TWsfWlanInfoi @ 36 NONAME
+	_ZN9CWsfModel4NewLER23MWsfStateChangeObserveri @ 37 NONAME
+	_ZN9CWsfModel5NewLCER23MWsfStateChangeObserveri @ 38 NONAME
+	_ZN9CWsfModel8ConnectLER8TPckgBufIiEm18TWsfIapPersistenceR14TRequestStatus @ 39 NONAME
+	_ZN9CWsfModel8ConnectLEm @ 40 NONAME
+	_ZN9CWsfModelD0Ev @ 41 NONAME
+	_ZN9CWsfModelD1Ev @ 42 NONAME
+	_ZN9CWsfModelD2Ev @ 43 NONAME
+	_ZNK9CWsfModel18CheckIsIapIdValidLEj @ 44 NONAME
+	_ZThn12_N9CWsfModel14LaunchBrowserLEm @ 45 NONAME
 

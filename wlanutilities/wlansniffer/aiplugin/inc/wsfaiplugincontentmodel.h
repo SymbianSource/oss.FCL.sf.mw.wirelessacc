@@ -37,17 +37,9 @@ const TUid KUidWlanWizardPlugin = { KImplUidWlanWizardPlugin };
  */
 enum TWsfAiWizardContentIds
     {
-     EAiWizardContentFullText
-    ,EAiWizardContentNaviBarIcon
-    ,EAiWizardContentTitleText
-    ,EAiWizardContentStatusIcon
-    ,EAiWizardContentStatusText
-    ,EAiWizardContentTypeIcon       // Transparent icon
-    ,EAiWizardContentTypeText
-    ,EAiWizardContentStrengthIcon
-    ,EAiWizardContentStrengthText    
+     EAiWizardContentStatusIcon
+    ,EAiWizardContentStrengthIcon   
     ,EAiWizardContentSecureIcon
-    ,EAiWizardContentSecureText
     ,EAiWizardContentNetworkStatus
     ,EAiWizardContentNetworkName
     };
@@ -57,17 +49,9 @@ enum TWsfAiWizardContentIds
  */
 const TAiContentItem KAiWizardContent[] =
     {
-     { EAiWizardContentFullText,      L"FullText",     KAiContentTypeText }
-    ,{ EAiWizardContentNaviBarIcon,   L"NaviBarIcon",  KAiContentTypeBitmap }
-    ,{ EAiWizardContentTitleText,     L"TitleText",    KAiContentTypeText }
-    ,{ EAiWizardContentStatusIcon,    L"StatusIcon",   KAiContentTypeBitmap }
-    ,{ EAiWizardContentStatusText,    L"StatusText",   KAiContentTypeText }
-    ,{ EAiWizardContentTypeIcon,      L"TypeIcon",     KAiContentTypeBitmap }
-    ,{ EAiWizardContentTypeText,      L"TypeText",     KAiContentTypeText }
+     { EAiWizardContentStatusIcon,    L"StatusIcon",   KAiContentTypeBitmap }
     ,{ EAiWizardContentStrengthIcon,  L"StrengthIcon", KAiContentTypeBitmap }
-    ,{ EAiWizardContentStrengthText,  L"StrengthText", KAiContentTypeText }
     ,{ EAiWizardContentSecureIcon,    L"SecureIcon",   KAiContentTypeBitmap }
-    ,{ EAiWizardContentSecureText,    L"SecureText",   KAiContentTypeText }
     ,{ EAiWizardContentNetworkStatus, L"NetworkStatus",KAiContentTypeText }
     ,{ EAiWizardContentNetworkName,   L"NetworkName",  KAiContentTypeText }
     };

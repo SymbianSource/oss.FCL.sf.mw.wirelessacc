@@ -373,8 +373,10 @@ void TWsfMainController::WlanConnectionClosedL()
         if ( iInfoArray->Count() )
             {
             TWsfWlanInfo* firstItem = iInfoArray->At( 0 );
-            if ( firstItem && firstItem->Connected() )
+            if ( firstItem && ( firstItem->Connected() ||
+                                firstItem->iConnectionState == EConnecting ) )
                 {
+                LOG_WRITEF( "info state = %d", firstItem->iConnectionState );
                 firstItem->iConnectionState = ENotConnected;
                 TRAPD( error, iModel->CheckIsIapIdValidL( firstItem->iIapId ) );
                 if ( error )

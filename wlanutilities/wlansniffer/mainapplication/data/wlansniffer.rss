@@ -430,6 +430,32 @@ RESOURCE TBUF r_qtn_sniffer_wlan_max_data_rate
 
 //-----------------------------------------------------------------------------
 //
+// Details View Wlan technology definitions  
+//
+//-----------------------------------------------------------------------------
+
+RESOURCE TBUF r_qtn_sniffer_wlan_sett_technology_802_11b
+    {
+    buf = "802.11b";
+    }
+
+RESOURCE TBUF r_qtn_sniffer_wlan_sett_technology_802_11g
+    {
+    buf = "802.11g";
+    }
+
+RESOURCE TBUF r_qtn_sniffer_wlan_sett_technology_802_11bg
+    {
+    buf = "802.11b/g";
+    }
+
+RESOURCE TBUF r_qtn_sniffer_wlan_sett_technology_802_11n
+    {
+    buf = "802.11n";
+    }
+    
+//-----------------------------------------------------------------------------
+//
 // Connected Details Pop-up heading text:
 //
 //-----------------------------------------------------------------------------

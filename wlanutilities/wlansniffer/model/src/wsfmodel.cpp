@@ -916,25 +916,43 @@ EXPORT_C void CWsfModel::RefreshScan( TPckgBuf<TBool>& aPckg,
     LOG_ENTERFN( "CWsfModel::RefreshScan" );
     iSession.RequestScan( aPckg, aStatus );
     }
+
+
+// ----------------------------------------------------------------------------
+// CWsfModel::CloseHelperApplication
+// ----------------------------------------------------------------------------
+//
+EXPORT_C TBool CWsfModel::CloseHelperApplication()
+    {
+    LOG_ENTERFN( "CWsfModel::CloseHelperApplication" );
+    TBool endTaskCalled = EFalse;
+    // check if the app is already running ... and kill it.
+    TUid id( TUid::Uid( KHelperApUid.iUid ) );
+    TApaTaskList taskList( iEikEnv->WsSession() );
+    TApaTask task = taskList.FindApp( id );
+
+    if ( task.Exists() )
+        {
+        LOG_WRITE( "ending task" );
+        task.EndTask();
+        endTaskCalled = ETrue;
+        }
+    return endTaskCalled;
+    }
+
     
 
 // ----------------------------------------------------------------------------
 // CWsfModel::LaunchHelperApplicationL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C void CWsfModel::LaunchHelperApplicationL( TWsfWlanInfo &aWlanInfo,
-                                                   TBool aConnecting, 
-                                                   TBool aConnectOnly )
+EXPORT_C void CWsfModel::LaunchHelperApplicationL( TWsfWlanInfo &aWlanInfo )
     {
     LOG_ENTERFN( "CWsfModel::LaunchHelperApplicationL" );
     TPckgC<TWsfWlanInfo> param( aWlanInfo );
-    TPckgC<TBool> param2( aConnecting );
-    TPckgC<TBool> param3( aConnectOnly );
     
-    TBuf8<sizeof( TWsfWlanInfo ) + sizeof( TBool ) + sizeof( TBool )> temp;
+    TBuf8<sizeof( TWsfWlanInfo )> temp;
     temp.Copy( param );
-    temp.Append( param2 );
-    temp.Append( param3 );
     
     TFileName fileName;
     fileName.Copy( temp );

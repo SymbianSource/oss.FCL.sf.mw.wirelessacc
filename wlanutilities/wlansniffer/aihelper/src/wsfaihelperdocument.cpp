@@ -105,15 +105,11 @@ CFileStore* CWsfAiHelperDocument::OpenFileL( TBool /*aDoOpen*/,
     // Read the afilename arg
     // Take that into a TWlanInfo and start creation of accesspoint
     TPckgBuf<TWsfWlanInfo> info;
-    TPckgBuf<TBool> connecting;
-    TPckgBuf<TBool> connectOnly;
+
     info.Copy( aFilename.Left( sizeof( TWsfWlanInfo ) ) );
-    connecting.Copy( aFilename.Mid( sizeof( TWsfWlanInfo ), sizeof( TBool ) ) );
-    connectOnly.Copy( aFilename.Right( sizeof( TBool ) ) );
     
     iWlanInfo = info();
-    iUseDefaultConnection = connecting();
-    iConnectOnly = connectOnly();
+    
     static_cast<CWsfAiHelperAppUi*>( iAppUi )->NotifyFileName();
 
     return NULL;

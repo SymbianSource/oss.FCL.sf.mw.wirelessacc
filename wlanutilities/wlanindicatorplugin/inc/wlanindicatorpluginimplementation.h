@@ -22,29 +22,10 @@
 
 //  INCLUDES
 #include <AknIndicatorPlugin.h> // CAknIndicatorPlugin
-#include <wlanmgmtcommon.h>
-#include <wlanmgmtclient.h>
 #include <rconnmon.h>
-
-//  CONSTANTS
-const TInt KWlanMaxAccessPointNameLength = 50;
 
 //  FORWARD DECLARATIONS
 class CCoeEnv;
-
-//  CLASS DECLARATIONS
-struct TWliWlanInfo
-    {
-    // Network name (unknown: SSID, known: IAP name), TBuf8
-    TWlanSsid iSsid;
-
-    //Internet Access Point Id. 0 if the IAP has not been defined. 
-    TUint32 iIapId;
-
-    // The name of the WLAN IAP, TBuf16
-    TBuf<KWlanMaxAccessPointNameLength> iNetworkName;
-};
-
 
 /**
 *  WLAN Indicator Plug-in implementation
@@ -97,11 +78,8 @@ class CWlanIndicatorPluginImplementation : public CAknIndicatorPlugin
     private: // new functions
 
         /**
-        * Creates text for the cases
-        * - "WLAN network found"
-        * - "WLAN networks found"
-        * - "'myNetwork' found"
-        * @return Descriptor for the current "wlan available" case
+        * Creates text for the case "wlan networks available"
+        * @return Descriptor for the "wlan available" case
         */
         HBufC* CreateWlanNetworksFoundTextL();
         
@@ -110,21 +88,7 @@ class CWlanIndicatorPluginImplementation : public CAknIndicatorPlugin
         * @return Descriptor containing the "'myNetwork' connected" text
         */
         HBufC* CreateWlanConnectedTextL();
-        
-        /**
-         * Finds the required info for the "networks available" case:
-         * - name of the known network (null if all unknown)
-         * - number of available networks
-         * @param aAvailableCount Number of available networks
-         */
-        HBufC* AvailableNetworksInfoL( TInt& aAvailableCount );
-         
-        /**
-         * Finds the network name based on the IAP id
-         * @param Struct for storing the IAP information
-         */
-        void GetWlanInfoFromIapL( TWliWlanInfo& aWlanInfo );
-        
+                     
         /**
          * Finds the WLAN connection name.
          * @return Descriptor containing the name of the connected WLAN nw.
@@ -164,12 +128,6 @@ class CWlanIndicatorPluginImplementation : public CAknIndicatorPlugin
          */
         RConnectionMonitor iConnMonitor;
         
-        /**
-         * Owned. Used for getting WLAN available networks info
-         */
-        CWlanMgmtClient* iWlanMgmtClient;
-        
-
     };
 
 #endif      // CWLANINDICATORPLUGINIMPLEMENTATION_H

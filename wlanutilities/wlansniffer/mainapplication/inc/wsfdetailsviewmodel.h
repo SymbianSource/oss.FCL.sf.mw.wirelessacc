@@ -231,11 +231,11 @@ NONSHARABLE_CLASS( CWsfDetailsViewModel ): public CBase
         HBufC* FormatCoverageLC();
     
         /**
-         * Formats wlan speed to string 
-         * @since S60 v5.0
+         * Formats wlan technology to string 
+         * @since S60 v5.2
          * @return formated string
          */        
-        HBufC* FormatSpeedLC();
+        HBufC* FormatTechnologyLC();
     
         /**
         * Calculate number of visible (Not hidden) WLANs

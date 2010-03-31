@@ -15,6 +15,8 @@
 *
 */
 
+
+
 //  EXTERNAL INCLUDES
 #include <aicontentobserver.h>
 #include <aiutility.h>
@@ -50,8 +52,6 @@
 
 
 // define icon id for Navigation Bar icon
-LOCAL_D const TInt KNaviBarIcon = EWlanOffIcon;
-LOCAL_D const TInt KTransparentIcon = ETransparentIcon;
 LOCAL_D const TUid KUidSnifferApp = {0x10281CAA};
 LOCAL_D const TInt KRefreshStepTime = 200 * 1000;
 LOCAL_D const TInt KConnectingStepTime = 200 * 1000;
@@ -98,14 +98,6 @@ CWsfAiPlugin::~CWsfAiPlugin()
     delete iModel;
     delete iAiModel;
     delete iUi;
-
-    delete iCurrentSignalStrength;
-    delete iCurrentSecureInfo;
-    
-    if ( iWlanTitle )
-        {
-        delete iWlanTitle;
-        }
     
     if ( iMskActivate )
         {
@@ -184,7 +176,6 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
     TInt rightBoundary( 0 );
     TChar boundary('\'');
     HBufC* localCurrentStatusText( NULL );
-    HBufC* localCurrentTypeText( NULL );
     
     HBufC* localCurrentNetworkStatus( NULL );
     HBufC* localCurrentNetworkName( NULL );
@@ -201,19 +192,18 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
          leftBoundary != KErrNotFound && 
          rightBoundary != KErrNotFound )
         {
+        LOG_WRITE( "status name exists" );
         TPtrC begin = fullText.Mid( leftBoundary, 
                                     rightBoundary - leftBoundary + 1 );
         localCurrentStatusText = begin.AllocLC();
         localCurrentNetworkName = begin.AllocLC();
 
         TPtrC end = fullText.Mid( rightBoundary + 1 );
-        localCurrentTypeText = end.AllocLC();
        }
     else
         {
+        LOG_WRITE( "status name does not exist" );
         localCurrentStatusText = fullText.AllocLC();
-        delete localCurrentTypeText;
-        localCurrentTypeText = NULL;
         }
     
     //Connected
@@ -221,6 +211,7 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
         {
         if ( iAiModel->Connected() )
             {
+            LOG_WRITE( "ai model is connected" );
             if ( !iConnectedTo )
                 {
                 iConnectedTo = StringLoader::LoadL( 
@@ -235,11 +226,13 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
                 iKnownNetworkFound = StringLoader::LoadL( 
                         R_QTN_SNIFFER_PLUG_IN_WLAN_NETWORK_FOUND );
                 }
+            LOG_WRITE( "there is known network" );
             localCurrentNetworkStatus = iKnownNetworkFound;
             }
         }
     else
         {
+        LOG_WRITE( "use current status text" );
         localCurrentNetworkStatus = localCurrentStatusText;
         }
 
@@ -252,93 +245,40 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
           iCurrentObserverIndex < iObservers.Count(); 
           ++iCurrentObserverIndex )
         {
+        LOG_WRITEF( "Start publish - index = %d", iCurrentObserverIndex );
+        
         MAiContentObserver* observer = iObservers[iCurrentObserverIndex];
         observer->StartTransaction( reinterpret_cast<TInt32>( this ) );
         // make sure we cancel the tracsaction if leaves
         CleanupStack::PushL( TCleanupItem( PublishCleanup, this ) );
 
-        // Publish Full Text if Classic or Navigation Bar Classic used
-        if ( localFullText )
-            {
-            published = PublishText( observer, 
-                                     EAiWizardContentFullText,
-                                     *localFullText ) || published;
-            }
-
-        // Publish Navigation Bar Icon: EAiWizardContentNaviBarIcon
-        published = PublishIconL( observer, 
-                                  EAiWizardContentNaviBarIcon,
-                                  KNaviBarIcon ) || published;
-
-        // Publish Application Title: EAiWizardContentTitleText
-        if ( !iWlanTitle )
-            {
-            iWlanTitle = StringLoader::LoadL( R_QTN_AI_WIZARD_TITLE );
-            }
-        if ( iWlanTitle )
-            {
-            published = PublishText( observer, 
-                                     EAiWizardContentTitleText,
-                                     *iWlanTitle ) || published;
-            }
-
         if ( localCurrentStatusText )
             {
+            LOG_WRITE( "Publish -> status icon" );
             // Publish Status icon: EAiWizardContentStatusIcon
             iconId = aPublishIconArray->At( 0 );
             published = PublishIconL( observer, 
                                       EAiWizardContentStatusIcon,
                                       iconId ) || published;
-            
-            // Publish Status text: EAiWizardContentStatusText
-            published = PublishText( observer, 
-                                     EAiWizardContentStatusText,
-                                     *localCurrentStatusText ) || published;
             }
 
-        if ( localCurrentTypeText )
-            {
-            // Publish Type icon: EAiWizardContentTypeIcon
-            published = PublishIconL( observer, 
-                                      EAiWizardContentTypeIcon,
-                                      KTransparentIcon ) || published;
-
-            // Publish Type text: EAiWizardContentTypeText
-            published = PublishText( observer, 
-                                     EAiWizardContentTypeText,
-                                     *localCurrentTypeText ) || published;
-            }
-
+        LOG_WRITE( "Publish -> Strength icon" );
         // Publish Strength icon: EAiWizardContentStrengthIcon
         iconId = aPublishIconArray->At( 2 );
         published = PublishIconL( observer, 
                                   EAiWizardContentStrengthIcon,
                                   iconId ) || published;
 
-        // Publish Strength text: EAiWizardContentStrengthText
-        if ( iCurrentSignalStrength && iScanState )
-            {
-            published = PublishText( observer, 
-                                     EAiWizardContentStrengthText,
-                                     *iCurrentSignalStrength ) || published;
-            }
-
+        LOG_WRITE( "Publish -> secure icon" );
         // Publish Secure icon: EAiWizardContentSecureIcon
         iconId = aPublishIconArray->At( 1 );
         published = PublishIconL( observer, 
                                   EAiWizardContentSecureIcon,
                                   iconId ) || published;
-
-        // Publish Secure text: EAiWizardContentSecureText
-        if ( iCurrentSecureInfo && iScanState )
-            {
-            published = PublishText( observer, 
-                                     EAiWizardContentSecureText,
-                                     *iCurrentSecureInfo ) || published;
-            }
         
         if ( localCurrentNetworkName )
             {
+            LOG_WRITE( "Publish -> localCurrentNetworkName" );
             // Publish NetworkName text: EAiWizardContentNetworkName
             published = PublishText( observer, 
                                      EAiWizardContentNetworkName,
@@ -347,6 +287,7 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
         
         if ( localCurrentNetworkStatus )
             {
+            LOG_WRITE( "Publish -> localCurrentNetworkStatus" );
             // Publish NetworkName text: EAiWizardContentNetworkName
             published = PublishText( observer, 
                                      EAiWizardContentNetworkStatus,
@@ -357,20 +298,19 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
         // otherwise cancel transaction
         if ( published )
             {
+            LOG_WRITE( "Commit" );
             observer->Commit( reinterpret_cast<TInt32>( this ) );
             published = EFalse;
             }
         else
             {
+            LOG_WRITE( "Cancel transaction" );
             observer->CancelTransaction( reinterpret_cast<TInt32>( this ) );
             }
         CleanupStack::Pop( 1 ); // PublishCleanup()
         }
     
-    if ( localCurrentTypeText ) 
-        {
-        CleanupStack::PopAndDestroy( localCurrentTypeText );
-        }
+    LOG_WRITE( "Publishing ready" );
     
     if ( localCurrentNetworkName ) 
         {
@@ -469,9 +409,6 @@ void CWsfAiPlugin::Suspend( TSuspendReason aReason )
             delete iAnimationPeriodic;
             iAnimationPeriodic = NULL;
             }
-                
-        // HS went to background -> dismiss open dialogs/menus
-        TRAP_IGNORE( iController.DismissDialogsL() );
         }
     }
 
@@ -570,53 +507,16 @@ void CWsfAiPlugin::ClearL()
 
         observer->StartTransaction( reinterpret_cast<TInt32>( this ) );
 
-        observer->Clean( *this, EAiWizardContentNaviBarIcon, 
-                                EAiWizardContentNaviBarIcon );
-        observer->Clean( *this, EAiWizardContentTitleText, 
-                                EAiWizardContentTitleText );
         observer->Clean( *this, EAiWizardContentStatusIcon, 
                                 EAiWizardContentStatusIcon );
-        observer->Clean( *this, EAiWizardContentStatusText, 
-                                EAiWizardContentStatusText );
-        observer->Clean( *this, EAiWizardContentTypeIcon,
-                                EAiWizardContentTypeIcon );
-        observer->Clean( *this, EAiWizardContentTypeText, 
-                                EAiWizardContentTypeText );
         observer->Clean( *this, EAiWizardContentStrengthIcon, 
                                 EAiWizardContentStrengthIcon );
-        observer->Clean( *this, EAiWizardContentStrengthText, 
-                                EAiWizardContentStrengthText );
         observer->Clean( *this, EAiWizardContentSecureIcon, 
                                 EAiWizardContentSecureIcon );
-        observer->Clean( *this, EAiWizardContentSecureText, 
-                                EAiWizardContentSecureText );
         observer->Clean( *this, EAiWizardContentNetworkName, 
                                 EAiWizardContentNetworkName );
+        
         observer->Commit( reinterpret_cast<TInt32>( this ) );
-        }
-    }
-
-
-// --------------------------------------------------------------------------
-// CWsfAiPlugin::SetStrengthAndSecure
-// --------------------------------------------------------------------------
-//
-void CWsfAiPlugin::SetStrengthAndSecure( TDesC* aStrength, TDesC* aSecure )
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::SetStrengthAndSecure" );
-    delete iCurrentSignalStrength;
-    iCurrentSignalStrength = NULL;
-    if ( aStrength && aStrength->Length() > 0)
-        {
-        iCurrentSignalStrength = aStrength->Alloc();
-        }
-
-    delete iCurrentSecureInfo;
-    iCurrentSecureInfo = NULL;
-    if ( aSecure && aSecure->Length() > 0)
-        {
-        // r_qtn_sniffer_plug_in_content_secure
-        iCurrentSecureInfo = aSecure->Alloc();
         }
     }
 
@@ -847,10 +747,15 @@ TBool CWsfAiPlugin::PublishIconL( MAiContentObserver* aObserver,
 //
 void CWsfAiPlugin::PublishCleanup( TAny* aPtr )
     {
-    LOG_ENTERFN( "CWsfAiPlugin::PublishClearup" );
+    LOG_ENTERFN( "CWsfAiPlugin::PublishCleanup" );
     CWsfAiPlugin* self = static_cast<CWsfAiPlugin*>( aPtr );
-    self->iObservers[self->iCurrentObserverIndex]
+    
+    if ( self && self->iCurrentObserverIndex < self->iObservers.Count() )
+        {
+        LOG_WRITE( "Cancel transaction" );
+        self->iObservers[self->iCurrentObserverIndex]
                      ->CancelTransaction( reinterpret_cast<TInt32>( self ) );
+        }
     }
 
 

@@ -55,10 +55,8 @@ LIBRARY                 eikcore.lib
 LIBRARY                 apgrfx.lib
 LIBRARY                 cone.lib
 LIBRARY                 commonengine.lib
-LIBRARY                 commdb.lib
 LIBRARY                 charconv.lib
 LIBRARY                 connmon.lib
 LIBRARY                 cmmanager.lib
-LIBRARY                 cmmanagerdatabase.lib
 LIBRARY                 bafl.lib
 

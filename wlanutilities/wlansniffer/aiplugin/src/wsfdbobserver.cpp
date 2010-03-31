@@ -18,6 +18,7 @@
 */
 
 
+
 //User includes
 #include "wsfdbobserver.h"
 #include "wsfaicontroller.h"
@@ -31,9 +32,9 @@
 
 const TInt KWlanSettingsUiDefaultScanNetwork = 300;
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::CWlanPluginDbObserver
-// Constructor
+// CWsfDbObserver::CWsfDbObserver
 // ---------------------------------------------------------
 CWsfDbObserver::CWsfDbObserver(  ) 
 : CActive( EPriorityNormal ),
@@ -41,8 +42,9 @@ iOuterScanState( EFalse )
     {
     }
     
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::NewL
+// CWsfDbObserver::NewL
 // ---------------------------------------------------------    
 CWsfDbObserver* CWsfDbObserver::NewL(  )
     {
@@ -52,9 +54,10 @@ CWsfDbObserver* CWsfDbObserver::NewL(  )
     CleanupStack::Pop();
     return self;
     }
-       
+
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::ConstructL
+// CWsfDbObserver::ConstructL
 // ---------------------------------------------------------   
 void CWsfDbObserver::ConstructL()
     {
@@ -64,18 +67,15 @@ void CWsfDbObserver::ConstructL()
     
     FeatureManager::InitializeLibL(); 
          
-    CActiveScheduler::Add(this);
+    CActiveScheduler::Add( this );
+    }
 
-  }
-    
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::~CWlanPluginDbObserver
-// Destructor
+// CWsfDbObserver::~CWsfDbObserver
 // ---------------------------------------------------------       
 CWsfDbObserver::~CWsfDbObserver()
     {
-    
-    
     Cancel();
     
     delete iRecord;
@@ -84,24 +84,23 @@ CWsfDbObserver::~CWsfDbObserver()
             
     delete iWlanMgmtClient;
     
- 		FeatureManager::UnInitializeLib();  
+    FeatureManager::UnInitializeLib();  
     }
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::RunL
+// CWsfDbObserver::RunL
 // ---------------------------------------------------------       
 void CWsfDbObserver::RunL()
     {
     LOG_ENTERFN( "CWsfDbObserver::RunL" );        
-    //iSession->OpenTransactionL();
-    //iRecord->RefreshL( *iSession );
     iRecord->LoadL( *iSession );
-    //iSession->CommitTransactionL();        
     
     //if scanning state changed start or stop the server
     TInt i = iRecord->iBgScanInterval;
     TInt j = iRecord->iSavedBgScanInterval;
-    LOG_WRITEF( "CWsfDbObserver::RunL -- Bg:%d bg2:%d O:%d", i, j, iOuterScanState );
+    LOG_WRITEF( "CWsfDbObserver::RunL -- Bg:%d bg2:%d O:%d", i, j, 
+                                                              iOuterScanState );
     if ( iRecord->iBgScanInterval == 0 && iOuterScanState )
         {
         LOG_WRITE( "CWsfDbObserver::RunL -- Scan disabled" );
@@ -118,34 +117,33 @@ void CWsfDbObserver::RunL()
     SetActive();
     
     iRecord->RequestNotification(*iSession,iStatus);
-    
     }
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::DoCancel
+// CWsfDbObserver::DoCancel
 // ---------------------------------------------------------       
 void CWsfDbObserver::DoCancel()
     {
-    
     iRecord->CancelNotification( *iSession, iStatus );       
-    
     }
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::ActivateIt
+// CWsfDbObserver::ActivateIt
 // ---------------------------------------------------------       
 void CWsfDbObserver::ActivateItL()
     {
+    LOG_ENTERFN( "CWsfDbObserver::ActivateItL" );
     
     iSession = CMDBSession::NewL( KCDLatestVersion );
-    
+
     TMDBElementId tableId = 0;
-    
+
     tableId = CCDWlanDeviceSettingsRecord::TableIdL( *iSession );
-        
-    iRecord = new( ELeave )
-            CCDWlanDeviceSettingsRecord( tableId );         
-    
+
+    iRecord = new (ELeave) CCDWlanDeviceSettingsRecord( tableId );
+
     iRecord->iWlanDeviceSettingsType = KWlanUserSettings;
     
     
@@ -165,91 +163,114 @@ void CWsfDbObserver::ActivateItL()
     
     }
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::SetController
+// CWsfDbObserver::SetController
 // ---------------------------------------------------------  
 void CWsfDbObserver::SetController( TWsfAiController* aController )
 	{
 	iController = aController;
 	}
 
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::EnableScanL
+// CWsfDbObserver::EnableScanL
 // ---------------------------------------------------------  
 void CWsfDbObserver::EnableScanL()
     {
-	if( !iOuterScanState )
+    LOG_ENTERFN( "CWsfDbObserver::EnableScanL" );
+    if ( !iOuterScanState )
         {
-        iSession->OpenTransactionL();
         iRecord->RefreshL( *iSession );
         if ( iRecord->iBgScanInterval == 0 ) // not scanning
-        	{
-        	TInt j;
-        	j = iRecord->iSavedBgScanInterval;
-        	if( j == 0 )
-        		{
-        		j = DefaultScanIntervalL();        		
-        		}
-        	iRecord->iBgScanInterval = j;
-        	iRecord->ModifyL( *iSession );
-        	iOuterScanState = ETrue;
-        	}
-        iSession->CommitTransactionL();
+            {
+            TInt j;
+            j = iRecord->iSavedBgScanInterval;
+            if ( j == 0 )
+                {
+                j = DefaultScanIntervalL();
+                }
+            iRecord->iBgScanInterval = j;
+            iRecord->ModifyL( *iSession );
+            iOuterScanState = ETrue;
+            }
 #ifndef __WINS__
         // Notifying WLAN Engine about changes in settings
         iWlanMgmtClient->NotifyChangedSettings();
 #endif
         }
     }
-        
+       
+
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::DisableScanL
+// CWsfDbObserver::DisableScanL
 // ---------------------------------------------------------     
 void CWsfDbObserver::DisableScanL()
-	{
-	if( iOuterScanState )
-		{
-		iSession->OpenTransactionL();
-		iRecord->RefreshL( *iSession );
+    {
+    LOG_ENTERFN( "CWsfDbObserver::DisableScanL" );
+    if ( iOuterScanState )
+        {
+        iRecord->RefreshL(*iSession);
         if ( iRecord->iBgScanInterval != 0 ) // scanning
-        	{
-        	TInt i;
-        	i = iRecord->iBgScanInterval;
-        	iRecord->iBgScanInterval = 0;
-        	iRecord->iSavedBgScanInterval = i;
-        	iRecord->ModifyL( *iSession );
-        	iOuterScanState = EFalse;
-        	}
-        iSession->CommitTransactionL();
+            {
+            TInt i;
+            i = iRecord->iBgScanInterval;
+            iRecord->iBgScanInterval = 0;
+            iRecord->iSavedBgScanInterval = i;
+            iRecord->ModifyL( *iSession );
+            iOuterScanState = EFalse;
+            }
 #ifndef __WINS__
         // Notifying WLAN Engine about changes in settings
         iWlanMgmtClient->NotifyChangedSettings();
 #endif
-		}
-	}
+        }
+    }
+
 
 // ---------------------------------------------------------
-// CWlanPluginDbObserver::DefaultScanInterval
+// CWsfDbObserver::DefaultScanInterval
 // ---------------------------------------------------------     
 TInt CWsfDbObserver::DefaultScanIntervalL()
-    {  
-	  	TBool iPsmSupported = FeatureManager::FeatureSupported( KFeatureIdPowerSave );
-			if ( iPsmSupported )
-				{
-    		// Read the default value from CenRep (different in PSM mode)
-    		TInt defaultScanInterval( KWlanSettingsUiDefaultScanNetwork );
-    
-    		CRepository* repository = CRepository::NewLC( KCRUidWlanDeviceSettingsRegistryId ); 
-    		if ( repository )
-    			{
-      	  	repository->Get( KWlanDefaultBGScanInterval, defaultScanInterval );
-    			}     
-    		 CleanupStack::PopAndDestroy( repository );
-   			 return  defaultScanInterval; 
- 				 } 
-  		else
-				{
-   			 return KWlanSettingsUiDefaultScanNetwork;
-  			}	
-     }
+    {
+    LOG_ENTERFN( "CWsfDbObserver::DefaultScanIntervalL" );
+    TBool iPsmSupported = FeatureManager::FeatureSupported(
+                                                        KFeatureIdPowerSave );
+    if ( iPsmSupported )
+        {
+        // Read the default value from CenRep (different in PSM mode)
+        TInt defaultScanInterval( KWlanSettingsUiDefaultScanNetwork );
+
+        CRepository* repository = CRepository::NewLC( 
+                KCRUidWlanDeviceSettingsRegistryId );
+        if ( repository )
+            {
+            repository->Get( KWlanDefaultBGScanInterval, defaultScanInterval );
+            }
+        CleanupStack::PopAndDestroy( repository );
+        return defaultScanInterval;
+        }
+    else
+        {
+        return KWlanSettingsUiDefaultScanNetwork;
+        }
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfDbObserver::RunError
+// ----------------------------------------------------------------------------
+//
+#ifdef _DEBUG
+TInt CWsfDbObserver::RunError( TInt aError )
+    {
+    LOG_ENTERFN( "CWsfDbObserver::RunError" );
+    LOG_WRITEF( "aError = %d", aError );
+#else
+TInt CWsfDbObserver::RunError( TInt /*aError*/ )
+    {
+#endif
+    return KErrNone;
+    }
+
 

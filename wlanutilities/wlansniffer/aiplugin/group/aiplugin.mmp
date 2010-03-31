@@ -42,7 +42,8 @@ SOURCE          wsfwlanlistactivewrapper.cpp
 SOURCE          wsfrefreshscanactivewrapper.cpp
 SOURCE          wsfdisconnectactivewrapper.cpp
 SOURCE          wsfconnectactivewrapper.cpp
-SOURCE 		wsfactivewrappers.cpp
+SOURCE          wsfactivewrappers.cpp
+SOURCE          wsflaunchaihelperactivewrapper.cpp
 
 
 // Plugin's own resources.

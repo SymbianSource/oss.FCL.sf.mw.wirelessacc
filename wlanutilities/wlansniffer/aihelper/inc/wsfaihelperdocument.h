@@ -128,20 +128,6 @@ NONSHARABLE_CLASS( CWsfAiHelperDocument ): public CAknDocument
          */
         inline TWsfWlanInfo& WlanInfo();
         
-        /**
-        * Returns whether Connect or Start Web browsing was selected
-        * @since S60 5.0
-        * @return ETrue if Connect was selected (browser doesn't need to be 
-        *         launched, EFalse otherwise.
-        */
-        inline TBool ShouldConnectOnly();
-        
-        /**
-        * Returns whether default connection should be used
-        * @return ETrue if default should be used, EFalse otherwise.
-        */
-        inline TBool UseDefaultConnection();
-        
     
     private:    // data
     
@@ -154,16 +140,6 @@ NONSHARABLE_CLASS( CWsfAiHelperDocument ): public CAknDocument
          * Data of the currently used WLAN network
          */
         TWsfWlanInfo iWlanInfo;
-        
-        /**
-         * Indicates whether Connect or Start Web browsing was selected
-         */
-        TBool iConnectOnly;
-        
-        /**
-         * Indicates whether default connection should be used
-         */
-        TBool iUseDefaultConnection;
         
     };
 

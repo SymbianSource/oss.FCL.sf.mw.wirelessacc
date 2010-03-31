@@ -171,10 +171,9 @@ NONSHARABLE_CLASS( CWsfMainView ): public CAknView,
         * Check if the Browser application is already running and 
         * using the selected connection.
         * @since S60 5.0 
-        * @return EFalse if Start Web Browsing menu item should be shown
-        *         ETrue if Start Web Browsing menu item should not be shown
+        * @return IapId that browser is using
         */
-        TBool IsBrowserUsingWlanL();
+        TInt BrowserIapIdL();
         
     private:
 
@@ -201,9 +200,9 @@ NONSHARABLE_CLASS( CWsfMainView ): public CAknView,
         TBool iSelectionKey;
         
         /**
-         * If Browser is using the WLAN connection or not.
+         * IapId that browser is using
          */
-        TBool iIsBrowserUsingWlan;
+        TInt iBrowserIapId;
         
     };
 

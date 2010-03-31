@@ -42,15 +42,6 @@ public:
                                   CEikLabel* aText1 ) = 0;
     
     /**
-    * Sets signal strenght and the security string
-    * @since S60 5.0  
-    * @param aStrength siganl strength string
-    * @param aSecure security string
-    */
-    virtual void SetStrengthAndSecure( TDesC* aStrength, 
-                                       TDesC* aSecure ) = 0;
-    
-    /**
     * Sets Scanning status on/off.
     * @since S60 5.0
     * @param aScanState Scanning satus flag
@@ -65,7 +56,7 @@ public:
     virtual void SetRefreshingL( TBool aRefreshing ) = 0;
     
     /**
-    * Sets refreshing status on/off.
+    * Sets connecting status on.
     * @since S60 5.0
     * @param aScanState Refreshing status flag
     */

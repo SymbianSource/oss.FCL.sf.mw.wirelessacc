@@ -66,12 +66,7 @@
 //  LOCAL DEFINITIONS
 LOCAL_D const TInt KFirstItemArrayIndex = 0;
 
-// Category UID of AiHelper property
-static const TUid KWsfAiHelperCategoryUid = { 0x10281CEB };
-
-// key numbers within the property 
-static const TUint KWsfAiHelperExitCodeKey = 0;
-static const TUint KWsfAiHelperIapIdKey = 1;
+// index value to suppress 1 second refreshing state
 static const TInt KSuppressRefreshIndex = 1024;
 
 
@@ -227,9 +222,6 @@ void TWsfAiController::StartupRefreshDataReadyL()
     
     MDesCArray* data = iAiModel->FormatSingleLineWlanListL( iInfoArray );
     
-    // index value to suppress 1 second refreshing state
-    const TInt KSuppressRefreshIndex = 1024;
-    
     iUi->UpdateHotSpotsL( data, KSuppressRefreshIndex );    
     }
 
@@ -288,20 +280,6 @@ void TWsfAiController::HandleSelectionKeyL()
                 }
             }
         }
-    }
-
-
-// --------------------------------------------------------------------------
-// TWsfAiController::DismissDialogsL
-// --------------------------------------------------------------------------
-//
-void TWsfAiController::DismissDialogsL()
-    {
-    LOG_ENTERFN("TWsfAiController::DismissDialogsL" );
-    TKeyEvent key;
-    key.iCode = EKeyEscape;
-    key.iModifiers = 0;
-    iEnv->SimulateKeyEventL( key, EEventKey );
     }
 
 
@@ -528,7 +506,7 @@ void TWsfAiController::StartBrowsingL( TWsfWlanInfo& aInfo )
     
     if ( !iUsedInfo.Connected() )
         {
-        ConnectL( iUsedInfo, EFalse );
+        ConnectL( iUsedInfo, EFalse, EFalse );
         }
     else
         {
@@ -574,13 +552,14 @@ void TWsfAiController::StartWebBrowserL( TWsfWlanInfo& aInfo )
 // TWsfAiController::ConnectL
 // --------------------------------------------------------------------------
 //
-void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aShoulConnectOnly )
+void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
+                                 TBool aTestAccessPoint )
     {
     LOG_ENTERFN( "TWsfAiController::ConnectL" );
     
     _ASS_D( iModel );
-    iTestAccessPoint = EFalse;
-    iShouldConnectOnly = aShoulConnectOnly;
+    iTestAccessPoint = aTestAccessPoint;
+    iShouldConnectOnly = aConnectOnly;
     iUsedInfo = aInfo;
     
     // Prevent connections to ad-hoc + WPA 
@@ -629,9 +608,10 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aShoulConnectOnly )
         {
         // let the helper app do the query if necessary
         LOG_WRITE("AiHelper needs to be launched");
-        LaunchAiHelperAppL( iUsedInfo );
-        ConnectingL( iUsedInfo.iIapId );
         iTestAccessPoint = ETrue;
+        iActiveWrappers->LaunchHelperApplicationL( iUsedInfo, 
+                                                   iShouldConnectOnly,
+                                                   iTestAccessPoint );
         }
     
     // Connect
@@ -646,7 +626,6 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aShoulConnectOnly )
             {
             iActiveWrappers->Connect( iUsedInfo.iIapId, EIapPersistent );
             }
-
         }
     // pop cleanup item 
     CleanupStack::Pop();
@@ -664,54 +643,6 @@ void TWsfAiController::CleanUpConnectingL( TAny* aPtr )
     self->iModel->SetConnecting( EFalse );
     self->iAiModel->SetConnecting( EFalse );
     TRAP_IGNORE( self->RefreshUiL());
-    }
-
-
-// --------------------------------------------------------------------------
-// TWsfAiController::LaunchAiHelperAppL
-// --------------------------------------------------------------------------
-//
-void TWsfAiController::LaunchAiHelperAppL( TWsfWlanInfo& aInfo )
-    {
-    LOG_ENTERFN( "TWsfAiController::LaunchAiHelperAppL" );
-
-    CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewL();
-    CleanupStack::PushL( waiter );
-    
-    RProperty aiHelperApp;
-    User::LeaveIfError( aiHelperApp.Attach( 
-                                       KWsfAiHelperCategoryUid, 
-                                       KWsfAiHelperExitCodeKey ) );
-    CleanupClosePushL( aiHelperApp );
-    
-    aiHelperApp.Subscribe( waiter->iStatus );
-
-    LOG_WRITE("launching...");
-    iModel->LaunchHelperApplicationL( aInfo, ETrue, EFalse );
-    waiter->WaitForRequest();
-    
-    TInt exitCode( KErrNone );
-    aiHelperApp.Get( exitCode );
-    
-    LOG_WRITEF("AiHelper returned %d", exitCode );   
-    
-    if ( exitCode == KErrNone )
-        {
-        User::LeaveIfError( aiHelperApp.Attach( 
-                                       KWsfAiHelperCategoryUid, 
-                                       KWsfAiHelperIapIdKey ) );
-        TInt iapId( 0 );
-        aiHelperApp.Get( iapId );
-        aInfo.iIapId = TUint32( iapId );
-        LOG_WRITEF("AiHelper iap id = %d", iapId );
-        }
-    else
-        {
-        User::Leave( exitCode );
-        }
-    
-    CleanupStack::PopAndDestroy( &aiHelperApp );
-    CleanupStack::PopAndDestroy( waiter );
     }
 
 
@@ -1092,13 +1023,14 @@ void TWsfAiController::HandleMskIfOfflineL()
                 
                 if ( LaunchSearchDialogL( info ) )
                     {
-                    ConnectL( info, ETrue );
+                    ConnectL( info, ETrue, EFalse );
                     }
                 }
             else
                 {
                 // there are known networks
-                ConnectL( *wlanArray->At( KFirstItemArrayIndex ), ETrue );
+                ConnectL( *wlanArray->At( KFirstItemArrayIndex ), ETrue, 
+                          EFalse );
                 }
             
             break;
@@ -1120,7 +1052,7 @@ void TWsfAiController::HandleMskIfOfflineL()
             
             if ( LaunchSearchDialogL( info ) )
                 {
-                ConnectL( info, ETrue );
+                ConnectL( info, ETrue, EFalse );
                 }
 
             break;
@@ -1243,8 +1175,15 @@ void TWsfAiController::HandleMskIfBrowsingL()
 void TWsfAiController::RefreshRefreshingL()
 	{
 	LOG_ENTERFN( "TWsfAiController::RefreshRefreshingL" );
-	MDesCArray *data = iAiModel->FormatRefreshingL();
-    iUi->UpdateViewL( data );
+	if ( !iUi->MultilineControl() )
+	    {
+        MDesCArray *data = iAiModel->FormatRefreshingL();
+        iUi->UpdateViewL( data );
+	    }
+	else
+	    {
+        LOG_WRITE( "Multiline control in use - no update done" );
+	    }
 	}
 
 // --------------------------------------------------------------------------
@@ -1254,8 +1193,15 @@ void TWsfAiController::RefreshRefreshingL()
 void TWsfAiController::RefreshConnectingL()
     {
     LOG_ENTERFN( "TWsfAiController::RefreshConnectingL" );
-    MDesCArray *data = iAiModel->FormatConnectingL();
-    iUi->UpdateViewL( data );
+    if ( !iUi->MultilineControl() )
+        {
+        MDesCArray *data = iAiModel->FormatConnectingL();
+        iUi->UpdateViewL( data );
+        }
+    else       
+        {
+        LOG_WRITE( "Multiline control in use - no update done" );
+        }
     }
 
 // End of file

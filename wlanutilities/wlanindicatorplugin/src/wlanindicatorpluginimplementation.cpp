@@ -30,11 +30,6 @@
 #include <rconnmon.h>
 #include <cmmanager.h>
 #include <cmconnectionmethod.h>
-#include <wlanmgmtclient.h>
-#include <wlanscaninfo.h>
-#include <cdblen.h>
-#include <commdb.h>
-#include <WlanCdbCols.h>
 #include <utf.h>
 #include <wlanindicator.rsg>
 #include "wlanindicatorpluginimplementation.h"
@@ -77,9 +72,7 @@ void CWlanIndicatorPluginImplementation::ConstructL()
     iResource = iCoeEnv->AddResourceFileL( fileName );
     
     iConnMonitor.ConnectL();
-    
-    iWlanMgmtClient = CWlanMgmtClient::NewL();
-    
+        
     }
 
 // -----------------------------------------------------------------------------
@@ -107,9 +100,7 @@ CWlanIndicatorPluginImplementation::~CWlanIndicatorPluginImplementation()
     iCoeEnv->DeleteResourceFile( iResource );
  
     iConnMonitor.Close();
-               
-    delete iWlanMgmtClient;
-    
+                   
     }
 
 
@@ -149,7 +140,8 @@ void CWlanIndicatorPluginImplementation::HandleIndicatorTapL( const TInt aUid )
 //    
 HBufC* CWlanIndicatorPluginImplementation::TextL( const TInt aUid,
                                                  TInt& aTextType )
-    {   
+    {
+    
     HBufC* textBuf = NULL;
     
     switch ( aUid )
@@ -190,37 +182,10 @@ HBufC* CWlanIndicatorPluginImplementation::CreateWlanNetworksFoundTextL()
     {
     
     HBufC* dynText = NULL;
-    HBufC* knownNetworkName = NULL;   
-    TInt availableCount( 0 );
 
-    knownNetworkName = AvailableNetworksInfoL( availableCount );
-    
-    CleanupStack::PushL( knownNetworkName ); 
-    
-    if ( !knownNetworkName )
-        {
-        if ( availableCount == 1 )
-            {
-            // dynText: "qtn_uni_ind_wlan_avail_unknown        WLAN network found"
-            dynText = StringLoader::LoadL (
-                    R_QTN_UNI_IND_WLAN_AVAIL_UNKNOWN, iCoeEnv );
-            }
-        else
-            {
-            // dynText: "qtn_uni_ind_wlan_avail_unknown_many    WLAN networks found"
-            dynText = StringLoader::LoadL (
-                    R_QTN_UNI_IND_WLAN_AVAIL_UNKNOWN_MANY, iCoeEnv );            
-            }
-        }
-    else
-        {
-        // dynText: "qtn_uni_ind_wlan_avail_known        '%U' found"
-        dynText = StringLoader::LoadL ( 
-                R_QTN_UNI_IND_WLAN_AVAIL_KNOWN, *knownNetworkName, iCoeEnv );
-                       
-        }
-    
-    CleanupStack::PopAndDestroy( knownNetworkName );
+    // "qtn_uni_ind_wlan_avail_unknown_many    WLAN networks found"
+    dynText = StringLoader::LoadL (
+            R_QTN_UNI_IND_WLAN_AVAIL_UNKNOWN_MANY, iCoeEnv );
 
     return dynText;
     }
@@ -252,99 +217,6 @@ HBufC* CWlanIndicatorPluginImplementation::CreateWlanConnectedTextL()
     return dynText;
     }       
 
-
-// ---------------------------------------------------------------------------
-// CWlanIndicatorPluginImplementation::AvailableNetworksInfoL()
-// ---------------------------------------------------------------------------
-//
-HBufC* CWlanIndicatorPluginImplementation::AvailableNetworksInfoL(
-    TInt& aAvailableCount )
-    {
-    
-    HBufC* knownNetworkName = NULL; 
- 
-    // get available iaps
-    RArray<TUint> availableIaps;
-    TInt iapError( 0 );
-    iapError = iWlanMgmtClient->GetAvailableIaps( availableIaps );
-        
-    if ( iapError == KErrNone )
-        {
-        // if there are known networks, get the name of the first one
-        // in an alphabetical order
-        if ( availableIaps.Count() )
-            {
-            // get all network names and put them into a sorted array
-        
-            // use one TWliWlanInfo struct to point to each IAP in a loop
-            TWliWlanInfo* availableInfo = new ( ELeave ) TWliWlanInfo();
-            CleanupStack::PushL( availableInfo );
-        
-            // descriptor array with granularity 2
-            CDesCArray* networkNames = new (ELeave)CDesCArrayFlat( 2 );
-            CleanupStack::PushL( networkNames );
-      
-            for ( TInt i = 0; i < availableIaps.Count() ; i++ )
-                {
-                availableInfo->iIapId = availableIaps[i];
-                GetWlanInfoFromIapL( *availableInfo );
-            
-                // insert the name into the proper place
-                // in alphabetical order
-                networkNames->InsertIsqL(
-                    ( availableInfo->iNetworkName ), ECmpFolded );
-                }
-        
-            knownNetworkName = ( networkNames->MdcaPoint(0) ).AllocL();
-        
-            CleanupStack::PopAndDestroy( networkNames );
-            CleanupStack::PopAndDestroy( availableInfo );
-               
-            }
-            
-        else // unknown networks only        
-            {
-            CWlanScanInfo* scanInfo = CWlanScanInfo::NewL();                    
-
-            TInt scanError( 0 );
-            scanError = iWlanMgmtClient->GetScanResults( *scanInfo );
-            if ( scanError == KErrNone )
-                {
-                // Find if we have 1 or more networks available,
-                // we don't have to know the exact amount
-                scanInfo->Next() ? aAvailableCount = 2 : aAvailableCount = 1;
-                }
-            
-            delete scanInfo;
-        
-            }
-        }    
-    
-    availableIaps.Close();
-    
-    return knownNetworkName;
-
-    }
-
-// ---------------------------------------------------------------------------
-// CWlanIndicatorPluginImplementation::GetWlanInfoFromIapL()
-// ---------------------------------------------------------------------------
-//
-void CWlanIndicatorPluginImplementation::GetWlanInfoFromIapL( TWliWlanInfo& aWlanInfo )
-    {
-    CCommsDatabase* commsDb = CCommsDatabase::NewL();    
-    CleanupStack::PushL( commsDb );
-    
-    CCommsDbTableView* commsDbIapTableView = commsDb->OpenViewMatchingUintLC(
-        TPtrC( IAP ), TPtrC( COMMDB_ID ), aWlanInfo.iIapId );
-
-    User::LeaveIfError( commsDbIapTableView->GotoFirstRecord() );
-
-    commsDbIapTableView->ReadTextL( TPtrC( COMMDB_NAME ), aWlanInfo.iNetworkName );
-    
-    CleanupStack::PopAndDestroy( commsDbIapTableView );
-    CleanupStack::PopAndDestroy( commsDb );
-    }
 
 // ---------------------------------------------------------------------------
 // CWlanIndicatorPluginImplementation::ConnectionNameL()

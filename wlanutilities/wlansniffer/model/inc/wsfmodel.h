@@ -310,17 +310,18 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
                                    TRequestStatus& aStatus );
         
         /**
-        * Launches and helper application to create an accesspoint 
-        * @since S60 5.0
-        * @param aWlanInfo The WlanInfo object to be passed to the helper app
-        * @param aConnecting ETrue if default connection is used, EFalse otherwise.
-        * @param aConnectOnly ETrue if the helper app is expected to connect 
-        *                    only, EFalse if it should also launch the browser 
-        *                    on successful connection.
+        * Closes helper application if it is launched 
+        * @since S60 5.2
+        * @return ETrue if helper application task was closed
         */
-        IMPORT_C void LaunchHelperApplicationL( TWsfWlanInfo& aWlanInfo,
-                                                TBool aConnecting,
-                                                TBool aConnectOnly );
+        IMPORT_C TBool CloseHelperApplication();
+        
+        /**
+        * Launches and helper application to create an accesspoint 
+        * @since S60 5.2
+        * @param aWlanInfo The WlanInfo object to be passed to the helper app
+        */
+        IMPORT_C void LaunchHelperApplicationL( TWsfWlanInfo& aWlanInfo );
         
         /**
         * Cancel notify events from server

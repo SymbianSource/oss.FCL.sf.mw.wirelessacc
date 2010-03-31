@@ -63,6 +63,7 @@ enum TWsf802Dot11InformationElementID
     E802Dot11ChallengeTextIE        = 16,
     // Reserved for challenge text extension 17 - 31
     E802Dot11ErpInformationIE       = 42,
+    E802Dot11HtCapabilitiesIE       = 45,
     E802Dot11ExtendedRatesIE        = 50,
     E802Dot11AironetIE              = 133,
     E802Dot11ApIpAddressIE          = 149,

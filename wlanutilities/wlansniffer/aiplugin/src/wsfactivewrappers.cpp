@@ -24,6 +24,7 @@
 #include "wsfrefreshscanactivewrapper.h"
 #include "wsfdisconnectactivewrapper.h"
 #include "wsfconnectactivewrapper.h"
+#include "wsflaunchaihelperactivewrapper.h"
 
 
 // ----------------------------------------------------------------------------
@@ -46,6 +47,7 @@ CWsfActiveWrappers::~CWsfActiveWrappers()
     delete iRefreshScanActiveWrapper;
     delete iDisconnectActiveWrapper;
     delete iConnectActiveWrapper;
+    delete iLaunchAiHelperActiveWrapper;
     }
 
 
@@ -57,9 +59,9 @@ CWsfActiveWrappers* CWsfActiveWrappers::NewLC( CWsfModel* aModel,
         TWsfAiController &aController )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::NewLC" );
-    CWsfActiveWrappers* self = new (ELeave) CWsfActiveWrappers();
+    CWsfActiveWrappers* self = new ( ELeave ) CWsfActiveWrappers();
     CleanupStack::PushL( self );
-    self->ConstructL( aModel,aController );
+    self->ConstructL( aModel, aController );
     return self;
     }
 
@@ -94,6 +96,9 @@ void CWsfActiveWrappers::ConstructL( CWsfModel* aModel,
     iDisconnectActiveWrapper = CWsfDisconnectActiveWrapper::NewL( aModel );
     
     iConnectActiveWrapper = CWsfConnectActiveWrapper::NewL( aModel );
+    
+    iLaunchAiHelperActiveWrapper = CWsfLaunchAiHelperActiveWrapper::NewL( 
+                                                          aModel, aController );
     }
 
 
@@ -138,6 +143,19 @@ void CWsfActiveWrappers::RefreshWLANList( TBool aStarUp )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::RefreshWLANList" );
     iWLANListActiveWrapper->Start( aStarUp );
+    }
+
+
+// ----------------------------------------------------------------------------
+// CWsfActiveWrappers::LaunchHelperApplicationL
+// ----------------------------------------------------------------------------
+//
+void CWsfActiveWrappers::LaunchHelperApplicationL( TWsfWlanInfo& aInfo, 
+                                                   TBool aConnectOnly,
+                                                   TBool aTestAccessPoint )
+    {
+    LOG_ENTERFN( "CWsfActiveWrappers::LaunchHelperApplicationL" );
+    iLaunchAiHelperActiveWrapper->Start( aInfo, aConnectOnly, aTestAccessPoint );
     }
 
 

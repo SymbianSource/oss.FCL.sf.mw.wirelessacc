@@ -34,6 +34,7 @@ class CWsfWLANListActiveWrapper;
 class CWsfRefreshScanActiveWrapper;
 class CWsfDisconnectActiveWrapper;
 class CWsfConnectActiveWrapper;
+class CWsfLaunchAiHelperActiveWrapper;
 
 // CLASS DECLARATION
 
@@ -59,15 +60,15 @@ public:
      * Two-phased constructor.
      * @since S60 5.2  
      */
-    static CWsfActiveWrappers* NewL(CWsfModel* aModel,
-            TWsfAiController &aController);
+    static CWsfActiveWrappers* NewL( CWsfModel* aModel,
+            TWsfAiController &aController );
 
     /**
      * Two-phased constructor.
      * @since S60 5.2 
      */
     static CWsfActiveWrappers* NewLC(CWsfModel* aModel,
-            TWsfAiController &aController);
+            TWsfAiController &aController );
 
 public:
 
@@ -81,7 +82,7 @@ public:
      * Starts connecting
      * @since S60 5.2     
      */
-    void Connect(TUint aIapID, TWsfIapPersistence aPersistence);
+    void Connect( TUint aIapID, TWsfIapPersistence aPersistence );
 
     /**
      * Starts refresh scan
@@ -95,6 +96,18 @@ public:
      * @param aStarUp is this called called from plugin start up   
      */
     void RefreshWLANList( TBool aStarUp );
+    
+    /**
+     * Starts launching of ai helper 
+     * @since S60 5.2   
+     * @param aWlanInfo The WlanInfo object to be passed to the helper app
+     * @param aConnectOnly ETrue if we are only connecting, 
+     *                     EFalse if we should also launch the browser  
+     * @param aTestAccessPoint ETrue if ICT is executed, 
+     *                         EFalse if ICT is not executed 
+     */
+    void LaunchHelperApplicationL( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
+                                   TBool aTestAccessPoint );
 
     /**
      * Returns the list of found WLANs. 
@@ -149,6 +162,12 @@ private:
      * Own.
      */
     CWsfConnectActiveWrapper* iConnectActiveWrapper;
+
+    /**
+     * Pointer to CWsfLaunchAiHelperActiveWrapper
+     * Own.
+     */
+    CWsfLaunchAiHelperActiveWrapper* iLaunchAiHelperActiveWrapper;
 
     };
 

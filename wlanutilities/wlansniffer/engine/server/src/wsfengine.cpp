@@ -631,6 +631,13 @@ void CWsfEngine::AbortConnectingL()
             iIapPersistence = EIapExpireOnBrowserExit;
             }
         }
+    else if ( result != KErrNone )
+        {
+        LOG_WRITE( "abort connection did not stopped connection" );
+        // Try to disconnect via normal disconnect if engine is  
+        // connected and and there is connection id
+        DisconnectWlan();
+        }
     }
     
 

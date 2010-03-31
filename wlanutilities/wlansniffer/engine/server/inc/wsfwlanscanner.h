@@ -35,6 +35,72 @@
 #include "wsfwlaninfo.h"
 
 
+const TUint8 TX_RATE_BASIC_MASK = 0x80;
+
+
+/**
+ * Defines the possible TX rate values.
+ */
+typedef enum _core_tx_rate_e
+    {
+    core_tx_rate_none       = 0x00000000,
+    core_tx_rate_1mbit      = 0x00000001,
+    core_tx_rate_2mbit      = 0x00000002,
+    core_tx_rate_5p5mbit    = 0x00000004,
+    core_tx_rate_6mbit      = 0x00000008,
+    core_tx_rate_9mbit      = 0x00000010,
+    core_tx_rate_11mbit     = 0x00000020,
+    core_tx_rate_12mbit     = 0x00000040,
+    core_tx_rate_18mbit     = 0x00000080,
+    core_tx_rate_22mbit     = 0x00000100,
+    core_tx_rate_24mbit     = 0x00000200,
+    core_tx_rate_33mbit     = 0x00000400,
+    core_tx_rate_36mbit     = 0x00000800,
+    core_tx_rate_48mbit     = 0x00001000,
+    core_tx_rate_54mbit     = 0x00002000
+    } core_tx_rate_e;
+
+const TUint32 CORE_TX_RATES_802P11B =
+    core_tx_rate_1mbit |
+    core_tx_rate_2mbit |
+    core_tx_rate_5p5mbit |
+    core_tx_rate_11mbit;
+
+const TUint32 CORE_TX_RATES_802P11G =
+    core_tx_rate_6mbit |
+    core_tx_rate_9mbit |
+    core_tx_rate_12mbit |
+    core_tx_rate_18mbit |
+    core_tx_rate_22mbit |
+    core_tx_rate_24mbit |
+    core_tx_rate_33mbit |
+    core_tx_rate_36mbit |
+    core_tx_rate_48mbit |
+    core_tx_rate_54mbit;
+
+/**
+ * Define the possible TX rate value as units of 500kbit/s.
+ */
+typedef enum _core_tx_rate_value_e
+    {
+    core_tx_rate_value_none    = 0,
+    core_tx_rate_value_1mbit   = 2,
+    core_tx_rate_value_2mbit   = 4,
+    core_tx_rate_value_5p5mbit = 11,
+    core_tx_rate_value_6mbit   = 12,
+    core_tx_rate_value_9mbit   = 18,
+    core_tx_rate_value_11mbit  = 22,
+    core_tx_rate_value_12mbit  = 24,
+    core_tx_rate_value_18mbit  = 36,
+    core_tx_rate_value_22mbit  = 44,
+    core_tx_rate_value_24mbit  = 48,
+    core_tx_rate_value_33mbit  = 66,
+    core_tx_rate_value_36mbit  = 72,
+    core_tx_rate_value_48mbit  = 96,
+    core_tx_rate_value_54mbit  = 108,
+    } _core_tx_rate_value_e;
+
+
 //  FORWARD DECLARATIONS
 class CWlanMgmtClient;
 class CWlanScanInfo;
@@ -297,11 +363,20 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
         void RefreshSecurityMode( TWsfWlanInfo& aWlanInfo );
 
         /**
-        * Parses the scan results for the transfer rate
-        * @since S60 5.0
+        * Convert the given rate value (500kbit/s per unit) 
+        * to a corresponding enum.
+        * @since S60 5.2
+        * @param aRate Rate value to be converted.
+        * @return Corresponding rate enum.
+        */
+        core_tx_rate_e ConvertTxRateToTxRateEnum( TUint8 aRate );
+
+        /**
+        * Parses the scan results for the technology information
+        * @since S60 5.2
         * @param aWlanInfo The wlaninfo to put the results in
         */
-        void RefreshMaxRate( TWsfWlanInfo& aWlanInfo );
+        void RefreshTechnology( TWsfWlanInfo& aWlanInfo );
 
         /**
         * Prepares for direct scanning

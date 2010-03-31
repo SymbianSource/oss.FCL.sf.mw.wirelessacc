@@ -39,22 +39,3 @@ TWsfWlanInfo& CWsfAiHelperDocument::WlanInfo()
     }
 
 
-// ---------------------------------------------------------------------------
-// CWsfAiHelperDocument::ShouldConnectOnly()
-// ---------------------------------------------------------------------------
-//
-TBool CWsfAiHelperDocument::ShouldConnectOnly()
-    {
-    return iConnectOnly;
-    }
-
-// ---------------------------------------------------------------------------
-// CWsfAiHelperDocument::UseDefaultConnection()
-// ---------------------------------------------------------------------------
-//
-TBool CWsfAiHelperDocument::UseDefaultConnection()
-    {
-    return iUseDefaultConnection;
-    }
-
-

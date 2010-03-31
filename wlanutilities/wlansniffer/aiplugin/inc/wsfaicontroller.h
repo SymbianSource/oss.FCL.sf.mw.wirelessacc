@@ -109,18 +109,12 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
          */
         void StartupRefresh();
         
-		/**
+        /**
          * Propagates the network data from the engine
          * to the AI model
          * @since S60 5.2
          */
         void StartupRefreshDataReadyL();
-
-        /**
-        * Dismisses the AI menu/other dialogs if there was any open
-        * @since S60 5.0
-        */
-        void DismissDialogsL();
         
         /**
         * Refreshes the refreshing icon
@@ -134,12 +128,24 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         */
         void RefreshConnectingL();
         
-		/**
+        /**
          * Propagates the network data from the engine
          * to the AI model
          * @since S60 5.2
          */
         void WlanListDataReadyL();
+        
+        /**
+        * Connect to the given wlan
+        * @since S60 5.2
+        * @param aInfo Wlaninfo to connect with
+        * @param aConnectOnly ETrue if we are only connecting, 
+        *                     EFalse if we should also launch the browser
+        * @param aTestAccessPoint ETrue if ICT is executed, 
+        *                         EFalse if ICT is not executed   
+        */
+        void ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
+                       TBool aTestAccessPoint );
         
 
     public:     // From MWsfStateChangeObserver
@@ -239,26 +245,12 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         * @param aInfo Wlaninfo to connect with
         */ 
         void StartWebBrowserL( TWsfWlanInfo& aInfo );
-
-        /*
-        * Connect to the given wlan
-        * @since S60 5.0
-        * @param aInfo Wlaninfo to connect with
-        */ 
-        void ConnectL( TWsfWlanInfo& aInfo, TBool aShoulConnectOnly );
         
         /**
         * Cleanup function to release connecting state
         * @param aPtr Pointer for this class
         */
         static void CleanUpConnectingL( TAny* aPtr );
-        
-        /**
-        * Launches and helper application to create an accesspoint 
-        * @since S60 5.2
-        * @param aWlanInfo The WlanInfo object to be passed to the helper app
-        */
-        void LaunchAiHelperAppL( TWsfWlanInfo& aInfo );
 
         /*
         * Brings browser to the foreground
@@ -381,7 +373,7 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
          */
         TBool iTestAccessPoint;
         
-		/**
+        /**
         * A pointer to CWsfActiveWrappers
         */
         CWsfActiveWrappers* iActiveWrappers;

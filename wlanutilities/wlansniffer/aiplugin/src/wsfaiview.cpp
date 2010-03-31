@@ -198,7 +198,13 @@ void CWsfAiView::UpdateHotSpotsL( MDesCArray* aItemTextArray,
         }
 
     iPublishObserver->SetScanningState( ETrue );
-    iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel );
+
+    TRAPD( error, 
+           iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel ) );
+    if ( error )
+        {
+        LOG_WRITEF( "Publish failed - %d error ignored", error );
+        }
     }
 
 
@@ -222,14 +228,17 @@ void CWsfAiView::ForceRefreshingL()
     LOG_ENTERFN( "CWsfAiView::ForceRefreshingL" );
     }
 
+
 // --------------------------------------------------------------------------
 // CWsfAiPlugin::SetRefreshingL
 // --------------------------------------------------------------------------
 //
 void CWsfAiView::StartConnectingAnimationL()
     {
+    LOG_ENTERFN( "CWsfAiView::StartConnectingAnimationL" );
     iPublishObserver->StartConnectingL();    
     }
+
 
 // --------------------------------------------------------------------------
 // CWsfAiView::MultilineControl
@@ -267,8 +276,6 @@ TBool CWsfAiView::ParseStringL( const TDesC& aString )
                                         delimiter ) + secondTabPos + 1;
 
     // ok we have the tab positions read the values...
-
-    TInt secVal = 0;
     //read the icons
     TLex( aString.Mid( 0, firstTabPos )).Val( (TInt&)statusIcon );
     TLex( aString.Mid(
@@ -278,16 +285,6 @@ TBool CWsfAiView::ParseStringL( const TDesC& aString )
     TLex( aString.Mid(
         thirdTabPos+1 , aString.Length() - ( thirdTabPos + 1 ) )
         ).Val( (TInt&) secureicon );
-    
-    secVal = secureicon;
-    HBufC* secureString = NULL;
-
-    iPublishObserver->SetStrengthAndSecure( NULL, secureString );
-    if ( secVal == ESecureNetworkIcon )
-        {
-        delete secureString;
-        secureString = NULL;
-        }
 
     // and the label text
     TPtrC labelText = aString.Mid( firstTabPos+1, 
@@ -328,7 +325,14 @@ void CWsfAiView::DoCompleteUpdateL()
     iUpdateStatusIconDeferred = iSavedUpdateStatusIconDeferred;
     
     MakePublishIconsL();
-    iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel );
+    
+    TRAPD( error, 
+           iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel ) );
+    if ( error )
+        {
+        LOG_WRITEF( "Publish failed - %d error ignored", error );
+        }
+    
     iPublishObserver->SetRefreshingL( EFalse );
     }
 
@@ -368,7 +372,13 @@ void CWsfAiView::DisplayEngineOffL()
     iUpdateStatusIconDeferred = EWlanOffIcon;
     iPublishObserver->SetScanningState( EFalse );
     MakePublishIconsL();
-    iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel );
+    
+    TRAPD( error, 
+           iPublishObserver->PublishContentL( iPublishIconArray, iTextLabel ) );
+    if ( error )
+        {
+        LOG_WRITEF( "Publish failed - %d error ignored", error );
+        }
     }
 
 
@@ -401,7 +411,6 @@ void CWsfAiView::MakePublishIconsL()
         iPublishIconArray->AppendL( iUpdateSecureIconDeferred );
         iPublishIconArray->AppendL( iUpdateSignalStrengthIconDeferred );
         }
-
     }
 
 
@@ -426,6 +435,11 @@ void CWsfAiView::MakeTransparentPublishIconsL()
     iUpdateSignalStrengthIconDeferred = tmp3;
     }
 
+
+// --------------------------------------------------------------------------
+// CWsfAiView::UpdateViewL()
+// --------------------------------------------------------------------------
+//
 void CWsfAiView::UpdateViewL( MDesCArray* aItemTextArray )
 	{
 	LOG_ENTERFN( "CWsfAiView::UpdateViewL" );
