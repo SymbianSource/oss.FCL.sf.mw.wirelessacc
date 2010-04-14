@@ -87,6 +87,7 @@ void TWsfMainController::UpdateViewL()
         case EDetailsViewId:
             {
             _ASSERTD( iDetailsView );
+            iMainView->UpdateWlanListInBackgroundL( array );
             iDetailsView->WlanListChangedL( array );
             break;           
             }

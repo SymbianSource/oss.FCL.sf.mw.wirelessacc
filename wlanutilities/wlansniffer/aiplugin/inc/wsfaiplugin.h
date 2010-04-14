@@ -359,6 +359,11 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         */
         CWsfActiveWrappers* iActiveWrappers;
         
+        /**
+        * Flag to publish network status text
+        */
+        TBool iPublishNetworkStatusText;
+        
     };
 
 

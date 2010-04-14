@@ -84,6 +84,14 @@ class TWsfMainViewController : public MWsfMainViewControllerIf,
         void UpdateWlanListL( CWsfWlanInfoArray* aWlanArray );
 
         /**
+         * Updates WLAN list with values passed as parameter
+         * when the main view is on the background
+         * @param aWlanArray list of WLAN
+         * @since S60 5.2
+         */
+        void UpdateWlanListInBackgroundL ( CWsfWlanInfoArray* aWlanArray );
+
+        /**
          * Request to refresh the mainview
          * @since S60 5.0
          */

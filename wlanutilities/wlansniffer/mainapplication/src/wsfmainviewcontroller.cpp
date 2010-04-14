@@ -64,7 +64,8 @@ void TWsfMainViewController::UpdateHotSpotsL( CWsfWlanInfoArray* aWlanList )
     {
     LOG_ENTERFN( "TWsfMainViewController::UpdateHotSpotsL" );   
     // Format WLAN list which was passed as a parameter
-    CDesCArray* formattedList = iModel->FormatWlanListL( aWlanList );
+    iModel->FormatWlanListL( aWlanList );
+    CDesCArray* formattedList = iModel->GetWlanList();
 
     if ( iContainer )
         {        
@@ -106,6 +107,16 @@ void TWsfMainViewController::UpdateWlanListL( CWsfWlanInfoArray* aWlanArray )
     UpdateNaviPaneL();
     }
 
+// ---------------------------------------------------------------------------
+// TWsfMainViewController::UpdateWlanListInBackgroundL
+// ---------------------------------------------------------------------------
+//
+void TWsfMainViewController::UpdateWlanListInBackgroundL(
+        CWsfWlanInfoArray* aWlanArray )
+    {
+    LOG_ENTERFN( "TWsfMainViewController::UpdateWlanListInBackgroundL" );   
+    iModel->FormatWlanListL( aWlanArray );
+    }
 
 // ---------------------------------------------------------------------------
 // TWsfMainViewController::RefreshL

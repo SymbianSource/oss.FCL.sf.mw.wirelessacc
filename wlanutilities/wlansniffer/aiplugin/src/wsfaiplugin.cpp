@@ -552,6 +552,7 @@ void CWsfAiPlugin::SetRefreshingL( TBool aRefreshing )
                 delete iAnimationPeriodic;
                 iAnimationPeriodic = NULL;
                 }
+            iPublishNetworkStatusText = ETrue;
             iAiModel->InitializeRefreshAnimation();
             iAnimationPeriodic = CPeriodic::NewL(
                     CActive::EPriorityStandard );
@@ -593,6 +594,7 @@ void CWsfAiPlugin::StartConnectingL()
         iAnimationPeriodic = NULL;
         }
 
+    iPublishNetworkStatusText = ETrue;
     iAiModel->InitializeConnectingAnimation();
     iAnimationPeriodic = CPeriodic::NewL(
                                     CActive::EPriorityStandard );
@@ -839,7 +841,7 @@ void CWsfAiPlugin::DoConnectingStepL()
 // ---------------------------------------------------------------------------
 //
 void CWsfAiPlugin::PublishStatusIconL( CArrayFix<TInt>* aPublishIconArray, 
-                                    CEikLabel* /*aText1*/ )
+                                       CEikLabel* aText1 )
     {
     LOG_ENTERFN( "CWsfAiPlugin::PublishStatusIconL" );
     TBool published( EFalse );
@@ -858,6 +860,17 @@ void CWsfAiPlugin::PublishStatusIconL( CArrayFix<TInt>* aPublishIconArray,
         published = PublishIconL( observer, 
                                   EAiWizardContentStatusIcon,
                                   iconId ) || published;
+        
+        if ( iPublishNetworkStatusText && aText1 )
+            {
+            iPublishNetworkStatusText = EFalse;
+            HBufC *statusText = aText1->Text()->AllocLC();
+            published = PublishText( observer, 
+                                     EAiWizardContentNetworkStatus,
+                                     *statusText ) || published;
+            CleanupStack::PopAndDestroy( statusText );
+            }
+        
         // If we published something then commit, 
         // otherwise cancel transaction
         if ( published )

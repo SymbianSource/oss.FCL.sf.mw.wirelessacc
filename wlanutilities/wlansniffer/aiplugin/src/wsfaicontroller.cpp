@@ -709,9 +709,6 @@ TBool TWsfAiController::LaunchSearchDialogL( TWsfWlanInfo& aInfo )
                 }
             }
         }
-        
-    RefreshUiL();
-    
     return success;
     }
 
@@ -1053,6 +1050,12 @@ void TWsfAiController::HandleMskIfOfflineL()
             if ( LaunchSearchDialogL( info ) )
                 {
                 ConnectL( info, ETrue, EFalse );
+                }
+            else
+                {
+                // User canceled Search Wlans dialog and probably did not 
+                // find anything interesting from the list - request scan
+                iActiveWrappers->RefreshScan();
                 }
 
             break;

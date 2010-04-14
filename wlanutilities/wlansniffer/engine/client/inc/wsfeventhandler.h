@@ -105,6 +105,13 @@ NONSHARABLE_CLASS( CWsfEventHandler ): public CActive
         void BlockNextConnectedEvent();
 
         /**
+        * Resets the flag that prevents the ongoing connecting process 
+        * from notifying the observer
+        * @since S60 5.2
+        */
+        void UnBlockNextConnectedEvent();
+
+        /**
         * Sets the connecting flag. Used by RWsfSession to mark the interval
         * of the connection creation.
         * @since S60 5.0

@@ -205,8 +205,7 @@ HBufC* CWsfMainViewModel::FormatNaviPaneLC()
 // CWsfMainViewModel::FormatWlanListL
 // ---------------------------------------------------------------------------
 //
-CDesCArrayFlat* CWsfMainViewModel::FormatWlanListL( 
-                                            CWsfWlanInfoArray* aWlanList )
+void CWsfMainViewModel::FormatWlanListL( CWsfWlanInfoArray* aWlanList )
     {
     LOG_ENTERFN( "CWsfMainViewModel::FormatWlanListL" );
     //Function expects that items in list are already in proper order
@@ -244,7 +243,6 @@ CDesCArrayFlat* CWsfMainViewModel::FormatWlanListL(
     iFormattedWlanList->AppendL( ptr );
 
     CleanupStack::PopAndDestroy ( item );
-    return iFormattedWlanList;
     }
 
 // ---------------------------------------------------------------------------

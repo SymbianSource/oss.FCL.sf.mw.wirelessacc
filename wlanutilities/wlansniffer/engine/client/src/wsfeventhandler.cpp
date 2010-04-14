@@ -296,11 +296,25 @@ void CWsfEventHandler::ResetObserver( MWsfStateChangeObserver& aObserver )
 //
 void CWsfEventHandler::BlockNextConnectedEvent()
     {
+    LOG_ENTERFN( "CWsfEventHandler::BlockNextConnectedEvent" );
     if ( iConnecting )
         {
+        LOG_WRITE( "iBlockConnectedEvent to true" );
         // set the flag only if we are the ones who are connecting
         iBlockConnectedEvent = ETrue;
         }
+    }
+
+
+// ---------------------------------------------------------------------------
+// CWsfEventHandler::UnBlockNextConnectedEvent
+// ---------------------------------------------------------------------------
+//
+void CWsfEventHandler::UnBlockNextConnectedEvent()
+    {
+    LOG_ENTERFN( "CWsfEventHandler::UnBlockNextConnectedEvent" );
+    LOG_WRITE( "iBlockConnectedEvent to false" );
+    iBlockConnectedEvent = EFalse;
     }
 
 
@@ -310,6 +324,8 @@ void CWsfEventHandler::BlockNextConnectedEvent()
 //
 void CWsfEventHandler::SetConnecting( TBool aConnecting )
     {
+    LOG_ENTERFN( "CWsfEventHandler::SetConnecting" );
+    LOG_WRITEF( "iConnecting=%d, aConnecting=%d", iConnecting, aConnecting );
     iConnecting = aConnecting;
     }
     

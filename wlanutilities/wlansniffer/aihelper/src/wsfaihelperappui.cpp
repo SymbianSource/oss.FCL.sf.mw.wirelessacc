@@ -54,7 +54,7 @@ static const TUint KWsfAiHelperIapIdKey = 1;
 //
 void CWsfAiHelperAppUi::ConstructL()
     {
-    BaseConstructL( EAknEnableSkin | EAknEnableMSK );
+    BaseConstructL( EAknEnableSkin | EAknEnableMSK | EAknSingleClickCompatible );
 
     iIdle = CIdle::NewL( CActive::EPriorityIdle );
     

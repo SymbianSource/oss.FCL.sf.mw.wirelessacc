@@ -486,6 +486,7 @@ EXPORT_C TInt RWsfSession::ConnectWlanBearerL( TUint32 aIapId,
     LOG_WRITEF( "IAP id = %d", aIapId );
 
     // mark the beginning of the connection process
+    iEventHandler->UnBlockNextConnectedEvent();
     iEventHandler->SetConnecting( ETrue );
 
     TInt res( KErrNone );
@@ -540,6 +541,7 @@ EXPORT_C void RWsfSession::ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
     LOG_WRITEF( "IAP id = %d", aIapId );
 
     // mark the beginning of the connection process
+    iEventHandler->UnBlockNextConnectedEvent();
     iEventHandler->SetConnecting( ETrue );
 
     SendReceive( ESnifferCmdConnect, TIpcArgs( &aPckg, aIapId, aPersistence ), 

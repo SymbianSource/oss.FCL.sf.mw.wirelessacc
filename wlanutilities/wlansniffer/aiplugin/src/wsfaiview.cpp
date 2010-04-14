@@ -466,6 +466,12 @@ void CWsfAiView::UpdateViewL( MDesCArray* aItemTextArray )
     TLex( aString.Mid(
         thirdTabPos+1 , aString.Length() - ( thirdTabPos + 1 ) )
         ).Val( (TInt&) secureicon );
+    
+    // and the label text
+    TPtrC labelText = aString.Mid( firstTabPos+1, 
+                                   secondTabPos - ( firstTabPos + 1 ) );
+    
+    iTextLabel->SetTextL( labelText );
             
     iUpdateStatusIconDeferred = statusIcon;
     

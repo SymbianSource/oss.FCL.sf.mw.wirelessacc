@@ -80,10 +80,9 @@ NONSHARABLE_CLASS( CWsfMainViewModel ): public CBase
 
         /**
         * Creates array for the listbox.
-        * @param Array of WLAN that will be formatted.
-        * @return Formatted WLAN list 
+        * @param Array of WLAN that will be formatted. 
         */
-        CDesCArrayFlat* FormatWlanListL( CWsfWlanInfoArray* aWlanList );
+        void FormatWlanListL( CWsfWlanInfoArray* aWlanList );
         
         /*
         * Returns WLAN list that has already formatted
