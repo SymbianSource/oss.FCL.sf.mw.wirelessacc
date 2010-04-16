@@ -92,9 +92,6 @@ void CHsBrowserLoadEventObserver::HandleBrowserLoadEventL(
             // no break, fall through
         	}
 		case TBrCtlDefs::EEventNewContentDisplayed:
-        	{
-        	DEBUG( "CHsBrowserLoadEventObserver::HandleBrowserLoadEventL() EEventNewContentDisplayed" );            
-            }        
         case TBrCtlDefs::EEventNewContentStart:
             {
             DEBUG( "CHsBrowserLoadEventObserver::HandleBrowserLoadEventL() EEventNewContentStart" );            

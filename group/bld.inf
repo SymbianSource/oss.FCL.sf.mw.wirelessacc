@@ -24,7 +24,6 @@ PRJ_EXPORTS
 PRJ_MMPFILES
 #include "../hotspotfw/group/bld.inf"
 #include "../hsfw_plat/group/bld.inf"
-#include "../wlanutilities/group/bld.inf"
 
 PRJ_TESTMMPFILES
 

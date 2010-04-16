@@ -1,6 +1,0 @@
-EXPORTS
-	??1CWlanSettingsUi@@UAE@XZ @ 1 NONAME ; CWlanSettingsUi::~CWlanSettingsUi(void)
-	?NewL@CWlanSettingsUi@@SAPAV1@AAVCEikonEnv@@@Z @ 2 NONAME ; class CWlanSettingsUi * CWlanSettingsUi::NewL(class CEikonEnv &)
-	?RunSettingsL@CWlanSettingsUi@@QAEXPAVCMDBSession@CommsDat@@@Z @ 3 NONAME ; void CWlanSettingsUi::RunSettingsL(class CommsDat::CMDBSession *)
-	?RunSettingsL@CWlanSettingsUi@@QAEXXZ @ 4 NONAME ; void CWlanSettingsUi::RunSettingsL(void)
-

@@ -90,6 +90,11 @@ CIctsHttpHandler* CIctsHttpHandler::NewL( CIctsEngine& aOwner,
 CIctsHttpHandler::~CIctsHttpHandler()
     {
     DEBUG("CIctsHttpHandler::~CIctsHttpHandler()");
+    RHTTPTransaction notActive;
+    if ( iHttpTransaction != notActive )
+        {
+        iHttpTransaction.Close();
+        }
     iHttpSession.Close();
     CTimer::Cancel();
     iConnection.Close();
@@ -243,7 +248,11 @@ void CIctsHttpHandler::CancelHttpRequestL()
     {
     DEBUG("CIctsHttpHandler::CancelHttpRequestL()");
     CTimer::Cancel();
-    iHttpTransaction.Cancel();
+    RHTTPTransaction notActive;
+    if ( iHttpTransaction != notActive )
+        {
+        iHttpTransaction.Close();
+        }
     }
 
 // ---------------------------------------------------------------------------
@@ -253,7 +262,11 @@ void CIctsHttpHandler::CancelHttpRequestL()
 void CIctsHttpHandler::RunL()
     {
     DEBUG("CIctsHttpHandler::RunL()");
-    iHttpSession.Close();
+    RHTTPTransaction notActive;
+    if ( iHttpTransaction != notActive )
+        {
+        iHttpTransaction.Close();
+        }
     iString = KNullDesC;
     iOwner.HttpEventL( ETimeout, iString );
     }
@@ -296,10 +309,6 @@ void CIctsHttpHandler::MHFRunL(RHTTPTransaction aTransaction,
             {
             DEBUG("CIctsHttpHandler::THTTPEvent::ESucceeded");
             CTimer::Cancel();
-            // Indicates that transaction succeeded. 
-            // Transaction can be closed now. It's not needed anymore.
-            aTransaction.Close();
-            iHttpSession.Close();
             iOwner.HttpEventL( EConnectionOk, iString );
             iString = KNullDesC;
             }
@@ -332,23 +341,17 @@ void CIctsHttpHandler::MHFRunL(RHTTPTransaction aTransaction,
                     RStringF fieldValStr = strP.StringF(hVal.StrF());
                     const TDesC8& fieldValDesC = fieldValStr.DesC();
                     iString.Copy(fieldValDesC);
-                    aTransaction.Close();
-                    iHttpSession.Close();
                     iOwner.HttpEventL( EHttpAuthenticationNeeded, iString );
                     }
                 else
                     {
                     // No location header. Can't use authentication -> redirect.
-                    aTransaction.Close();
-                    iHttpSession.Close();
                     iOwner.HttpEventL( EConnectionNotOk, iString );    
                     }
                 }
              else
                 {
                 // Failed for other reason than redirect
-                aTransaction.Close();
-                iHttpSession.Close();
                 iOwner.HttpEventL( EConnectionNotOk, iString );
                 }
               
@@ -371,24 +374,21 @@ void CIctsHttpHandler::MHFRunL(RHTTPTransaction aTransaction,
             break;
     
         default:
-           {
-           DEBUG1( "CIctsHttpHandler::MHFRunL::default iStatus: %d", aEvent.iStatus ); 
-           CTimer::Cancel();
-           aTransaction.Close();
-           iHttpSession.Close();
-           // close the transaction if it's an error
-           if ( aEvent.iStatus < 0 )
-               {
-               _LIT(string, "Unknown error");
-               iString = string;
-               iOwner.HttpEventL( EConnectionNotOk, iString );
-               }
-           else
-               {
-               _LIT(string, "Default");
-               iString = string;
-               iOwner.HttpEventL( EConnectionNotOk, iString );
-               }
+            {
+            DEBUG1( "CIctsHttpHandler::MHFRunL::default iStatus: %d", aEvent.iStatus ); 
+            CTimer::Cancel();
+            if ( aEvent.iStatus < 0 )
+                {
+                _LIT(string, "Unknown error");
+                iString = string;
+                iOwner.HttpEventL( EConnectionNotOk, iString );
+                }
+            else
+                {
+                _LIT(string, "Default");
+                iString = string;
+                iOwner.HttpEventL( EConnectionNotOk, iString );
+                }
             } 
             break;
         }

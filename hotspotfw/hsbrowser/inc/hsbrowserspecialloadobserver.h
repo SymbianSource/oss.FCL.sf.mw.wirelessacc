@@ -22,7 +22,7 @@
 #define HSBROWSERSPECIALLOADOBSERVER_H
 
 //  INCLUDES
-#include <brctlspecialloadobserver.h>
+#include <BrCtlSpecialLoadObserver.h>
 #include <brctlinterface.h>
 
 // CLASS DECLARATION

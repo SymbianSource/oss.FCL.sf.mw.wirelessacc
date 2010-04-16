@@ -108,7 +108,7 @@ EXPORT_C TInt RHssInterface::Connect()
         error = CreateSession( KHotSpotDataServerName,
                                Version(),
                                KDefaultMsgSlots );
-         DEBUG1( "RHssInterface::Connect() CreateSession: %d", error );  
+        DEBUG1( "RHssInterface::Connect() CreateSession: %d", error );  
         }
     return error;
     }
@@ -412,75 +412,50 @@ TVersion RHssInterface::Version() const
 //
 TInt RHssInterface::StartServer()
     {
-    DEBUG( "RHssInterface::StartServer" );
-    TInt result;
-
-    TFindServer findHotSpotServer( KHotSpotDataServerName );
+    TInt res( KErrNone );
+    // create server - if one of this name does not already exist
+    TFindServer findServer( KHotSpotDataServerName );
     TFullName name;
 
-    result = findHotSpotServer.Next( name );
-    if ( result == KErrNone )
+    if ( findServer.Next( name ) != KErrNone ) // we don't exist already
         {
-        // Server already running
-        return KErrNone;
+        RProcess server;
+        // Create the server process
+        res = server.Create( KHotSpotServerExe, KNullDesC );
+
+        if ( res != KErrNone ) // thread created ok - now start it going
+            {
+            return res;
+            }
+
+        // Rendezvous is used to detect server start
+        TRequestStatus status;
+        server.Rendezvous( status );                                                 
+                                                                                   
+        if ( status != KRequestPending )                                             
+            {
+            DEBUG1( "StartServer Rendezvous ERROR: %d", status.Int() );
+            server.Kill( 0 );    // abort startup                                 
+            }                                                                      
+        else                                                                       
+            {                                                                      
+            server.Resume();    // logon OK - start the server                     
+            }                                                                      
+        
+        DEBUG( "StartServer wait for start" );
+        User::WaitForRequest( status ); // wait for start or death
+
+        // We can't use the 'exit reason' if the server paniced as this                                                          
+        // is the panic 'reason' and may be '0' which cannot be distinguished                                        
+        // from KErrNone                                                                                             
+        res = ( server.ExitType() == EExitPanic ) ? KErrGeneral : status.Int();
+        
+        // we're no longer interested in the other process
+        server.Close(); 
         }
+        
+    return res;
 
-    RSemaphore semaphore;
-    result = semaphore.CreateGlobal( KHotSpotServerSemaphore, 0 );
-    DEBUG1( "RHssInterface::StartServer semaphore: %d", result );
-    if ( result != KErrNone )
-        {
-        return  result;
-        }
-
-    result = CreateServerProcess();
-    DEBUG1( "RHssInterface::StartServer CreateServerProcess: %d", result );
-    if ( result != KErrNone )
-        {
-        // Should the semaphore be closed if process creating fails?
-        return  result;
-        }
-
-    semaphore.Wait();
-    semaphore.Close();
-
-    return KErrNone;
-    }
-
-// -----------------------------------------------------------------------------
-// RHssInterface::CreateServerProcess()
-// Creates a server process
-// -----------------------------------------------------------------------------
-//
-TInt RHssInterface::CreateServerProcess()
-    {
-  	const TUidType serverUid( KNullUid,KNullUid, KHotspotServerUid3 );
-
-	RProcess server;
-
-	TInt r = server.Create(KHotSpotServerExe,KNullDesC);
-	if ( r != KErrNone )
-		{
-	    DEBUG1( "**** RHssInterface: server start failed %d", r );
-		return r;
-		}
-	TRequestStatus stat;
-	server.Rendezvous( stat );
-	if ( stat!=KRequestPending )
-	    {
-	    server.Kill(0);		// abort startup
-	    }
-    else
-        {
-        server.Resume();	// logon OK - start the server
-        }
-		
-    DEBUG("**** RHssInterface: Started");
-	
-	User::WaitForRequest(stat);
-	r = ( server.ExitType()==EExitPanic ) ? KErrGeneral : stat.Int();
-	server.Close();
-	return r;
     }
 
 // ---------------------------------------------------------

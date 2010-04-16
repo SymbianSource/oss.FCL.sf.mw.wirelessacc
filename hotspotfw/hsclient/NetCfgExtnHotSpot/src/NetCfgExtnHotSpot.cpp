@@ -11,9 +11,10 @@
 *
 * Contributors:
 *
-* Description:   Implements Network Config Extension for HotSpot
+* Description:   Implements Network Config Extension for HotspotFW
 *
 */
+
 
 // INCLUDE FILES
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
@@ -24,11 +25,11 @@
 #include "am_debug.h"
 
 
-// ============================ MEMBER FUNCTIONS ===============================
+// ============================ MEMBER FUNCTIONS ==============================
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // NewL
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 CNetworkConfigExtensionHotSpot* CNetworkConfigExtensionHotSpot::NewL( 
                                                             TAny* aMNifIfNotify )
@@ -42,9 +43,9 @@ CNetworkConfigExtensionHotSpot* CNetworkConfigExtensionHotSpot::NewL(
 	return pDaemon;
 	}
 	
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // ConstructL
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //    
 void CNetworkConfigExtensionHotSpot::ConstructL()
 	{
@@ -52,17 +53,17 @@ void CNetworkConfigExtensionHotSpot::ConstructL()
 	CNetworkConfigExtensionBase::ConstructL();
 	iNotAuthenticated = ETrue;
 	iNotDeregistered = ETrue;
+	iIsStartLoginActive = EFalse;
 	iHotspotConnect = KErrNotFound;
-	DEBUG( "CNetworkConfigExtensionHotSpot::ConstructL() Done" );
 	}
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // SendIoctlMessageL 
-// Forwards Ioctl request to the daemon and activates the AO to wait for response
-// -----------------------------------------------------------------------------
+// Forwards Ioctl request to the daemon. Activates the AO to wait for response.
+// ----------------------------------------------------------------------------
 //
-void CNetworkConfigExtensionHotSpot::SendIoctlMessageL( const ESock::RLegacyResponseMsg& aMessage )
-
+void CNetworkConfigExtensionHotSpot::SendIoctlMessageL( 
+                                    const ESock::RLegacyResponseMsg& aMessage )
 	{
   	TInt name = aMessage.Int1();
   	if ( aMessage.Int0() != KCOLConfiguration )
@@ -85,109 +86,128 @@ void CNetworkConfigExtensionHotSpot::SendIoctlMessageL( const ESock::RLegacyResp
 	CNetworkConfigExtensionBase::SendIoctlMessageL( aMessage );
 	}
 	
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // ~CNetworkConfigExtensionHotSpot
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 CNetworkConfigExtensionHotSpot::~CNetworkConfigExtensionHotSpot()
-
 	{
-	DEBUG( "CNetworkConfigExtensionHotSpot::~CNetworkConfigExtensionHotSpot()" );
-	}	
+	DEBUG( "CNetworkConfigExtensionHotSpot::~CNetworkConfigExtensionHotSpot" );
+	iClient.Close();
+	}    
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // ImplementationTable
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 const TImplementationProxy ImplementationTable[] = 
     {
-    IMPLEMENTATION_PROXY_ENTRY(0x10282ECA, CNetworkConfigExtensionHotSpot::NewL)
+    IMPLEMENTATION_PROXY_ENTRY( 0x10282ECA, 
+                                CNetworkConfigExtensionHotSpot::NewL )
     };
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // ImplementationGroupProxy
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
-EXPORT_C const TImplementationProxy* ImplementationGroupProxy(TInt& aTableCount)
+EXPORT_C const TImplementationProxy* ImplementationGroupProxy( 
+                                                            TInt& aTableCount )
     {
-    aTableCount = sizeof(ImplementationTable) / sizeof(TImplementationProxy);
+    aTableCount = sizeof( ImplementationTable ) / 
+                    sizeof( TImplementationProxy );
 
     return ImplementationTable;
     }
 
+// ----------------------------------------------------------------------------
+// Deregister
+// ----------------------------------------------------------------------------
+//
+void CNetworkConfigExtensionHotSpot::Deregister( TInt aCause )
+    {
+    DEBUG1( "CNetworkConfigExtensionHotSpot::Deregister() aCause: %d", aCause );
+    CNetworkConfigExtensionBase::Deregister( aCause ); // to parent
+    
+    if ( iIsStartLoginActive )
+        {
+        DEBUG( "CNetworkConfigExtensionHotSpot::Deregister() LoginComplete" );
+        iClient.LoginComplete( iConnectionInfoBuf().iIapId, KErrNone );
+        }
+    iIsStartLoginActive = EFalse;
+    }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 // RunL
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 void CNetworkConfigExtensionHotSpot::RunL()
-	{
-	DEBUG( "CNetworkConfigExtensionHotSpot::RunL()" );
-	if (iLastGenericProgressStage == KConfigDaemonStartingRegistration)
-		{
-	
-		if(iNotAuthenticated)
-		    {	
-		    DEBUG( "CNetworkConfigExtensionHotSpot::RunL() not auth" );
-            TUint iapId = iConnectionInfoBuf().iIapId;
-	    	TUint networkId = iConnectionInfoBuf().iNetId;
-	    	
-	    	iHotspotConnect = iClient.Connect();
-	    	
-	    	if ( KErrNone == iHotspotConnect )
-	    		{
-	    		iClient.StartLogin( iapId, networkId, iStatus);
-	    		SetActive();
-	    		}
-	    	else
-	    		{
-	    		CNetworkConfigExtensionBase::RunL();
-	    		}
-			iNotAuthenticated = EFalse;
-            }
-		else
-		    {
-		    DEBUG( "CNetworkConfigExtensionHotSpot::RunL() close" );
-			CNetworkConfigExtensionBase::RunL();
-		    }
-		
-		}
-    else if (iLastGenericProgressStage == KConfigDaemonStartingDeregistration)
+    {
+    DEBUG( "CNetworkConfigExtensionHotSpot::RunL()" );
+    if ( iLastGenericProgressStage == KConfigDaemonStartingRegistration )
         {
-        if(iNotDeregistered)
-		    {
-		    DEBUG( "CNetworkConfigExtensionHotSpot::RunL() dereg" );
-            TUint iapId = iConnectionInfoBuf().iIapId;
-	    	TUint networkId = iConnectionInfoBuf().iNetId;
-	    	
-	    	if ( KErrNone == iHotspotConnect )
-	    		{
-	    		iClient.CloseConnection( iapId, iStatus);
-	    		SetActive();
-	    		}
-	    	else
-	    		{
-	    		CNetworkConfigExtensionBase::RunL();
-	    		}
-			iNotDeregistered = EFalse;
-		    }
-        else
-		    {
-		    DEBUG( "CNetworkConfigExtensionHotSpot::RunL() dereg close" );
-		    iClient.Close();
-		    CNetworkConfigExtensionBase::RunL();
-		    }
+        if( iNotAuthenticated )
+            {    
+            DEBUG( "CNetworkConfigExtensionHotSpot::RunL() StartLogin" );
+            iHotspotConnect = iClient.Connect();
+            
+            if ( KErrNone == iHotspotConnect )
+                {
+                iIsStartLoginActive = ETrue;
+                iClient.StartLogin( iConnectionInfoBuf().iIapId, 
+                                    iConnectionInfoBuf().iNetId, 
+                                    iStatus );
+                SetActive();
+                }
+            else // to parent
+                {
+                CNetworkConfigExtensionBase::RunL();
+                }
+            iNotAuthenticated = EFalse;
+            }
+        else // to parent
+            {
+            DEBUG( "CNetworkConfigExtensionHotSpot::RunL() authenticated" );
+            iIsStartLoginActive = EFalse;
+            CNetworkConfigExtensionBase::RunL();
+            }
+        
         }
-	else // original =========================================================
-	    {
-	    DEBUG( "CNetworkConfigExtensionHotSpot::RunL() original" );
-		CNetworkConfigExtensionBase::RunL();
-	    }
-	}
-	
-// -----------------------------------------------------------------------------
+    else if ( iLastGenericProgressStage == 
+              KConfigDaemonStartingDeregistration )
+        {
+        if( iNotDeregistered )
+            {
+            DEBUG( "CNetworkConfigExtensionHotSpot::RunL() CloseConnection" );
+            TUint iapId = iConnectionInfoBuf().iIapId;
+            TUint networkId = iConnectionInfoBuf().iNetId;
+            
+            if ( KErrNone == iHotspotConnect )
+                {
+                iClient.CloseConnection( iapId, iStatus );
+                SetActive();
+                }
+            else // to parent
+                {
+                CNetworkConfigExtensionBase::RunL();
+                }
+            iNotDeregistered = EFalse;
+            }
+        else // to parent
+            {
+            DEBUG( "CNetworkConfigExtensionHotSpot::RunL() deregistered" );
+            CNetworkConfigExtensionBase::RunL();
+            }
+        }
+    else // to parent
+        {
+        DEBUG( "CNetworkConfigExtensionHotSpot::RunL() original" );
+        CNetworkConfigExtensionBase::RunL();
+        }
+    }
+    
+// ----------------------------------------------------------------------------
 // DoCancel
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------
 //
 void CNetworkConfigExtensionHotSpot::DoCancel()
     {
