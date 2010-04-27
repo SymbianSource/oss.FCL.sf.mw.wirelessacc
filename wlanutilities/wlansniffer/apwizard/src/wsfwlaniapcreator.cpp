@@ -493,9 +493,27 @@ void CWsfWlanIapCreator::RollbackCommsDat( TAny* aDbSession )
 TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
     {
     LOG_ENTERFN( "CWsfWlanIapCreator::CreateConnectionMethodL" );
-    HBufC* ssid16 = HBufC::NewLC( aWlanInfo.iSsid.Length() );
-    ssid16->Des().Copy( aWlanInfo.iSsid );
-
+    
+    HBufC* name16 = NULL;
+    HBufC* ssid16 = NULL;
+    
+    if ( aWlanInfo.iRawSsid.Length() )
+        {
+        // ssid is from scan result store it as it is 
+        // since the encoding of ssid is unknown
+        name16 = HBufC::NewLC( aWlanInfo.iRawSsid.Length() );
+        name16->Des().Copy( aWlanInfo.iRawSsid );
+        ssid16 = HBufC::NewLC( aWlanInfo.iRawSsid.Length() );
+        ssid16->Des().Copy( aWlanInfo.iRawSsid );
+        }
+    else
+        {
+        // user has inputted ssid store it to name as unicode since it is utf-8 
+        name16 = aWlanInfo.GetSsidAsUnicodeLC();
+        ssid16 = HBufC::NewLC( aWlanInfo.iSsid.Length() );
+        ssid16->Des().Copy( aWlanInfo.iSsid );
+        }
+        
     TUint32 iapId( 0 );
     
     if ( !iDestinationId )
@@ -507,7 +525,7 @@ TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
                                                          KUidWlanBearerType );
         CleanupClosePushL( cm );
         
-        cm.SetStringAttributeL( ECmName, *ssid16 );
+        cm.SetStringAttributeL( ECmName, *name16 );
         cm.SetStringAttributeL( EWlanSSID, *ssid16 );
         cm.SetIntAttributeL( EWlanSecurityMode, aWlanInfo.iSecurityMode );
         cm.SetIntAttributeL( EWlanConnectionMode, aWlanInfo.iNetMode );
@@ -522,8 +540,16 @@ TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
         // now retrieve the name again to see if it has been changed 
         // (ExistingCmName -> ExistingCmName(01) and alike)
         HBufC* cmName = cm.GetStringAttributeL( ECmName );
-        aWlanInfo.iNetworkName.Copy( *cmName );
         
+        TInt error = CnvUtfConverter::ConvertFromUnicodeToUtf8( 
+                                                        aWlanInfo.iNetworkName, 
+                                                        *cmName  );
+        if ( error )
+            {
+            LOG_WRITE( "ConvertFromUnicodeToUtf8 failed");
+            aWlanInfo.iNetworkName.Copy( *cmName );
+            }
+
         delete cmName;
         
         CleanupStack::PopAndDestroy( &cm );
@@ -541,7 +567,7 @@ TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
                                                          KUidWlanBearerType );
         CleanupClosePushL( cm );
 
-        cm.SetStringAttributeL( ECmName, *ssid16 );
+        cm.SetStringAttributeL( ECmName, *name16 );
         cm.SetStringAttributeL( EWlanSSID, *ssid16 );
         cm.SetIntAttributeL( EWlanSecurityMode, aWlanInfo.iSecurityMode );
         cm.SetIntAttributeL( EWlanConnectionMode, aWlanInfo.iNetMode );
@@ -556,7 +582,14 @@ TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
         // now retrieve the name again to see if it has been changed 
         // (ExistingCmName -> ExistingCmName(01) and alike)
         HBufC* cmName = cm.GetStringAttributeL( ECmName );
-        aWlanInfo.iNetworkName.Copy( *cmName );
+        TInt error = CnvUtfConverter::ConvertFromUnicodeToUtf8( 
+                                                         aWlanInfo.iNetworkName, 
+                                                         *cmName  );
+        if ( error )
+            {
+            LOG_WRITE( "ConvertFromUnicodeToUtf8 failed");
+            aWlanInfo.iNetworkName.Copy( *cmName );
+            }
         
         delete cmName;
         
@@ -565,6 +598,7 @@ TUint32 CWsfWlanIapCreator::CreateConnectionMethodL( TWsfWlanInfo& aWlanInfo )
         }
 
     CleanupStack::PopAndDestroy( ssid16 );
+    CleanupStack::PopAndDestroy( name16 );
 
     aWlanInfo.iIapId = iapId;
     LOG_WRITEF( "new iapId = %d", iapId );

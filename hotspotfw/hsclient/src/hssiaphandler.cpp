@@ -98,10 +98,11 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
     CleanupClosePushL( cmManager );
     
     TUint easyWlanId = cmManager.EasyWlanIdL();
+    
     // Easy WLAN can't be modified
     if ( easyWlanId == aIapID )
     	{
-    	cmManager.Close();
+        CleanupStack::PopAndDestroy( &cmManager ); 
     	return KErrPermissionDenied;
     	}
     
@@ -117,8 +118,8 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
         plugin.SetStringAttributeL( ECmName, aSettings.Name );
         plugin.UpdateL();
         }
-    CleanupStack::PopAndDestroy( &plugin ); // Close() called on "plugin"
-    CleanupStack::PopAndDestroy( &cmManager ); // Close() called on "cmManager"
+    CleanupStack::PopAndDestroy( &plugin ); 
+    CleanupStack::PopAndDestroy( &cmManager ); 
 
     // CommsDat section starts
     CMDBSession* dbSession = CMDBSession::NewL(CMDBSession::LatestVersion());
