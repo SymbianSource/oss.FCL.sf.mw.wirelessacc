@@ -630,7 +630,11 @@ void CHotSpotSession::ConnectivityObserver( TIctsTestResult aResult,
                 {
                 iServer.CompleteMessage( indx, KErrNone );    
                 }
-            TRAP_IGNORE( iIapSettingsHandler->CreateIapL() );
+            TRAPD( trap, iIapSettingsHandler->CreateIapL() );
+            if ( trap != KErrNone )
+                {
+                DEBUG1("CHotSpotSession::ConnectivityObserver trap: %d", trap);
+                }
             break;
         case EHttpAuthenticationNeeded :
             // Start browser for authentication

@@ -43,7 +43,7 @@ public:
     //from HbIndicatorPluginInterface
     QStringList indicatorTypes() const;
     bool accessAllowed(const QString &indicatorType,
-                       const HbSecurityInfo *securityInfo) const;
+                       const QVariantMap &securityInfo ) const;
     HbIndicatorInterface* createIndicator(const QString &indicatorType);
     int error() const;
 public:

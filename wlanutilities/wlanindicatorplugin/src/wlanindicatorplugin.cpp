@@ -42,7 +42,7 @@ const static char IndicatorType[] = "com.nokia.hb.indicator.connectivity.wlanind
     WlanIndicatorPlugin constructor.
 */
 WlanIndicatorPlugin::WlanIndicatorPlugin() :
-    HbIndicatorInterface(IndicatorType, GroupPriorityAverage, InteractionActivated),
+    HbIndicatorInterface(IndicatorType, SettingCategory, InteractionActivated),
     mError(0)
 {
     OstTraceFunctionEntry1(WLANINDICATORPLUGIN_WLANINDICATORPLUGIN_ENTRY, this);
@@ -74,7 +74,7 @@ QStringList WlanIndicatorPlugin::indicatorTypes() const
     The handleClientRequest handles client request to change indicators parameters.
 */
 bool WlanIndicatorPlugin::accessAllowed(const QString &indicatorType,
-    const HbSecurityInfo *securityInfo) const
+    const QVariantMap &securityInfo) const
 {
     OstTraceFunctionEntry1(WLANINDICATORPLUGIN_ACCESSALLOWED_ENTRY, this);
 
@@ -207,12 +207,18 @@ QVariant WlanIndicatorPlugin::indicatorData(int role) const
             OstTrace0( WLANINDICATORPLUGIN_ERR,INVALID_PARAMS,"Invalid indicator parameters");
            }
         break;
-    case IconNameRole:
-        if (mParameter.isValid()) {
+        // this is the statusbar icon, which is shown only when a connection is active
+    case MonoDecorationNameRole:
         OstTraceFunctionExit1(DUP1_WLANINDICATORPLUGIN_INDICATORDATA_EXIT, this);
-        qvariant = HbIcon("qtg_small_wlan");
-        break;
+        
+        if (mParameter.isValid() && mParameter.type() == QVariant::List) {
+            indicatorText = mParameter.toList();
+            if ((indicatorText.size() > 0) && (indicatorText[0] == wlanConnected)) {
+                qvariant = HbIcon("qtg_status_wlan");
+            }
         }
+        break;
+        // this is the icon in the indicator
     case DecorationNameRole:
         OstTraceFunctionExit1(DUP2_WLANINDICATORPLUGIN_INDICATORDATA_EXIT, this);
         qvariant = HbIcon("qtg_small_wlan");

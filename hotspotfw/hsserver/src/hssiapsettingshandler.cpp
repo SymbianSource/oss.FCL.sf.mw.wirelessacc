@@ -148,39 +148,40 @@ void CHssIapSettingsHandler::CreateIapL()
         destination = cmManager.DestinationL( destinations[i] );
         CleanupClosePushL( destination ); 
         // Internet destination will always exist in the system.
-        // Internet destination will have ESnapPurposeInternet set in its metadata.
+        // Internet destination will have ESnapPurposeInternet 
+        // set in its metadata.
         if (destination.MetadataL( CMManager::ESnapMetadataPurpose ) == 
                                         CMManager::ESnapPurposeInternet )
             {
             CWlanMgmtClient* wlanMgmtClient = CWlanMgmtClient::NewL();
             CleanupStack::PushL( wlanMgmtClient );
             
-            TWlanConnectionMode connMode( EWlanConnectionModeNotConnected );
-            wlanMgmtClient->GetConnectionMode( connMode );
-
-            TWlanConnectionSecurityMode secMode( EWlanConnectionSecurityOpen );
-            wlanMgmtClient->GetConnectionSecurityMode( secMode );
-                        
+            TWlanConnectionMode connMode;
+            User::LeaveIfError( 
+                    wlanMgmtClient->GetConnectionMode( connMode ) );
+            
+            TWlanConnectionSecurityMode secMode;
+            User::LeaveIfError( 
+                    wlanMgmtClient->GetConnectionSecurityMode( secMode ) );
+                          
             HBufC* ssid( NULL );
             TWlanSsid ssidConn;
             
-            User::LeaveIfError( wlanMgmtClient->GetConnectionSsid( ssidConn ) );
+            User::LeaveIfError( 
+                    wlanMgmtClient->GetConnectionSsid( ssidConn ) );
             ssid = HBufC::NewLC( ssidConn.Length() );
             ssid->Des().Copy( ssidConn ); 
             
             TUint32 serviceId(0);
             TUint32 easyWlanIapId(0);
             easyWlanIapId = cmManager.EasyWlanIdL();
-            DEBUG1("CHssIapSettingsHandler::SaveDestinationL easyWlanIapId: %d", 
-                    easyWlanIapId);            
-            
+                       
             RCmConnectionMethodExt easyWlanPlugin;
             easyWlanPlugin = cmManager.ConnectionMethodL( easyWlanIapId );
             CleanupClosePushL( easyWlanPlugin );
             TBool scanSsid = easyWlanPlugin.GetBoolAttributeL( EWlanScanSSID );
-            DEBUG1("CHssIapSettingsHandler::SaveDestinationL scanSsid: %d", scanSsid);
-            TUint32 easyWlanServiceId = easyWlanPlugin.GetIntAttributeL( EWlanServiceId );
-            DEBUG1("CHssIapSettingsHandler::SaveDestinationL easyWlanServiceId: %d", easyWlanServiceId);
+            TUint32 easyWlanServiceId = 
+                    easyWlanPlugin.GetIntAttributeL( EWlanServiceId );
             CleanupStack::PopAndDestroy(); // easyWlanPlugin;
             
             RCmConnectionMethodExt plugin =
@@ -197,7 +198,7 @@ void CHssIapSettingsHandler::CreateIapL()
             destination.UpdateL();
             serviceId = plugin.GetIntAttributeL( EWlanServiceId );                
            
-            CleanupStack::PopAndDestroy( &plugin ); // Close() called
+            CleanupStack::PopAndDestroy( &plugin ); 
             if ( secMode == EWlanConnectionSecurityWep )
                 {
                 SaveWEPKeyL( easyWlanServiceId, serviceId );
@@ -207,12 +208,13 @@ void CHssIapSettingsHandler::CreateIapL()
                 {
                 SaveWPAKeyL( easyWlanServiceId, serviceId );
                 }
-            CleanupStack::PopAndDestroy( ssid ); // ssid
+            
+            CleanupStack::PopAndDestroy( ssid ); 
             CleanupStack::PopAndDestroy( wlanMgmtClient );
             }
-        CleanupStack::PopAndDestroy(); // destination
+        CleanupStack::PopAndDestroy( &destination ); 
         }
-    CleanupStack::PopAndDestroy(); // destinations
+    CleanupStack::PopAndDestroy( &destinations ); 
     CleanupStack::PopAndDestroy( &cmManager );
 
     DEBUG("CHssIapSettingsHandler::CreateIapL Done");
