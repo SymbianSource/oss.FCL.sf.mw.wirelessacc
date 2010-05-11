@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hbdocument version="0.9">
+    <widget name="occ_wps_P1" type="HbWidget">
+        <widget name="radioButtonList" type="HbRadioButtonList">
+            <container name="items" type="stringlist">
+                <string locid="txt_occ_list_use_pushbutton"  value="Use Push-Button"/>
+                <string locid="txt_occ_list_use_pin_code"  value="Use Pin Code"/>
+                <string locid="txt_occ_list_configure_manually"  value="Configure manually"/>
+            </container>
+            <sizehint height="50un" type="PREFERRED"/>
+        </widget>
+        <widget name="label_heading" type="HbLabel">
+            <enums name="textWrapping" value="TextWordWrap"/>
+            <enums name="aspectRatioMode" value="IgnoreAspectRatio"/>
+            <string locid="txt_occ_dialog_selected_network_supports_wifi_pro" name="plainText" value="Selected network supports Wifi Protected Setup for receving settings automatically"/>
+        </widget>
+        <real name="z" value="1"/>
+        <rect height="401.99999" name="geometry" width="308.99997" x="26" y="85"/>
+        <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Expanding" verticalStretch="0"/>
+        <sizehint height="60un" type="PREFERRED" width="46.1194un"/>
+        <layout orientation="Vertical" type="linear">
+            <linearitem itemname="label_heading"/>
+            <linearitem itemname="radioButtonList"/>
+            <stretchitem stretchfactor="1"/>
+        </layout>
+    </widget>
+    <metadata activeUIState="Common ui state" display="NHD portrait" unit="un">
+        <uistate name="Common ui state" sections="#common"/>
+    </metadata>
+</hbdocument>
