@@ -23,7 +23,7 @@
 
 class CAknIconArray;
 class CEikLabel;
-class CArrayFix< TInt >;
+
 /**
  *  Abstract interface for wlan active idle plugin
  *

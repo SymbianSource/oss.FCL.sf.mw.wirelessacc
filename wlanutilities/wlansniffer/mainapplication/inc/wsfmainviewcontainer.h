@@ -248,13 +248,12 @@ class CWsfMainViewContainer : public CCoeControl
          * Steps the connecting animation
          * @param ptr Pointer to an instance of this class
          */
-        static TInt CWsfMainViewContainer::DoConnectingAnimationStepL( 
-                                                                TAny* ptr );
+        static TInt DoConnectingAnimationStepL( TAny* ptr );
         
         /**
          * Steps the connecting animation
          */                
-        void CWsfMainViewContainer::DoConnectingAnimationStepL();
+        void DoConnectingAnimationStepL();
 
         /**
          *  Initialize the connecting animation

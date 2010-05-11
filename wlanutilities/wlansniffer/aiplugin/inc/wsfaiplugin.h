@@ -90,23 +90,23 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         * Steps 
         * @param ptr Pointer to an instance of this class
         */
-        static TInt CWsfAiPlugin::DoRefreshingStepL( TAny* ptr );
+        static TInt DoRefreshingStepL( TAny* ptr );
         
         /**
         * Steps the refresh animation
         */                
-        void CWsfAiPlugin::DoRefreshingStepL();
+        void DoRefreshingStepL();
         
         /**
         * Steps 
         * @param ptr Pointer to an instance of this class
         */
-        static TInt CWsfAiPlugin::DoConnectingStepL( TAny* ptr );
+        static TInt DoConnectingStepL( TAny* ptr );
         
         /**
         * Steps the refresh animation
         */                
-        void CWsfAiPlugin::DoConnectingStepL();
+        void DoConnectingStepL();
     
     public:     // from CHSContentPublisher
         

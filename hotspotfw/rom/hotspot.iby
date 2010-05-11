@@ -27,7 +27,6 @@
 
 #ifdef __PROTOCOL_WLAN
 
-*** DLLs
 file=ABI_DIR\BUILD_DIR\hotspotclient.dll        SHARED_LIB_DIR\hotspotclient.dll
 file=ABI_DIR\BUILD_DIR\ictsclientinterface.dll  SHARED_LIB_DIR\ictsclientinterface.dll
 
