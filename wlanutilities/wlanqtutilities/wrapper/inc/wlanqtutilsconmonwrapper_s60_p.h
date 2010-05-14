@@ -198,6 +198,8 @@ private:
      */
     static WlanQtUtilsBearerType connMon2WlanQtUtilsBearerTypeMap(TInt aBearerType);
 
+    bool isWlan(uint connectionId);
+
 private:
     // Data
 

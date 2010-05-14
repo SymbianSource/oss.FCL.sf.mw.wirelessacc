@@ -298,6 +298,11 @@ void ConnMonConnInfo::EventL(const CConnMonEventBase& aConnMonEvent)
         CONNMONCONNINFO_EVENTL_EVENTTYPE,
         "ConnMonConnInfo::EventL;connectionId=%u;aConnMonEvent.EventType()=%d", connectionId, aConnMonEvent.EventType() );
 
+    // Filter out other than WLAN connections
+    if (!isWlan(connectionId)) {
+        return;
+    }
+    
     // Note: Conversions from CConnMonEventBase to sub classes cannot be made to use dynamic_cast
     // because constructors of CConnMonEventBase and its sub classes are not public in
     // connmon library's interface.
@@ -528,6 +533,36 @@ WlanQtUtilsBearerType ConnMonConnInfo::connMon2WlanQtUtilsBearerTypeMap( TInt aB
     return connUtilsBearerType;
     }
 
+/*!
+    Checks the bearer of given connection.
+    Meant for filtering handling only for WLAN IAP's.
+    
+    @param [in] connectionId Connection ID.
+    
+    @return Returns true if connection a WLAN connection, otherwise false. 
+*/
+
+bool ConnMonConnInfo::isWlan(uint connectionId)
+{
+    bool result = false;
+    TRequestStatus status;
+
+    TInt bearer = 0;
+    iMonitor.GetIntAttribute(
+        connectionId,
+        0,
+        KBearer,
+        bearer,
+        status);
+    User::WaitForRequest(status);
+
+    if (status.Int() == KErrNone && bearer == EBearerWLAN) {
+        result = true;
+    }
+    
+    return result;
+}
+
 // ---------------------------------------------------------
 // ConnMonConnDisconnect::ConnMonConnDisconnect()
 // Constructor
@@ -629,5 +664,3 @@ void ConnMonConnDisconnect::disconnectConnection(int iapId)
 
     OstTraceFunctionExit1( CONNMONCONNDISCONNECT_DISCONNECTCONNECTION_EXIT, this );
     }
-
-//end of file
