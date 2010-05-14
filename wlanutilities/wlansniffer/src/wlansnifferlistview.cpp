@@ -44,7 +44,7 @@ WlanSnifferListView::WlanSnifferListView(WlanSniffer *appRef) :
     mStatusLabel(NULL),
     mAppRef(appRef),
     mConnectingIapId(0),
-    mIapItemMenuOpen(false)
+    mContextMenu(NULL)
 {
     OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_WLANSNIFFERLISTVIEW_ENTRY );
     
@@ -113,7 +113,8 @@ void WlanSnifferListView::update()
 {
     OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_UPDATE_ENTRY );
     
-    if (mIapItemMenuOpen == false) {
+    // Do not update list while the context menu is open
+    if (mContextMenu == NULL) {
         QList<WlanQtUtilsWlanAp*> aps;
         QList<WlanQtUtilsWlanIap*> iaps;
         
@@ -158,6 +159,17 @@ void WlanSnifferListView::updateConnectionClosed(int iapId)
     OstTraceFunctionExit0( WLANSNIFFERLISTVIEW_UPDATECONNECTIONCLOSED_EXIT );
 }
 
+void WlanSnifferListView::handleContextMenuClosed()
+{
+    OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_HANDLECONTEXTMENUCLOSED_ENTRY );
+
+    // Menu deletes itself, but we need to cleanup the member variable
+    // in order to enable list updating again
+    mContextMenu = NULL;
+    
+    OstTraceFunctionExit0( WLANSNIFFERLISTVIEW_HANDLECONTEXTMENUCLOSED_EXIT );
+}
+
 void WlanSnifferListView::handleListItemActivated(HbListWidgetItem *item)
 {
     OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_HANDLELISTITEMACTIVATED_ENTRY );
@@ -193,44 +205,47 @@ void WlanSnifferListView::handleListItemLongPressed(HbListWidgetItem *item, cons
 {
     OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_HANDLELISTITEMLONGPRESSED_ENTRY );
     
-    // Disable list refreshing while context menu is shown
-    // Todo: Propably a more elegant way to do this is needed..
-    mIapItemMenuOpen = true;
-    
-    (void)item;
-    HbMenu *contextMenu = new HbMenu();
-    HbAction *actionDetails = contextMenu->addAction(hbTrId("txt_occ_menu_details"));
-    HbAction *actionSettings = contextMenu->addAction(hbTrId("txt_occ_menu_network_settings"));
-    HbAction *actionDisable = contextMenu->addAction(hbTrId("txt_occ_menu_disable_network"));
-    
-    // Add disconnect option if the IAP is connected
-    HbAction *actionDisconnect = 0;
-    WlanQtUtilsIap *iap = 0;
-    QVariant data = item->data();
-    if (data.canConvert<int>()) {
-        // Item was an IAP.
-        iap = mAppRef->wlanQtUtils()->iap(data.toInt());
-        if (iap->connectionStatus() == WlanQtUtilsConnectionStatusConnected) {
-            actionDisconnect = contextMenu->addAction(hbTrId("txt_common_menu_disconnect"));
-        }
-    }
-    
-    // Show the menu
-    HbAction *selectedAction = contextMenu->exec(coords);
-    // Re-enable list refreshing
-    mIapItemMenuOpen = false;
+    Q_ASSERT(mContextMenu == NULL);
 
-    if (selectedAction) {
-        // Handle the "Disconnect" menu selection
-        if (selectedAction == actionDisconnect) {
-            mStatusLabel->setPlainText(hbTrId("txt_occ_grid_not_connected"));
-            mAppRef->wlanQtUtils()->disconnectIap(iap->id());
-            // Redraw the list so that disconnected network is not shown anymore
-            update();
-        }
-    }        
+    if (item->data().canConvert<int>() && item->data().toInt() ==
+        mAppRef->wlanQtUtils()->connectedWlanId()) {
+        // Connected IAP, add "Disconnect" action
+		    mContextMenu = new HbMenu();
+		    // Remember the item that was long pressed
+    		mContextMenuData = item->data();
+        mContextMenu->addAction(
+            hbTrId("txt_common_menu_disconnect"),
+            this,
+            SLOT(handleListItemDisconnect()));
+		    // Show the menu and connect closure signal (to re-enable list refreshing)
+		    bool connectStatus = connect(
+		        mContextMenu,
+		        SIGNAL(aboutToClose()),
+		        this,
+		        SLOT(handleContextMenuClosed()));
+		    Q_ASSERT(connectStatus);
+		    mContextMenu->setAttribute(Qt::WA_DeleteOnClose);
+		    mContextMenu->setTimeout(HbPopup::ContextMenuTimeout);
+		    mContextMenu->setPreferredPos(coords);
+		    mContextMenu->show();
+    }
 
     OstTraceFunctionExit0( WLANSNIFFERLISTVIEW_HANDLELISTITEMLONGPRESSED_EXIT );
+}
+
+/*!
+    Handles a "Disconnect" action selected from the context menu for a list item.
+ */
+void WlanSnifferListView::handleListItemDisconnect()
+{
+    OstTraceFunctionEntry0( WLANSNIFFERLISTVIEW_HANDLELISTITEMDISCONNECT_ENTRY );
+
+    // "Disconnect" was only added, if the item was an IAP and data was
+    // the IAP ID
+    Q_ASSERT(mContextMenuData.canConvert<int>());
+    mAppRef->wlanQtUtils()->disconnectIap(mContextMenuData.toInt());
+    
+    OstTraceFunctionExit0( WLANSNIFFERLISTVIEW_HANDLELISTITEMDISCONNECT_EXIT );
 }
 
 // Todo: This is a temporary solution - real WLAN status indication & listening

@@ -44,9 +44,13 @@ signals:
     void detailsTriggered(int);
     void completeServiceTriggered();
 
+public slots:
+    void handleContextMenuClosed();
+
 private slots:
     void handleListItemActivated(HbListWidgetItem *item);
     void handleListItemLongPressed(HbListWidgetItem *item, const QPointF &coords);
+    void handleListItemDisconnect();
     void handleDisconnect();
     
 private:
@@ -59,7 +63,12 @@ private:
     HbLabel *mStatusLabel;
     WlanSniffer *mAppRef;
     int mConnectingIapId;
-    bool mIapItemMenuOpen;
+    /*!
+     * Data identifying the network for which the context menu has been
+     * opened: WlanQtUtilsAp class, or int IAP ID
+     */
+    QVariant mContextMenuData;
+    HbMenu *mContextMenu; //!< Context menu reference, if one is open
     };
 
 #endif

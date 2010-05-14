@@ -1,34 +1,34 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0""
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:  
- *   
- */
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Entry plugin implementation.
+*/
  
 #ifndef	CPWLANENTRYPLUGIN_H
 #define	CPWLANENTRYPLUGIN_H
 
-
 // System includes
 
 #include <QObject>
-#include <cppluginplatinterface.h>
+#include <QSharedPointer>
+#include <cpplugininterface.h>
 
 // User includes
 
 // Forward declarations
 
-class QTranslator;
+class HbTranslator;
 
 // External data types
 
@@ -36,10 +36,10 @@ class QTranslator;
 
 // Class declaration
 
-class CpWlanEntryPlugin : public QObject, public CpPluginPlatInterface
+class CpWlanEntryPlugin : public QObject, public CpPluginInterface
 {
     Q_OBJECT
-    Q_INTERFACES(CpPluginPlatInterface)
+    Q_INTERFACES(CpPluginInterface)
     
 public:
 
@@ -49,7 +49,8 @@ public:
     
     virtual ~CpWlanEntryPlugin();
     
-    virtual CpSettingFormItemData *createSettingFormItemData(CpItemDataHelper &itemDataHelper) const;
+    virtual QList<CpSettingFormItemData *> createSettingFormItemData(
+        CpItemDataHelper &itemDataHelper) const;
 
 signals:
 
@@ -67,11 +68,12 @@ private slots:
 
 private: // data
 
-    bool mWlanSupported;            // WLAN dynamic ON/OFF configuration
-    QTranslator *mTranslator;       // Translator for text ID's used in this plugin
+    //! WLAN dynamic ON/OFF configuration
+    bool mWlanSupported;
+    //! Translator for text ID's used in this plugin
+    QSharedPointer<HbTranslator> mTranslator;
 
     // Friend classes
-
 };
 
 #endif	// CPWLANENTRYPLUGIN_H

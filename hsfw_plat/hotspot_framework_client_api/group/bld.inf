@@ -32,4 +32,4 @@ PRJ_EXPORTS
 ../inc/hssmgmtscaninfo.h     MW_LAYER_PLATFORM_EXPORT_PATH(hssmgmtscaninfo.h)
 ../inc/hssmgmtclient.inl     MW_LAYER_PLATFORM_EXPORT_PATH(hssmgmtclient.inl)
 ../inc/hssmgmtscaninfo.inl     MW_LAYER_PLATFORM_EXPORT_PATH(hssmgmtscaninfo.inl)
-../inc/hssiapsettings.inl     MW_LAYER_PLATFORM_EXPORT_PATH(hssiapsettings.inl)
+

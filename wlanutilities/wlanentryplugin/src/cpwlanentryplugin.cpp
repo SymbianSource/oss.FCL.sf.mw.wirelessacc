@@ -1,25 +1,24 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0""
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:  
- *
- */
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Entry plugin implementation.
+*/
 
 // System includes
 
 #include <QApplication>
-#include <QTranslator>
-#include <QLocale>
+#include <HbTranslator>
 #include "qsysteminfo.h"
 
 // User includes
@@ -52,9 +51,12 @@ using namespace QtMobility;
     Constructor.
 */
 
-CpWlanEntryPlugin::CpWlanEntryPlugin() : QObject()
+CpWlanEntryPlugin::CpWlanEntryPlugin() :
+    QObject(),
+    mWlanSupported(false),
+    mTranslator()
 {
-    OstTraceFunctionEntry1(CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_ENTRY, this);
+    OstTraceFunctionEntry0(CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_ENTRY);
     
     // Check & store WLAN dynamic configuration
     QtMobility::QSystemInfo sysinfo;
@@ -62,14 +64,11 @@ CpWlanEntryPlugin::CpWlanEntryPlugin() : QObject()
     
     if (mWlanSupported) {
         // Install localization
-        mTranslator = new QTranslator(this);
-        QString lang = QLocale::system().name(); 
-        QString path = "Z:/resource/qt/translations/"; 
-        mTranslator->load("wlanentryplugin_" + lang, path); 
-        qApp->installTranslator(mTranslator);
+        mTranslator = QSharedPointer<HbTranslator>(
+            new HbTranslator("wlanentryplugin"));
     }
     
-    OstTraceFunctionExit1(CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_EXIT, this);
+    OstTraceFunctionExit0(CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_EXIT);
 }
 
 /*!
@@ -78,27 +77,30 @@ CpWlanEntryPlugin::CpWlanEntryPlugin() : QObject()
 
 CpWlanEntryPlugin::~CpWlanEntryPlugin()
 {
-    OstTraceFunctionEntry1(DUP1_CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_ENTRY, this);
-    OstTraceFunctionExit1(DUP1_CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_EXIT, this);
+    OstTraceFunctionEntry0(DUP1_CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_ENTRY);
+    OstTraceFunctionExit0(DUP1_CPWLANENTRYPLUGIN_CPWLANENTRYPLUGIN_EXIT);
 }
 
 /*!
     Plugin function for creating the entry plugin form item data.
+    
+    @param [in,out] itemDataHelper Control Panel item data helper.
 */
 
-CpSettingFormItemData *CpWlanEntryPlugin::createSettingFormItemData(CpItemDataHelper &itemDataHelper) const
+QList<CpSettingFormItemData *> CpWlanEntryPlugin::createSettingFormItemData(
+    CpItemDataHelper &itemDataHelper) const
 {
-    OstTraceFunctionEntry1(CPWLANENTRYPLUGIN_CREATESETTINGFORMITEMDATA_ENTRY, this);
+    OstTraceFunctionEntry0(CPWLANENTRYPLUGIN_CREATESETTINGFORMITEMDATA_ENTRY);
     
-    CpWlanEntryItemData *entryItemData = 0;
+    QList<CpSettingFormItemData *> settingFormData;
     
     // The plugin is disabled if WLAN is not supported by the product.
     if (mWlanSupported) {
-        entryItemData = new CpWlanEntryItemData(itemDataHelper);
+        settingFormData.append(new CpWlanEntryItemData(itemDataHelper));
     }
 
-    OstTraceFunctionExit1(CPWLANENTRYPLUGIN_CREATESETTINGFORMITEMDATA_EXIT, this);
-    return entryItemData;
+    OstTraceFunctionExit0(CPWLANENTRYPLUGIN_CREATESETTINGFORMITEMDATA_EXIT);
+    return settingFormData;
 }
 
 Q_EXPORT_PLUGIN2(cpwlanentryplugin, CpWlanEntryPlugin);
