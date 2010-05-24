@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -19,14 +19,14 @@
 #include "wlanqtutilsconntestwrapper.h"
 #include "wlanqtutilsconntestwrapper_s60_p.h"
 
-ConnTestWrapper::ConnTestWrapper(QObject *parent) : QObject(parent)
+ConnTestWrapper::ConnTestWrapper(QObject *parent) :
+    QObject(parent),
+    d_ptr_(new ConnTestWrapperPrivate(this))
 {
-    d_ptr_ = new ConnTestWrapperPrivate(this);
 }
 
 ConnTestWrapper::~ConnTestWrapper()
 {
-    delete d_ptr_;
 }
 
 void ConnTestWrapper::connectivityTestDone(bool result)

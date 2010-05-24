@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -19,10 +19,7 @@
 #define WLANQTUTILSCONNTESTWRAPPER_H_
 
 #include <QObject>
-
-QT_BEGIN_HEADER
-
-QT_BEGIN_NAMESPACE
+#include <QScopedPointer>
 
 class ConnTestWrapperPrivate;
 
@@ -83,11 +80,7 @@ private:
     * d_ptr pointer to ConnTestWrapperPrivate
     * Owned by ConnTestWrapper object, instantiated in constructor.
     */
-    ConnTestWrapperPrivate *d_ptr_;
+    QScopedPointer<ConnTestWrapperPrivate> d_ptr_;
 };
-
-QT_END_HEADER
-
-QT_END_NAMESPACE
 
 #endif /* WLANQTUTILSCONNTESTWRAPPER_H_ */

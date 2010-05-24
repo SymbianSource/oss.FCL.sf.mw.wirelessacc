@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,138 +12,185 @@
 * Contributors:
 *
 * Description:
-*
+* Private implementation of wrapper for Symbian Esock library.
 */
 
-// INCLUDE FILES
+// System includes
+
 #include <e32base.h>
 #include <es_sock.h>
 #include <in_sock.h>
-#include <commdbconnpref.h>
+#include <extendedconnpref.h>
+
+// User includes
+
 #include "wlanqtutilsesockwrapper.h"
 #include "wlanqtutilsesockwrapper_s60_p.h"
 
-#ifdef WLANQTUTILS_NO_OST_TRACES_FLAG
-#include <opensystemtrace.h>
-#else
 #include "OstTraceDefinitions.h"
-#endif
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanqtutilsesockwrapper_s60Traces.h"
 #endif
 
+/*!
+    \class WlanQtUtilsWlanQtUtilsEsockWrapperPrivate
+    \brief Private implementation of wrapper for Symbian Esock library.
 
-// =========== PRIVATE CLASS MEMBER FUNCTIONS ===============
-//
-// ---------------------------------------------------------
-// EsockWrapperPrivate::EsockWrapperPrivate()
-// Constructor
-// ---------------------------------------------------------
-//
-EsockWrapperPrivate::EsockWrapperPrivate(EsockWrapper *aWrapper)
-: CActive(EPriorityStandard), q_ptr(aWrapper)
-    {
-    OstTraceFunctionEntryExt( ESOCKWRAPPERPRIVATE_ESOCKWRAPPERPRIVATE_ENTRY, this );
+    Provides functionality to connect and disconnect IAPs.
+*/
+
+// External function prototypes
+
+// Local constants
+
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
+
+/*!
+    Constructor.
     
+    @param [in] wrapper Wrapper to report progress to.
+ */
+
+WlanQtUtilsEsockWrapperPrivate::WlanQtUtilsEsockWrapperPrivate(
+    WlanQtUtilsEsockWrapper *wrapper) :
+    CActive(EPriorityStandard),
+    iConnectionActive(EFalse),
+    q_ptr(wrapper)
+{
+    OstTraceFunctionEntry1(WLANQTUTILSESOCKWRAPPERPRIVATE_WLANQTUTILSESOCKWRAPPERPRIVATE_ENTRY, this);
+
     CActiveScheduler::Add(this);
     
-    iSocketServer.Connect();
-    
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_ESOCKWRAPPERPRIVATE_EXIT, this );
-    }
+    // Establish a session to Socket Server. Errors in Socket Server
+    // connection are fatal so just throw them as exceptions
+    qt_symbian_throwIfError(iSocketServer.Connect());
 
-// ---------------------------------------------------------
-// EsockWrapperPrivate::EsockWrapperPrivate()
-// Destructor
-// ---------------------------------------------------------
-//
-EsockWrapperPrivate::~EsockWrapperPrivate()
-    {
-    OstTraceFunctionEntry1( ESOCKWRAPPERPRIVATE_ESOCKWRAPPERPRIVATEDESTR_ENTRY, this );
-    
+    OstTraceFunctionExit1(WLANQTUTILSESOCKWRAPPERPRIVATE_WLANQTUTILSESOCKWRAPPERPRIVATE_EXIT, this);
+}
+
+/*!
+    Destructor.
+ */
+
+WlanQtUtilsEsockWrapperPrivate::~WlanQtUtilsEsockWrapperPrivate()
+{
+    OstTraceFunctionEntry1(DUP1_WLANQTUTILSESOCKWRAPPERPRIVATE_WLANQTUTILSESOCKWRAPPERPRIVATE_ENTRY, this);
+
+    // Close any possibly ongoing connection
     Cancel();
-    // Closing active RConnection is not mandatory, but is recommended.
-    // ==> add checking here when implementing cancel/error cases.
+    // Close Socket Server session
     iSocketServer.Close();
     
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_ESOCKWRAPPERPRIVATEDESTR_EXIT, this );
-    }
+    OstTraceFunctionExit1(DUP1_WLANQTUTILSESOCKWRAPPERPRIVATE_WLANQTUTILSESOCKWRAPPERPRIVATE_EXIT, this);
+}
 
-// ---------------------------------------------------------
-// EsockWrapperPrivate::connectIap()
-// Start connection creation to given IAP.
-// ---------------------------------------------------------
-//
-void EsockWrapperPrivate::connectIap(int aIapId)
-    {
-    OstTraceFunctionEntryExt( ESOCKWRAPPERPRIVATE_CONNECTIAP_ENTRY, this );
+/*!
+   Starts connection creation to given IAP.
+
+   @param [in] iapId IAP ID to connect.
+ */
+
+void WlanQtUtilsEsockWrapperPrivate::ConnectIap(int iapId)
+{
+    OstTraceFunctionEntry1(WLANQTUTILSESOCKWRAPPERPRIVATE_CONNECTIAP_ENTRY, this);
     
-    // Open an RConnection object.
-    iConnection.Open(iSocketServer);
+    // Cancel a (possibly) ongoing previous request
+    Cancel();
     
-    // Create overrides to force opening of the given IAP without any user prompts.
-    TCommDbConnPref prefs;
-    prefs.SetDialogPreference(ECommDbDialogPrefDoNotPrompt);
-    prefs.SetDirection(ECommDbConnectionDirectionOutgoing);
-    prefs.SetIapId(aIapId);
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANQTUTILSESOCKWRAPPERPRIVATE_CONNECTIAP,
+        "WlanQtUtilsEsockWrapperPrivate::connectIap;iapId=%d",
+        iapId );
     
-    // Start the Connection with overrides
-    iConnection.Start(prefs, iStatus);
+    // Open an RConnection object. Errors in RConnection opening are
+    // fatal so just throw them as exceptions
+    qt_symbian_throwIfError(iConnection.Open(iSocketServer));
     
-    // TODO: Currently SetActive Panics when connecting "furiously" in Visual view...
-    // Panicking line in SetActive was this:
-    // __ASSERT_ALWAYS(!(iStatus.iFlags&TRequestStatus::EActive),Panic(EReqAlreadyActive));
+    // Create overrides for connection preferences to force opening of the
+    // given IAP without any user prompts.
+    TConnPrefList prefList;
+    TExtendedConnPref prefs;
+    prefs.SetIapId(iapId);
+    prefs.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
+    QT_TRAP_THROWING(prefList.AppendL(&prefs));
+     
+    // Start a connection with connection preferences
+    iConnection.Start(prefList, iStatus);
+
+    iConnectionActive = ETrue;
+    
     SetActive();
     
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_CONNECTIAP_EXIT, this );
-    }
+    OstTraceFunctionExit1(WLANQTUTILSESOCKWRAPPERPRIVATE_CONNECTIAP_EXIT, this);
+}
 
-// ---------------------------------------------------------
-// EsockWrapperPrivate::disconnectIap()
-// Stop connection.
-// ---------------------------------------------------------
-//
-void EsockWrapperPrivate::disconnectIap()
-    {      
-    OstTraceFunctionEntry1( ESOCKWRAPPERPRIVATE_DISCONNECTIAP_ENTRY, this );
-    
-    // TODO: Error checking
-    iConnection.Close();
-    
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_DISCONNECTIAP_EXIT, this );
-    }
+/*!
+   Disconnects connection, if one is active.
+ */
 
-// ---------------------------------------------------------
-// EsockWrapperPrivate::RunL()
-// Called when connection creation has finished.
-// ---------------------------------------------------------
-//
-void EsockWrapperPrivate::RunL()
-    {
-    OstTraceFunctionEntry1( ESOCKWRAPPERPRIVATE_RUNL_ENTRY, this );
-    OstTrace1( TRACE_NORMAL, ESOCKWRAPPERPRIVATE_RUNL, "EsockWrapperPrivate::RunL;iStatus.Int()=%d", iStatus.Int() );
+void WlanQtUtilsEsockWrapperPrivate::DisconnectIap()
+{      
+    OstTraceFunctionEntry1(WLANQTUTILSESOCKWRAPPERPRIVATE_DISCONNECTIAP_ENTRY, this);
     
-    bool success = false;
+    if (iConnectionActive) {
+        OstTrace0(
+            TRACE_NORMAL,
+            WLANQTUTILSESOCKWRAPPERPRIVATE_DISCONNECTIAP_DISCONNECT,
+            "WlanQtUtilsEsockWrapperPrivate::disconnectIap Disconnecting connection");
+        
+        iConnectionActive = EFalse;
+        iConnection.Close();            
+    } else {
+        OstTrace0(
+            TRACE_NORMAL,
+            WLANQTUTILSESOCKWRAPPERPRIVATE_DISCONNECTIAP_IGNORED,
+            "WlanQtUtilsEsockWrapperPrivate::disconnectIap Ignored since no active connection");
+    }
     
-    if (iStatus == KErrNone)
-        {
+    OstTraceFunctionExit1(WLANQTUTILSESOCKWRAPPERPRIVATE_DISCONNECTIAP_EXIT, this);
+}
+
+/*!
+   From CActive: called when async request (RConnection::Start())
+   has been completed.
+ */
+
+void WlanQtUtilsEsockWrapperPrivate::RunL()
+{
+    OstTraceFunctionEntry1(WLANQTUTILSESOCKWRAPPERPRIVATE_RUNL_ENTRY, this);
+
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANQTUTILSESOCKWRAPPERPRIVATE_RUNL,
+        "WlanQtUtilsEsockWrapperPrivate::RunL;iStatus=%d", iStatus.Int());
+    
+    bool success;
+    if (iStatus == KErrNone) {
         success = true;
-        }
-    
-    q_ptr->updateConnection(success);
-    
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_RUNL_EXIT, this );
+    } else {
+        success = false;
+        iConnectionActive = EFalse;
     }
+    
+    // Report to public wrapper
+    q_ptr->updateConnection(success, iStatus.Int());
+    
+    OstTraceFunctionExit1(WLANQTUTILSESOCKWRAPPERPRIVATE_RUNL_EXIT, this);
+}
 
-// ---------------------------------------------------------
-// EsockWrapperPrivate::DoCancel()
-// 
-// ---------------------------------------------------------
-//
-void EsockWrapperPrivate::DoCancel()
-    {
-    OstTraceFunctionEntry1( ESOCKWRAPPERPRIVATE_DOCANCEL_ENTRY, this );
-    OstTraceFunctionExit1( ESOCKWRAPPERPRIVATE_DOCANCEL_EXIT, this );
-    }
+/*!
+   From CActive: called when active object is cancelled.
+ */
 
-//end of file
+void WlanQtUtilsEsockWrapperPrivate::DoCancel()
+{
+    OstTraceFunctionEntry1(WLANQTUTILSESOCKWRAPPERPRIVATE_DOCANCEL_ENTRY, this);
+    
+    // Disconnect, if needed.
+    DisconnectIap();
+    
+    OstTraceFunctionExit1(WLANQTUTILSESOCKWRAPPERPRIVATE_DOCANCEL_EXIT, this);
+}

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,68 +12,109 @@
 * Contributors:
 *
 * Description:
-*
+* Wrapper for Symbian Connection Monitor library.
 */
 
-// INCLUDE FILES
-#include <cmdestinationext.h>
-#include <cmmanagerext.h>
+// System includes
+
+#include <QSharedPointer>
+#include <QScopedPointer>
+
+// User includes
+
+#include "wlanqtutilsconmonwrapperdisconnect_s60_p.h"
+#include "wlanqtutilsconmonwrapperinfo_s60_p.h"
+#include "wlanqtutilsconmonwrapperscan_s60_p.h"
 #include "wlanqtutilsconmonwrapper.h"
-#include "wlanqtutilsconmonwrapper_s60_p.h"
 
-// ================= MEMBER FUNCTIONS =======================
+/*!
+    \class WlanQtUtilsConMonWrapper
+    \brief Wrapper for Symbian Connection Monitor library.
 
-ConMonWrapper::ConMonWrapper(QObject *parent)
- : QObject(parent)
+    Provides functionality to scan WLAN networks, to retrieve connection 
+    information, and to disconnect connections.
+*/
+
+// External function prototypes
+
+// Local constants
+
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
+
+/*!
+    Constructor.
+    
+    @param [in] parent Parent object.
+*/
+
+WlanQtUtilsConMonWrapper::WlanQtUtilsConMonWrapper(QObject *parent) :
+    QObject(parent),
+    d_ptrScan(new WlanQtUtilsConMonWrapperScan(this)),
+    d_ptrInfo(new WlanQtUtilsConMonWrapperInfo(this)),
+    d_ptrDisconnect(new WlanQtUtilsConMonWrapperDisconnect(this))
 {
-    d_ptrScanWlans = new ConnMonScanWlanAps(this);
-    d_ptrConnInfo = new ConnMonConnInfo(this);
-    d_ptrConnDisconnect = new ConnMonConnDisconnect(this);
 }
 
-ConMonWrapper::~ConMonWrapper()
+/*!
+    Destructor.
+*/
+
+WlanQtUtilsConMonWrapper::~WlanQtUtilsConMonWrapper()
 {
-    delete d_ptrScanWlans;
-    delete d_ptrConnInfo;
-    delete d_ptrConnDisconnect;
 }
 
-int ConMonWrapper::scanAvailableWlanAPs()
+/*!
+   Start a WLAN scan.
+*/
+
+void WlanQtUtilsConMonWrapper::scanAvailableWlanAPs()
 {
-    return d_ptrScanWlans->scanAvailableWlanAPs();
+    d_ptrScan->ScanAvailableWlanAPs();
 }
 
-void ConMonWrapper::emitAvailableWlans(QList<WlanQtUtilsWlanAp *> &availableWlanAPs)
+/*!
+   Stop a (possibly) ongoing WLAN scan.
+*/
+
+void WlanQtUtilsConMonWrapper::stopScan()
 {
-    emit availableWlanApsFromWrapper(availableWlanAPs);
+    d_ptrScan->StopScan();
 }
 
-void ConMonWrapper::emitConnCreatedEvent(uint connectionId)
+/*!
+   Return active connection information.
+
+   @return Information of active connection, 0 if not found.
+*/ 
+
+WlanQtUtilsConnection *WlanQtUtilsConMonWrapper::activeConnection() const
 {
-   emit connCreatedEventFromWrapper(connectionId);
+    return d_ptrInfo->ActiveConnection();
 }
 
-void ConMonWrapper::emitConnDeletedEvent(uint connectionId)
+/*!
+   Returns information of a connection with the given connection ID.
+
+   @param [in] connectionId Connection ID.
+
+   @return Information of the given connection, 0 if not found.
+*/ 
+
+WlanQtUtilsConnection* WlanQtUtilsConMonWrapper::connectionInfo(
+    uint connectionId) const
 {
-   emit connDeletedEventFromWrapper(connectionId);
+    return d_ptrInfo->ConnectionInfo(connectionId);
 }
 
-void ConMonWrapper::emitConnStatusEvent(uint connectionId, WlanQtUtilsConnectionStatus connectionStatus)
-{
-   emit connStatusEventFromWrapper(connectionId, connectionStatus);
-}
+/*!
+   Stops given connection regardless of how many applications are using it.
 
-WlanQtUtilsActiveConn *ConMonWrapper::activeConnection()
-{
-    return d_ptrConnInfo->activeConnection();
-}
+   @param [in] iapId IAP ID to disconnect.
+*/ 
 
-WlanQtUtilsActiveConn* ConMonWrapper::connectionInfo(uint connectionId)
+void WlanQtUtilsConMonWrapper::disconnectIap(int iapId)
 {
-    return d_ptrConnInfo->connectionInfo(connectionId);
-}
-
-void ConMonWrapper::disconnectIap(int iapId)
-{
-   d_ptrConnDisconnect->disconnectConnection(iapId);
+   d_ptrDisconnect->DisconnectConnection(iapId);
 }
