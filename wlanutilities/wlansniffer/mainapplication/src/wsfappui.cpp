@@ -247,7 +247,7 @@ void CWsfAppUi::HandleResourceChangeL( TInt aType )
 
 
 // ---------------------------------------------------------------------------
-// CWsfAppUi::HandleCommandL
+// CWsfAppUi::HandleForegroundEventL
 // ---------------------------------------------------------------------------
 //
 void CWsfAppUi::HandleForegroundEventL( TBool aForeground )
@@ -256,6 +256,17 @@ void CWsfAppUi::HandleForegroundEventL( TBool aForeground )
     //Application switched to foreground.
     if ( aForeground )
         {
+        CWsfMainView* mainView = static_cast<CWsfMainView*>( 
+                                            View( TUid::Uid( EMainViewId ) ) );
+        if ( mainView )
+            {
+            TRAPD( err, mainView->UpdateBrowserUsageInfoL() );
+            if ( err )
+                {
+                LOG_WRITEF( "Browser iap usage update failed - err=%d", err );
+                }
+            }
+    
         if ( iObserver )
             {
             iObserver->AppSwitchedForegroundL();

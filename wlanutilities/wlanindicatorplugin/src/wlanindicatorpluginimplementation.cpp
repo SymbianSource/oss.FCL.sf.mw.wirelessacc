@@ -30,6 +30,7 @@
 #include <rconnmon.h>
 #include <cmmanager.h>
 #include <cmconnectionmethod.h>
+#include <cmpluginwlandef.h>
 #include <utf.h>
 #include <wlanindicator.rsg>
 #include "wlanindicatorpluginimplementation.h"
@@ -244,7 +245,15 @@ HBufC* CWlanIndicatorPluginImplementation::ConnectionNameL( )
     RCmConnectionMethod connMethod = cmManager.ConnectionMethodL( connectedIapId );  
     CleanupClosePushL( connMethod );
     
-    connName = connMethod.GetStringAttributeL( ECmName );
+    TUint32 easyWLANIapId = cmManager.EasyWlanIdL();
+    if ( easyWLANIapId != connectedIapId )
+        {
+        connName = connMethod.GetStringAttributeL( ECmName );
+        }
+    else
+        {
+        connName = connMethod.GetStringAttributeL( EWlanUsedSSID );
+        }
         
     CleanupStack::PopAndDestroy( 2, &cmManager ); //cmManager and connMethod
     
