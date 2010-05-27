@@ -19,11 +19,11 @@ TARGET        wlansnifferkeepalive.exe
 TARGETTYPE    exe
 UID           0x100039CE 0x2002FF5F
 
-USERINCLUDE  ..\inc 
-USERINCLUDE  ..\traces
+USERINCLUDE  ../inc 
+USERINCLUDE  ../traces
 MW_LAYER_SYSTEMINCLUDE
 
-SOURCEPATH   ..\src
+SOURCEPATH   ../src
 SOURCE       main.cpp
 SOURCE       wsfkeepalive.cpp
 SOURCE       wsfkeepaliveconnmon.cpp
