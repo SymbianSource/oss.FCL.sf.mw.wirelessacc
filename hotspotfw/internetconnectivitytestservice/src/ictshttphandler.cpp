@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:   HTTP class for HTTP::HEAD testing
+* Description:   Class for HTTP GET testing
 *
 */
 
@@ -33,8 +33,8 @@ const TInt KMovedPermanently = 301;
 const TInt KFound = 302;
 const TInt KSeeOther = 303;
 const TInt KTemporaryRedirect = 307;
-// ======== MEMBER FUNCTIONS ========
 
+// ======== MEMBER FUNCTIONS ========
 
 // ---------------------------------------------------------------------------
 // CIctsHttpHandler::CIctsHttpHandler
@@ -76,7 +76,8 @@ CIctsHttpHandler* CIctsHttpHandler::NewL( CIctsEngine& aOwner,
                                             TInt aHttpResponseTime )
     {
     DEBUG("CIctsHttpHandler::NewL()");
-    CIctsHttpHandler* self = new( ELeave ) CIctsHttpHandler( aOwner, aHttpResponseTime );
+    CIctsHttpHandler* self = new( ELeave ) CIctsHttpHandler( aOwner, 
+                                                              aHttpResponseTime );
     CleanupStack::PushL( self );
     self->ConstructL();
     CleanupStack::Pop( self );
@@ -126,42 +127,47 @@ void CIctsHttpHandler::SetHttpConnectionInfoL( RConnection& aConnection,
     RHTTPConnectionInfo connInfo = iHttpSession.ConnectionInfo();
     
     // Clear RConnection and Socket Server instances
-    connInfo.RemoveProperty(strPool.StringF(HTTP::EHttpSocketServ,RHTTPSession::GetTable()));
-    connInfo.RemoveProperty(strPool.StringF(HTTP::EHttpSocketConnection,RHTTPSession::GetTable()));
+    connInfo.RemoveProperty( strPool.StringF( HTTP::EHttpSocketServ, 
+                                               RHTTPSession::GetTable() ) );
+    connInfo.RemoveProperty( strPool.StringF( HTTP::EHttpSocketConnection, 
+                                               RHTTPSession::GetTable() ) );
     
     // Clear the proxy settings
-    THTTPHdrVal proxyUsage(strPool.StringF(HTTP::EUseProxy,RHTTPSession::GetTable()));
-    connInfo.RemoveProperty(strPool.StringF(HTTP::EProxyUsage,RHTTPSession::GetTable()));
-    connInfo.RemoveProperty(strPool.StringF(HTTP::EProxyAddress,RHTTPSession::GetTable()));
+    THTTPHdrVal proxyUsage( strPool.StringF( HTTP::EUseProxy, 
+                                              RHTTPSession::GetTable() ) );
+    connInfo.RemoveProperty( strPool.StringF( HTTP::EProxyUsage, 
+                                               RHTTPSession::GetTable() ) );
+    connInfo.RemoveProperty( strPool.StringF( HTTP::EProxyAddress, 
+                                               RHTTPSession::GetTable() ) );
     
     // RConnection has been started, set proxy (if defined) and RConnection and
     // Socket Server session properties.
      
     // Proxy
-    result = aConnection.EnumerateConnections(connCount);
-    User::LeaveIfError(result);
+    result = aConnection.EnumerateConnections( connCount );
+    User::LeaveIfError( result) ;
         
     // Get service and service type for this connection
     //
     _LIT(string, "%s\\%s");
-    query.Format(string, IAP, IAP_SERVICE);
-    result = aConnection.GetIntSetting(query, serviceId);
+    query.Format( string, IAP, IAP_SERVICE );
+    result = aConnection.GetIntSetting( query, serviceId );
       
-    query.Format(string, IAP, IAP_SERVICE_TYPE);
-    result = aConnection.GetDesSetting(query, serviceType);
-    User::LeaveIfError(result);
+    query.Format( string, IAP, IAP_SERVICE_TYPE );
+    result = aConnection.GetDesSetting( query, serviceType );
+    User::LeaveIfError( result );
         
         
     // RConnection and Socket Server
     // Now bind the HTTP session with the socket server connection
     connInfo.SetPropertyL ( 
-        strPool.StringF(HTTP::EHttpSocketServ, RHTTPSession::GetTable()), 
-        THTTPHdrVal (aSocketServ.Handle()) );
+        strPool.StringF( HTTP::EHttpSocketServ, RHTTPSession::GetTable() ), 
+        THTTPHdrVal (aSocketServ.Handle() ) );
         
-    TInt connPtr1 = reinterpret_cast<TInt>(&aConnection);
+    TInt connPtr1 = reinterpret_cast<TInt>( &aConnection) ;
     connInfo.SetPropertyL ( 
-        strPool.StringF(HTTP::EHttpSocketConnection, 
-        RHTTPSession::GetTable() ), THTTPHdrVal (connPtr1) );    
+        strPool.StringF( HTTP::EHttpSocketConnection, 
+        RHTTPSession::GetTable() ), THTTPHdrVal ( connPtr1 ) );    
    
     }
 
@@ -188,7 +194,7 @@ TInt CIctsHttpHandler::SendHttpRequestL( TDesC8& aIPAddress,
   	
     if ( !iAttachDone )
         {
-        err = iConnection.Attach( pckgInfo, RConnection::EAttachTypeMonitor);
+        err = iConnection.Attach( pckgInfo, RConnection::EAttachTypeMonitor );
         DEBUG1("CIctsHttpHandler::SendHttpRequestL attach: %d", err);
         }
     
@@ -199,11 +205,13 @@ TInt CIctsHttpHandler::SendHttpRequestL( TDesC8& aIPAddress,
     
         // Remove redirect filter
         RStringPool stringPool = iHttpSession.StringPool();
-        RStringF filterName = stringPool.StringF(HTTP::ERedirect, RHTTPSession::GetTable());
-        iHttpSession.FilterCollection().RemoveFilter(filterName);
-    
+        RStringF filterName = 
+                stringPool.StringF( HTTP::ERedirect, RHTTPSession::GetTable() );
+        iHttpSession.FilterCollection().RemoveFilter( filterName );
+
         RStringPool strPool = iHttpSession.StringPool();
-        RStringF method = strPool.StringF(HTTP::EHEAD,RHTTPSession::GetTable());
+        RStringF method = 
+                strPool.StringF( HTTP::EGET, RHTTPSession::GetTable() );
     
         TBuf8<KMaxIpLength> ip;
         
@@ -217,7 +225,7 @@ TInt CIctsHttpHandler::SendHttpRequestL( TDesC8& aIPAddress,
         // Parse string to URI
         TUriParser8 uri; 
         uri.Parse(ip);
-        iHttpTransaction = iHttpSession.OpenTransactionL(uri, *this, method);
+        iHttpTransaction = iHttpSession.OpenTransactionL( uri, *this, method );
         RHTTPHeaders hdr = iHttpTransaction.Request().GetHeaderCollection();
     
         RStringF headerStrName = strPool.OpenFStringL( KHeaderName() );
@@ -279,35 +287,27 @@ void CIctsHttpHandler::RunL()
 // Called by framework to pass transaction events.
 // ---------------------------------------------------------------------------
 //   
-void CIctsHttpHandler::MHFRunL(RHTTPTransaction aTransaction, 
-                            const THTTPEvent& aEvent)
+void CIctsHttpHandler::MHFRunL( RHTTPTransaction aTransaction, 
+                            const THTTPEvent& aEvent )
     {
-    DEBUG("CIctsHttpHandler::MHFRunL");
-   
+    DEBUG1("CIctsHttpHandler::MHFRunL aEvent.iStatus: %d", 
+            aEvent.iStatus);
+    // See HTTP event statuses. Only ESucceeded and EFailed are needed. 
     switch (aEvent.iStatus) 
         {
-        
         case THTTPEvent::EGotResponseHeaders:
             {
             DEBUG("CIctsHttpHandler::THTTPEvent::EGotResponseHeaders");
+            if ( CheckStatusCodeL( aTransaction ) )
+                {
+                // Redirection found. Transaction can be canceled.
+                aTransaction.Cancel();
+                }
             }
             break;
-        
-        case THTTPEvent::EGotResponseBodyData:
-            {
-            DEBUG("CIctsHttpHandler::THTTPEvent::EGotResponseBodyData");
-            }
-            break;
-
-        case THTTPEvent::EResponseComplete:
-            {
-            DEBUG("CIctsHttpHandler::THTTPEvent::EResponseComplete");
-            }
-            break;
-        
         case THTTPEvent::ESucceeded:
             {
-            DEBUG("CIctsHttpHandler::THTTPEvent::ESucceeded");
+            DEBUG("CIctsHttpHandler::MHFRunL Succeeded");
             CTimer::Cancel();
             iOwner.HttpEventL( EConnectionOk, iString );
             iString = KNullDesC;
@@ -316,79 +316,17 @@ void CIctsHttpHandler::MHFRunL(RHTTPTransaction aTransaction,
 
         case THTTPEvent::EFailed:
             {
+            DEBUG("CIctsHttpHandler::MHFRunL Failed");
             CTimer::Cancel();
-            DEBUG("CIctsHttpHandler::THTTPEvent::EFailed");
-            
-            RHTTPResponse resp = aTransaction.Response();
-            TInt status = resp.StatusCode();
-            
-            // Check if redirect was cause of EFailed
-            if( status == KMovedPermanently || status == KFound || 
-                status == KSeeOther || status == KTemporaryRedirect )
-                {
-            
-                // Inform the hotspot server that authentication is needed    
-                RHTTPHeaders hdr =aTransaction.Response().GetHeaderCollection();
-                RStringPool strP = aTransaction.Session().StringPool();
-                RStringF location = strP.StringF(HTTP::ELocation,RHTTPSession::GetTable());
-                
-                //parse the headers and look for location header
-                THTTPHdrVal hVal;
-                if(hdr.GetField(location,0,hVal)== KErrNone) 
-                    {
-                   DEBUG("CIctsHttpHandler::THTTPEvent::GetField");
-                    // Location header is present
-                    RStringF fieldValStr = strP.StringF(hVal.StrF());
-                    const TDesC8& fieldValDesC = fieldValStr.DesC();
-                    iString.Copy(fieldValDesC);
-                    iOwner.HttpEventL( EHttpAuthenticationNeeded, iString );
-                    }
-                else
-                    {
-                    // No location header. Can't use authentication -> redirect.
-                    iOwner.HttpEventL( EConnectionNotOk, iString );    
-                    }
-                }
-             else
-                {
-                // Failed for other reason than redirect
-                iOwner.HttpEventL( EConnectionNotOk, iString );
-                }
-              
-              iString = KNullDesC;
+            iOwner.HttpEventL( EConnectionNotOk, iString );    
+            iString = KNullDesC;
             }
-            break;
-    
-        case THTTPEvent::ERedirectedPermanently:
-            {
-            // Nothing here
-            DEBUG("CIctsHttpHandler::THTTPEvent::ERedirectedPermanently");
-            } 
-            break;
-    
-        case THTTPEvent::ERedirectedTemporarily:
-            {
-            // Nothing here
-            DEBUG("CIctsHttpHandler::THTTPEvent::ERedirectedTemporarily");
-            } 
             break;
     
         default:
             {
-            DEBUG1( "CIctsHttpHandler::MHFRunL::default iStatus: %d", aEvent.iStatus ); 
-            CTimer::Cancel();
-            if ( aEvent.iStatus < 0 )
-                {
-                _LIT(string, "Unknown error");
-                iString = string;
-                iOwner.HttpEventL( EConnectionNotOk, iString );
-                }
-            else
-                {
-                _LIT(string, "Default");
-                iString = string;
-                iOwner.HttpEventL( EConnectionNotOk, iString );
-                }
+            DEBUG1( "CIctsHttpHandler::MHFRunL default: %d", aEvent.iStatus ); 
+            // Do nothing. Timer will take care of error situations.
             } 
             break;
         }
@@ -416,6 +354,59 @@ TBool CIctsHttpHandler::CheckHttp( TDesC8& aIPAddress )
     {
     // The "http://" prefix is expected to be at the beginning of the URI.
     return ( 0 == aIPAddress.Find( KHttpPrefix ) );
+    }
+
+// ----------------------------------------------------------------------------
+// CIctsHttpHandler::CheckStatusCodeL
+// ----------------------------------------------------------------------------    
+TBool CIctsHttpHandler::CheckStatusCodeL( RHTTPTransaction aTransaction )
+    {
+    DEBUG1("CIctsHttpHandler::CheckStatusCodeL response statuscode: %d", 
+                aTransaction.Response().StatusCode());
+          
+    TBool ret ( EFalse );
+    
+    switch ( aTransaction.Response().StatusCode() )
+        {
+        case KMovedPermanently:
+        case KFound:
+        case KSeeOther:
+        case KTemporaryRedirect:
+            {
+            DEBUG("CIctsHttpHandler::CheckStatusCodeL Redirect");
+            CTimer::Cancel();
+            ret = ETrue;
+            
+            //parse the headers and look for location header
+            RHTTPHeaders hdr =aTransaction.Response().GetHeaderCollection();
+            RStringPool strP = aTransaction.Session().StringPool();
+            RStringF location = 
+                    strP.StringF( HTTP::ELocation,RHTTPSession::GetTable() );
+            THTTPHdrVal hVal;
+            if( hdr.GetField( location, 0, hVal ) == KErrNone ) 
+                {
+                DEBUG("CIctsHttpHandler::CheckStatusCodeL location header");
+                // Location header is present
+                RStringF fieldValStr = strP.StringF(hVal.StrF());
+                const TDesC8& fieldValDesC = fieldValStr.DesC();
+                iString.Copy( fieldValDesC );
+                iOwner.HttpEventL( EHttpAuthenticationNeeded, iString );
+                }
+            else
+                {
+                DEBUG("CIctsHttpHandler::CheckStatusCodeL no location header");
+                // No location header. Can't redirect.
+                iOwner.HttpEventL( EConnectionNotOk, iString );
+                iString = KNullDesC;
+                }
+            }
+            break;
+        
+        default:
+            // Do nothing
+            break;
+        }
+    return ret;
     }
 
 //  End of File

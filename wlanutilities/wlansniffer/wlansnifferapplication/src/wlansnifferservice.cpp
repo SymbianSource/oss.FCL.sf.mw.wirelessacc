@@ -51,7 +51,6 @@
 
 WlanSnifferService::WlanSnifferService(QObject* parent) :
     XQServiceProvider(
-        // TODO: Change to use the define in xqaiwdeclplat.h
         QLatin1String("wlansniffer.com.nokia.symbian.IWlanSniffer"),
         parent)
 {

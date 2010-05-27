@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -25,6 +25,12 @@
 #include <xqservicelog.h>
 #endif
 #include <xqappmgr.h>
+#include <xqaiwdeclplat.h>
+
+// This workaround can be removed when XQOP_WLAN_SNIFFER is correctly
+// defined without the "void" parameter restriction:
+#undef XQOP_WLAN_SNIFFER
+#define XQOP_WLAN_SNIFFER  QLatin1String("listView()")
 
 #include <cpitemdatahelper.h>
 #include <cpbasesettingview.h>
@@ -103,12 +109,11 @@ CpBaseSettingView *CpWlanEntryItemData::createSettingView() const
 #endif
 
     // Execute synchronous WLAN Sniffer list view
-    // TODO: Start using defines in xqaiwdeclplat.h when available
     XQApplicationManager aiwMgr;
     XQAiwRequest *request = aiwMgr.create(
         "wlansniffer",
-        "com.nokia.symbian.IWlanSniffer",
-        "listView()",
+        XQI_WLAN_SNIFFER,
+        XQOP_WLAN_SNIFFER,
         true);
 
     // The WLAN Sniffer service must always exist
