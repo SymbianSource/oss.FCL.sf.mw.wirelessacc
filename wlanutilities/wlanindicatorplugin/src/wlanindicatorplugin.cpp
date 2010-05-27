@@ -197,9 +197,7 @@ QVariant WlanIndicatorPlugin::indicatorData(int role) const
                     }
 
             else if (indicatorText[0] == wlanConnected){
-                QString iapName = indicatorText[1].toString();                                        
-                QString str = QString(hbTrId("txt_occ_dblist_wireless_lan_val_1_connected"));
-                qvariant = str.arg(iapName);
+                qvariant = indicatorText[1].toString();
                 }
             }            
         else 
@@ -214,14 +212,14 @@ QVariant WlanIndicatorPlugin::indicatorData(int role) const
         if (mParameter.isValid() && mParameter.type() == QVariant::List) {
             indicatorText = mParameter.toList();
             if ((indicatorText.size() > 0) && (indicatorText[0] == wlanConnected)) {
-                qvariant = HbIcon("qtg_status_wlan");
+                qvariant = QString("qtg_status_wlan");
             }
         }
         break;
         // this is the icon in the indicator
     case DecorationNameRole:
         OstTraceFunctionExit1(DUP2_WLANINDICATORPLUGIN_INDICATORDATA_EXIT, this);
-        qvariant = HbIcon("qtg_small_wlan");
+        qvariant = QString("qtg_small_wlan");
         break;
     default:
         OstTraceFunctionExit1(DUP3_WLANINDICATORPLUGIN_INDICATORDATA_EXIT, this);

@@ -25,6 +25,12 @@ DEPENDPATH += .
 #Store generated .moc files to their own directory
 MOC_DIR = moc
 
+# Temporary solution to fix tracecompiler
+# When tracecompiler is fixed, this can be removed
+symbian: {
+    MMP_RULES += "USERINCLUDE traces"
+}
+
 #Following macros MW_LAYER_SYSTEMINCLUDE and OS_LAYER_SYSTEMINCLUDE are defined 
 #in X:\QT\mkspecs\features\symbian\platform_paths.prf that is always inluded in
 #QT compilation
