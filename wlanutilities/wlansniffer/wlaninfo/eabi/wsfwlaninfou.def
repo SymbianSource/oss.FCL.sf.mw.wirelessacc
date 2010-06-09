@@ -23,14 +23,14 @@ EXPORTS
 	_ZN17CWsfWlanInfoArray4NewLEv @ 22 NONAME
 	_ZN17CWsfWlanInfoArray5CountEv @ 23 NONAME
 	_ZN17CWsfWlanInfoArray5MatchERK6TDesC8i @ 24 NONAME
-	_ZN17CWsfWlanInfoArray5NewLCEv @ 25 NONAME
-	_ZN17CWsfWlanInfoArray5ResetEv @ 26 NONAME
-	_ZN17CWsfWlanInfoArray6DeleteEP12TWsfWlanInfo @ 27 NONAME
-	_ZN17CWsfWlanInfoArray6MatchLERK6TDesC8N9CMManager12TWlanSecModeENS3_12TWlanNetModeEiR13RPointerArrayI12TWsfWlanInfoE @ 28 NONAME
-	_ZN17CWsfWlanInfoArray7AppendLEP12TWsfWlanInfo @ 29 NONAME
-	_ZNK12TWsfWlanInfo12ExternalizeLER12RWriteStream @ 30 NONAME
-	_ZNK17CWsfWlanInfoArray13GetArrayIndexEP12TWsfWlanInfo @ 31 NONAME
-	_ZNK17CWsfWlanInfoArray2AtEi @ 32 NONAME
-	_ZNK17CWsfWlanInfoArrayixEj @ 33 NONAME
-	_ZN17CWsfWlanInfoArray5MatchEmi @ 34 NONAME
+	_ZN17CWsfWlanInfoArray5MatchEmi @ 25 NONAME
+	_ZN17CWsfWlanInfoArray5NewLCEv @ 26 NONAME
+	_ZN17CWsfWlanInfoArray5ResetEv @ 27 NONAME
+	_ZN17CWsfWlanInfoArray6DeleteEP12TWsfWlanInfo @ 28 NONAME
+	_ZN17CWsfWlanInfoArray6MatchLERK6TDesC8N9CMManager12TWlanSecModeENS3_12TWlanNetModeEiiR13RPointerArrayI12TWsfWlanInfoE @ 29 NONAME
+	_ZN17CWsfWlanInfoArray7AppendLEP12TWsfWlanInfo @ 30 NONAME
+	_ZNK12TWsfWlanInfo12ExternalizeLER12RWriteStream @ 31 NONAME
+	_ZNK17CWsfWlanInfoArray13GetArrayIndexEP12TWsfWlanInfo @ 32 NONAME
+	_ZNK17CWsfWlanInfoArray2AtEi @ 33 NONAME
+	_ZNK17CWsfWlanInfoArrayixEj @ 34 NONAME
 

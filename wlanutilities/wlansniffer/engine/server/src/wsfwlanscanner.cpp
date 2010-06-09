@@ -418,6 +418,7 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
                     iScanArray->MatchL( connectedInfo->iSsid,
                                         connectedInfo->iSecurityMode,
                                         connectedInfo->iNetMode, 
+                                        connectedInfo->UsesPreSharedKey(),
                                         iScanArray->Count(),
                                         matchArray );
                     }
@@ -428,7 +429,9 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
                 LOG_WRITE( "Easy WLAN connection" );
                 iScanArray->MatchL( connectedInfo->iSsid,
                         connectedInfo->iSecurityMode,
-                        connectedInfo->iNetMode, iScanArray->Count(),
+                        connectedInfo->iNetMode, 
+                        connectedInfo->UsesPreSharedKey(),
+                        iScanArray->Count(),
                         matchArray );
                 }
 
@@ -1045,8 +1048,12 @@ void CWsfWlanScanner::DoScanForNetworksL()
             // found several iaps configured for same wlan)
             RPointerArray<TWsfWlanInfo> matchArray;
             CleanupClosePushL(matchArray);
-            iScanArray->MatchL( wlanInfo->iSsid, wlanInfo->iSecurityMode, 
-                    wlanInfo->iNetMode, nElem, matchArray );
+            iScanArray->MatchL( wlanInfo->iSsid, 
+                                wlanInfo->iSecurityMode, 
+                                wlanInfo->iNetMode, 
+                                wlanInfo->UsesPreSharedKey(), 
+                                nElem, 
+                                matchArray );
 
             TInt matchcount = matchArray.Count();
 

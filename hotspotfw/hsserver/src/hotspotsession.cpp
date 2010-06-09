@@ -625,35 +625,34 @@ void CHotSpotSession::ConnectivityObserver( TIctsTestResult aResult,
     switch ( aResult )
         {
         case EConnectionOk :
+            // Create IAP first, then complete the message to connection.
+            TRAP_IGNORE( iIapSettingsHandler->CreateIapL() );
             indx = iServer.FindMessage( iIapId, EHssStartLogin );
             if ( KErrNotFound != indx )
                 {
                 iServer.CompleteMessage( indx, KErrNone );    
-                }
-            TRAPD( trap, iIapSettingsHandler->CreateIapL() );
-            if ( trap != KErrNone )
-                {
-                DEBUG1("CHotSpotSession::ConnectivityObserver trap: %d", trap);
                 }
             break;
         case EHttpAuthenticationNeeded :
             // Start browser for authentication
-            TRAP_IGNORE( AuthenticateL( aString ) );
-            break;
-        case EConnectionNotOk :
-            indx = iServer.FindMessage( iIapId, EHssStartLogin );
-            if ( KErrNotFound != indx )
+            TRAPD( browserStarted, AuthenticateL( aString ) );
+            if ( browserStarted != KErrNone )
                 {
-                iServer.CompleteMessage( indx, KErrNone );    
+                // Starting of browser leaved. Complete the message.
+                indx = iServer.FindMessage( iIapId, EHssStartLogin );
+                if ( KErrNotFound != indx )
+                    {
+                    iServer.CompleteMessage( indx, KErrNone );    
+                    }
                 }
             break;
+        case EConnectionNotOk :
         case ETimeout :
             indx = iServer.FindMessage( iIapId, EHssStartLogin );
             if ( KErrNotFound != indx )
                 {
                 iServer.CompleteMessage( indx, KErrNone );    
                 }
-            
             break;
         default:
             break;

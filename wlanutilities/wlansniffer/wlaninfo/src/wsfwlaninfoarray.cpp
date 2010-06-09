@@ -285,6 +285,7 @@ EXPORT_C void CWsfWlanInfoArray::MatchWithIapIDL( const TUint aIapID,
 EXPORT_C void CWsfWlanInfoArray::MatchL( const TDesC8& aSsid, 
                                          CMManager::TWlanSecMode aSecMode, 
                                          CMManager::TWlanNetMode aNetMode, 
+                                         TBool aUsesPreSharedKey,
                                          const TInt aPriorThis, 
                                          RPointerArray<TWsfWlanInfo>& aMatchArray )
     {
@@ -298,9 +299,32 @@ EXPORT_C void CWsfWlanInfoArray::MatchL( const TDesC8& aSsid,
     for( TInt i = 0; i < count ; i++ )
         {
         temp = ( *iInfoArray )[i]; 
-        if( !temp->iSsid.Compare( aSsid ) && temp->iSecurityMode == aSecMode && temp->iNetMode == aNetMode)
+        if( !temp->iSsid.Compare( aSsid ) && temp->iSecurityMode == aSecMode  
+                && temp->iNetMode == aNetMode )
             {
             aMatchArray.AppendL(temp);
+            }
+        else if ( temp->iIapId && !temp->iSsid.Compare( aSsid ) 
+                    && temp->SecurityMode() == CMManager::EWlanSecMode802_1x 
+                    && temp->iNetMode == aNetMode )
+            {
+            if ( aSecMode == CMManager::EWlanSecModeOpen )
+                {
+                aMatchArray.AppendL(temp);
+                }
+            else if ( aSecMode == CMManager::EWlanSecModeWep )
+                {
+                aMatchArray.AppendL(temp);
+                }
+            else if ( aSecMode == CMManager::EWlanSecModeWpa 
+                        && !aUsesPreSharedKey )
+                {
+                aMatchArray.AppendL(temp);
+                }
+            else if ( aSecMode == CMManager::EWlanSecMode802_1x )
+                {
+                aMatchArray.AppendL(temp);
+                }
             }
         }
     }

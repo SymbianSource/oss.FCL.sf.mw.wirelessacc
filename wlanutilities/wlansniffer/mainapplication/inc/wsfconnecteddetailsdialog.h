@@ -91,7 +91,17 @@ class CWsfConnectedDetailsDialog : public CAknListQueryDialog
          * @param aModel List model of the dialog
          */
         void SetListModel( CWsfConnectedDetailsModel* aModel );
-        
+
+        /**
+        * Super class method overriden to prevent dialog window to be
+        * shut down by pressing anywhere in the dialog (only pressing
+        * the OK button should close the dialog.
+        * @param aListBox - 
+        * @param TListBoxEvent - 
+        */
+        void HandleListBoxEventL( CEikListBox* aListBox,
+                                  TListBoxEvent aEventType );
+
     private:    // from CEikDialog
 
         /**

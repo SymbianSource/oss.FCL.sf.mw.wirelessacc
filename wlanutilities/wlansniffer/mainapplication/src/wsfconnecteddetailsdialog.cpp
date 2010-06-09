@@ -170,5 +170,13 @@ MWsfDetailsViewControllerIf& CWsfConnectedDetailsDialog::Controller()
     return iController;     
     }    
 
-//  End of File
+// ---------------------------------------------------------
+// CWsfConnectedDetailsDialog::HandleListBoxEventL
+// ---------------------------------------------------------
+//
+void CWsfConnectedDetailsDialog::HandleListBoxEventL( CEikListBox* /*aListBox*/,
+                                               TListBoxEvent /*aEventType*/ )
+    {
+    }
 
+//  End of File

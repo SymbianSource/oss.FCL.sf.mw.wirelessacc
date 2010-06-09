@@ -470,6 +470,7 @@ void TWsfMainController::StartBrowsingL()
             && info.iSecurityMode == CMManager::EWlanSecModeWpa )
         {
         iAppUi->ShowGlobalErrorNoteL( KErrNotSupported );
+        CleanupStack::PopAndDestroy();
         return;
         }
 
@@ -558,6 +559,7 @@ void TWsfMainController::ConnectL()
             && info.iSecurityMode == CMManager::EWlanSecModeWpa )
         {
         iAppUi->ShowGlobalErrorNoteL( KErrNotSupported );
+        CleanupStack::PopAndDestroy();
         return;
         }
         

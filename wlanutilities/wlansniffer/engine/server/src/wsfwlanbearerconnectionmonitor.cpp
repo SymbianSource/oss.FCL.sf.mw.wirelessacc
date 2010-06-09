@@ -580,6 +580,11 @@ TBool CWsfWlanBearerConnectionMonitor::ConnectedWlanConnectionDetailsL(
             }
         }    
     LOG_WRITEF( "conn.secmode = %d", aWlanInfo->iSecurityMode );
+    
+    aWlanInfo->SetUsesPreSharedKey( 
+            EConnMonSecurityWpaPsk == securityAttribute );
+    
+    LOG_WRITEF( "conn.usespresharedkey = %d", aWlanInfo->UsesPreSharedKey() );
 
     // network mode    
     TInt networkModeAttribute( 0 );

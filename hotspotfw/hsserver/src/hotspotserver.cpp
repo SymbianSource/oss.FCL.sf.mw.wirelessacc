@@ -213,6 +213,10 @@ void CHotSpotServer::FindClientIapsL()
     TBool supportedBearersOnly = ETrue;
     TBool legacyCmsOnly = EFalse;
     
+    // Read Easy WLAN IAP ID first
+    iEasyWlanId = cmManager.EasyWlanIdL();
+    DEBUG1("CHotSpotServer::FindClientIapsL() iEasyWlanId: % d", iEasyWlanId);
+    
     cmManager.ConnectionMethodL( cmArray, supportedBearersOnly, legacyCmsOnly );
     DEBUG1("CHotSpotServer::FindClientIapsL count: %d", cmArray.Count());  
     
@@ -243,11 +247,8 @@ void CHotSpotServer::FindClientIapsL()
         CleanupStack::PopAndDestroy( &cm );
         }
     CleanupStack::PopAndDestroy( &cmArray );
-    
-    // Read Easy WLAN IAP ID
-    iEasyWlanId = cmManager.EasyWlanIdL();
     CleanupStack::PopAndDestroy( &cmManager );
-    DEBUG1("CHotSpotServer::FindClientIapsL() iEasyWlanId: % d", iEasyWlanId);
+    DEBUG("CHotSpotServer::FindClientIapsL() Done");
     }
 
 // -----------------------------------------------------------------------------

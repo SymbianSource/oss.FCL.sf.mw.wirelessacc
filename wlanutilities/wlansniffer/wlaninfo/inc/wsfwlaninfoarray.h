@@ -148,36 +148,38 @@ NONSHARABLE_CLASS( CWsfWlanInfoArray ): public CBase
         * @return Pointer to the wlan info object (ownership not passed), or 
         * NULL if ssid is not found
         */
-		IMPORT_C void MatchWithIapIDL( const TUint aIapID, 
-		                                const TInt aPriorThis, 
-		                                RPointerArray<TWsfWlanInfo>& aMatchArray );
-		
-		
-		/**
-		 * Returns the info array element matching the SSID, security mode and net mode
-		 * prior the given index
-		 * @since S60 5.0
-		 * @param aSsid The SSID to match
-		 * @param aSecMode The security mode to match
- 		 * @param aNetMode The network mode to match
-		 * @param aPriorThis The index after which results are not reported
-		 * @return Pointer to the wlan info object (ownership not passed), or 
-		 *         NULL if ssid is not found
-		 */		 
-		IMPORT_C void MatchL( const TDesC8& aSsid, 
-		                      CMManager::TWlanSecMode aSecMode, 
-		                      CMManager::TWlanNetMode aNetMode, 
-		                      const TInt aPriorThis, 
-		                      RPointerArray<TWsfWlanInfo>& aMatchArray ); 
-		
-		/**
-		* Serialize the array content to a buffer and pushes it on the 
-		* cleanup stack
+        IMPORT_C void MatchWithIapIDL( const TUint aIapID, 
+                                        const TInt aPriorThis, 
+                                        RPointerArray<TWsfWlanInfo>& aMatchArray );
+        
+        
+        /**
+         * Returns the info array element matching the SSID, security mode and net mode
+         * prior the given index
+         * @since S60 5.0
+         * @param aSsid The SSID to match
+         * @param aSecMode The security mode to match
+         * @param aNetMode The network mode to match
+         * @param aUsesPreSharedKey pre shared key usage to match
+         * @param aPriorThis The index after which results are not reported
+         * @return Pointer to the wlan info object (ownership not passed), or 
+         *         NULL if ssid is not found
+         */		 
+        IMPORT_C void MatchL( const TDesC8& aSsid, 
+                              CMManager::TWlanSecMode aSecMode, 
+                              CMManager::TWlanNetMode aNetMode, 
+                              TBool aUsesPreSharedKey,
+                              const TInt aPriorThis, 
+                              RPointerArray<TWsfWlanInfo>& aMatchArray ); 
+        
+        /**
+        * Serialize the array content to a buffer and pushes it on the 
+        * cleanup stack
         * @since S60 5.0
-		* @return The buffer created
-		*/
-		IMPORT_C HBufC8* SerializeContentLC();
-
+        * @return The buffer created
+        */
+        IMPORT_C HBufC8* SerializeContentLC();
+        
 		/**
 		* Read wlan info objects from buffer and append them to the array
         * @since S60 5.0
