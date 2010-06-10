@@ -109,6 +109,12 @@ class CHssIapHandler : public CBase
         void ConvertAsciiToHex( const TDes8& aSource, 
                                                 HBufC8*& aDest );   
                                                                          
+        /**
+        * Removes brackets from UID
+        * @param aUid, UID of the client
+        */
+        void ModifyClientUid( TDes& aUid );
+       
     private: // Data
         
         /**

@@ -371,8 +371,11 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
     {
     DEBUG("CHssIapSettingsHandler::GetClientsIapsL");
     TBuf<32> buffer;                    // Temporary buffer for found UID from destination.
-    TUidName uidClient = aUId.Name();   // UID of the client.
     TUint32 iapId = 0;                  // IAP Identifiier.
+    TBuf<KIapNameLength> uidClient;     // UID of the client.
+    
+    uidClient.Copy( aUId.Name() );
+    ModifyClientUid( uidClient );
 
     RArray<TUint32> destArray = RArray<TUint32>( 10 );  // KCmArrayGranularity instead of 10
     CleanupClosePushL( destArray );
@@ -422,6 +425,25 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
 
     CleanupStack::PopAndDestroy( &cmManager );
     CleanupStack::PopAndDestroy( &destArray );
+    }
+
+// -----------------------------------------------------------------------------
+// ModifyClientUid
+// -----------------------------------------------------------------------------
+//
+void CHssIapHandler::ModifyClientUid( TDes& aUid )
+    {
+    DEBUG("CHssIapHandler::ModifyClientUid");
+    TInt indx = aUid.Find( KMark1 );
+    if ( KErrNotFound != indx )
+        {
+        aUid.Delete( indx, 1 );
+        indx = aUid.Find( KMark2 );
+        if ( KErrNotFound != indx )
+            {
+            aUid.Delete( indx, 1 );
+            }
+        }
     }
 
 // End of File
