@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,173 +12,126 @@
 * Contributors:
 *
 * Description:
-*
+* Wrapper for Symbian Connection Monitor library.
 */
 
 #ifndef WLANQTUTILSCONMONWRAPPER_H
 #define WLANQTUTILSCONMONWRAPPER_H
 
-// INCLUDES
+// System includes
+
 #include <QObject>
 #include <QList>
-#include <QStringList>
+#include <QSharedPointer>
+#include <QScopedPointer>
 
-QT_BEGIN_HEADER
+// User includes
 
-QT_BEGIN_NAMESPACE
+#include "wlanqtutils.h"
 
-#include "wlanqtutilscommon.h"
+// Forward declarations
 
-// FORWARD DECLARATIONS
-class WlanQtUtilsWlanAp;
-class WlanQtUtilsActiveConn;
-class ConnMonScanWlanAps;
-class ConnMonConnInfo;
-class ConnMonConnDisconnect;
+class WlanQtUtilsAp;
+class WlanQtUtilsConnection;
+class WlanQtUtilsConMonWrapperScan;
+class WlanQtUtilsConMonWrapperInfo;
+class WlanQtUtilsConMonWrapperDisconnect;
 
-// CLASS DECLARATION
+// External data types
 
-/**
-* ConMonWrapper class.
-*/
-class ConMonWrapper : public QObject
+// Constants
+
+// Class declaration
+
+class WlanQtUtilsConMonWrapper : public QObject
 {
     Q_OBJECT
     
 public:
-        
-    /**
-     * Constructor.
-     */
-    ConMonWrapper(QObject *parent = 0);
+
+    // Data types
+
+    WlanQtUtilsConMonWrapper(QObject *parent = 0);
     
-    /**
-    * Destructor.
-    */
-    ~ConMonWrapper();
+    ~WlanQtUtilsConMonWrapper();
 
-    /**
-     * Requests wlan scanning
-     *
-     * @return ???.
-     */
-    int scanAvailableWlanAPs();
+    void scanAvailableWlanAPs();
     
-    /**
-     * Emits available WLANs to engine.
-     * 
-     * @param[in] availableWlanAPs Available WLAN access points found in scan.
-     */
-    void emitAvailableWlans(QList<WlanQtUtilsWlanAp *> &availableWlanAPs);
-
-    /**
-     * Emits signal indicating that a new connection has been created.
-     * 
-     * @param[in] connectionId Connection ID.
-     */
-    void emitConnCreatedEvent(uint connectionId);
+    void stopScan();
     
-    /**
-     * Emits signal indicating that a connection has been deleted.
-     * 
-     * @param[in] connectionId Connection ID.
-     */
-    void emitConnDeletedEvent(uint connectionId);
-    
-    /**
-     * Emits signal indicating that status of a connection has changed.
-     * 
-     * @param[in] connectionId Connection ID.
-     * @param[in] connectionStatus Connection status.
-     */
-    void emitConnStatusEvent(uint connectionId, WlanQtUtilsConnectionStatus connectionStatus);
+    WlanQtUtilsConnection *activeConnection() const;
 
-    /**
-     * Return active connection information.
-     * 
-     * @return Information of active connection, if one exists.
-     */ 
-    WlanQtUtilsActiveConn *activeConnection();
+    WlanQtUtilsConnection *connectionInfo(uint connectionId) const;
 
-    /**
-     * Returns information of a connection with the given connection ID.
-     * 
-     * @param[in] connectionId Connection ID.
-     * @return Information of the given connection, if one exists.
-     */ 
-    WlanQtUtilsActiveConn *connectionInfo(uint connectionId);
-
-    /**
-     * Stops given connection regardless of how many applications are using it.
-     * 
-     * @param[in] iapId IAP ID to disconnect.
-     */ 
     void disconnectIap(int iapId);
         
 signals:
 
-    /**
-     * Signal indicating available WLAN access points.
-     * 
-     * @param[in] availableWlans Available WLAN access points found in scan.
+    /*!
+       Signal indicating available WLAN access points.
+
+       @param [in] availableWlans Available WLAN access points found in scan.
      */
-    void availableWlanApsFromWrapper(QList<WlanQtUtilsWlanAp *> &availableWlans);
+    void availableWlanApsFromWrapper(
+        QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
     
-    /**
-     * Signal indicating that a new connection has been created.
-     * 
-     * @param[in] connectionId Connection ID.
+    /*!
+       Signal indicating that a new connection has been created.
+
+       @param [in] connectionId Connection ID.
      */
     void connCreatedEventFromWrapper(uint connectionId);
 
-    /**
-     * Signal indicating that a connection has been deleted.
-     * 
-     * @param[in] connectionId Connection ID.
+    /*!
+       Signal indicating that a connection has been deleted.
+
+       @param [in] connectionId Connection ID.
      */
     void connDeletedEventFromWrapper(uint connectionId);
 
-    /**
-     * Signal indicating that status of a connection has changed.
-     * 
-     * @param[in] connectionId Connection ID.
-     * @param[in] connectionStatus Connection status.
+    /*!
+       Signal indicating that status of a connection has changed.
+
+       @param [in] connectionId Connection ID.
+       @param [in] connectionStatus Connection status.
      */
-    void connStatusEventFromWrapper(uint connectionId, WlanQtUtilsConnectionStatus connectionStatus);
+    void connStatusEventFromWrapper(
+        uint connectionId,
+        WlanQtUtils::ConnStatus connectionStatus);
 
-private: // Data
+public slots:
+
+protected:
+
+protected slots:
+
+private:
+
+private slots:
+
+private: // data
     
-    /**
-    * d_ptrScanWlans pointer to ConMonWrapperPrivate
-    * Owned by ConMonWrapper object, instantiated in
-    * constructor.
-    */
-    ConnMonScanWlanAps *d_ptrScanWlans;
+    // Owned data
     
-    /**
-    * d_ptrConnInfo pointer to ConMonWrapperPrivate
-    * Owned by ConMonWrapper object, instantiated in
-    * constructor.
-    */
-    ConnMonConnInfo *d_ptrConnInfo;
+    //! Private implementation of scan interface
+    QScopedPointer<WlanQtUtilsConMonWrapperScan> d_ptrScan;
+    
+    //! Private implementation of connection info interface
+    QScopedPointer<WlanQtUtilsConMonWrapperInfo> d_ptrInfo;
 
-    /**
-    * d_ptrConnDisconnect pointer to ConMonWrapperPrivate
-    * Owned by ConMonWrapper object, instantiated in
-    * constructor.
-    */
-    ConnMonConnDisconnect *d_ptrConnDisconnect;
+    //! Private implementation of connection disconnect interface
+    QScopedPointer<WlanQtUtilsConMonWrapperDisconnect> d_ptrDisconnect;
 
-private: // Friend classes
-    // TestWlanQtUtils is defined as a friend class in order to be able to
-    // call event handlers of wrappers.
+    // Friend classes
+    
+    // These are defined as friend classes in order to be able to emit
+    // public signals directly from private implementation classes.
+    friend class WlanQtUtilsConMonWrapperScan;
+    friend class WlanQtUtilsConMonWrapperInfo;
+    
+    // This is defined as a friend class in order to be able to call
+    // event handlers of wrappers from unit tests.
     friend class TestWlanQtUtils;
 };
 
-QT_END_HEADER
-
-QT_END_NAMESPACE
-
-#endif /* WLANQTUTILSCONMONWRAPPER_H */
-
-// End of file
+#endif // WLANQTUTILSCONMONWRAPPER_H

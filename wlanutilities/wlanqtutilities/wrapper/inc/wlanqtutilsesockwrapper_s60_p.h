@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,80 +12,63 @@
 * Contributors:
 *
 * Description:
-*
+* Private implementation of wrapper for Symbian Esock library.
 */
 
-#ifndef ESOCKWRAPPER_S60_P_H_
-#define ESOCKWRAPPER_S60_P_H_
+#ifndef WLANQTUTILSESOCKWRAPPER_S60_P_H
+#define WLANQTUTILSESOCKWRAPPER_S60_P_H
 
-// INCLUDES
+// System includes
+
 #include <es_sock.h>
 
-QT_BEGIN_NAMESPACE
+// User includes
 
-// CLASS DECLARATION
+// Forward declarations
 
-/**
-* EsockWrapperPrivate class.
-*/
-class EsockWrapperPrivate: public CActive
+// External data types
+
+// Constants
+
+// Class declaration
+
+class WlanQtUtilsEsockWrapperPrivate: public CActive
 {
 
-public:  // Constructor and destructor
+public:
     
-    /**
-    * Default constructor
-    */
-    EsockWrapperPrivate(EsockWrapper *aWrapper);
-    
-    /**
-     * Destructor
-     */
-    ~EsockWrapperPrivate();
+    // Data types
 
-public: // New functions
+    WlanQtUtilsEsockWrapperPrivate(WlanQtUtilsEsockWrapper *wrapper);
     
-    /**
-    * connectIap
-    * Starts connection creation.
-    */
-    void connectIap(int aIapId);
-    
-    /**
-    * dsiconnectIap
-    * Stops connection.
-    */
-    void disconnectIap();
+    ~WlanQtUtilsEsockWrapperPrivate();
 
-private: // Functions from base class
+    void ConnectIap(int iapId);
     
-    /**
-    * RunL
-    * Called when the scheduled function ends.
-    */
+    void DisconnectIap();
+
+protected:
+    
+private:
+    
     void RunL();
     
-    /**
-    * DoCancel
-    * Cancels operations.
-    */
     void DoCancel();
         
-private: // Data
+private: // data
+
+    // Owned data
     
-    /**
-    * q_ptr pointer to ConnectionWrapper
-    * Owned by ConnectionWrapperPrivate object, instantiated in
-    * constructor.
-    */
-    EsockWrapper *q_ptr;
+    RSocketServ iSocketServer; //!< Socket server handle
+    RConnection iConnection;   //!< Connection handle
+    TBool iConnectionActive;   //!< Do we have an active connection handle?
+
+    // Not owned data
     
-    RSocketServ iSocketServer;
-    RConnection iConnection;
+    //! Public implementation to report progress to
+    WlanQtUtilsEsockWrapper *q_ptr;
+
+    // Friend classes
 };
 
-QT_END_NAMESPACE
-
-#endif /*ESOCKWRAPPER_S60_P_H_*/
-
-// End of file
+#endif // WLANQTUTILSESOCKWRAPPER_S60_P_H

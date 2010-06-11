@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,34 +12,99 @@
 * Contributors:
 *
 * Description:
-* This is a source file for EsockWrapper class.
+* Wrapper for Symbian Esock library.
 */
+
+// System includes
+
+#include <QScopedPointer>
+
+// User includes
 
 #include "wlanqtutilsesockwrapper.h"
 #include "wlanqtutilsesockwrapper_s60_p.h"
 
-EsockWrapper::EsockWrapper(QObject *parent)
- : QObject(parent)
+/*!
+    \class WlanQtUtilsEsockWrapper
+    \brief Wrapper for Symbian Esock library.
+
+    Provides functionality to connect and disconnect IAPs.
+*/
+
+// External function prototypes
+
+// Local constants
+
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
+
+/*!
+    Constructor.
+    
+    @param [in] parent Parent object.
+ */
+
+WlanQtUtilsEsockWrapper::WlanQtUtilsEsockWrapper(QObject *parent) :
+    QObject(parent),
+    d_ptr(new WlanQtUtilsEsockWrapperPrivate(this)),
+    mLastStatusCode(KErrNone)
 {
-    d_ptr = new EsockWrapperPrivate(this);
 }
 
-EsockWrapper::~EsockWrapper()
+/*!
+    Destructor.
+ */
+
+WlanQtUtilsEsockWrapper::~WlanQtUtilsEsockWrapper()
 {
-    delete d_ptr;
 }
 
-void EsockWrapper::updateConnection(bool isOpened)
+/*!
+   Handles connection status update event.
+
+   @param [in] isOpened Was the connection opened or not?
+   @param [in] platformStatusCode Platform specific status code.
+ */
+
+void WlanQtUtilsEsockWrapper::updateConnection(
+    bool isOpened,
+    int platformStatusCode)
 {
+    mLastStatusCode = platformStatusCode;
 	emit connectionStatusFromWrapper(isOpened);
 }
 
-void EsockWrapper::connectIap(int iapId)
+/*!
+   Returns last received connection creation status code. Clears status.
+
+   @return Platform specific status code of the last connection attempt.
+ */
+
+int WlanQtUtilsEsockWrapper::lastStatusCode()
 {
-    d_ptr->connectIap(iapId);
+    // Return current status and clear it
+    int status = mLastStatusCode;
+    mLastStatusCode = KErrNone;
+    return status;
 }
 
-void EsockWrapper::disconnectIap()
+/*!
+   Starts connection creation to given IAP.
+
+   @param [in] iapId IAP ID to connect.
+ */
+
+void WlanQtUtilsEsockWrapper::connectIap(int iapId)
 {
-    d_ptr->disconnectIap();
+    d_ptr->ConnectIap(iapId);
+}
+
+/*!
+   Disconnects connection, if one is active.
+ */
+
+void WlanQtUtilsEsockWrapper::disconnectIap()
+{
+    d_ptr->DisconnectIap();
 }

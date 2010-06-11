@@ -12,16 +12,18 @@
 * Contributors:
 *
 * Description:
+* WLAN Status Info wrapper for WLAN entry plugin.
 */
 
 // System includes
 
 #include <HbGlobal>
+#include <xqsettingsmanager.h>
+#include <wlandevicesettingsinternalcrkeys.h>
 
 // User includes
 
 #include "wlanqtutils.h"
-#include "wlanqtutilswlaniap.h"
 
 #include "wlanstatusinfo.h"
 
@@ -33,13 +35,24 @@
 /*!
     \class WlanStatusInfo
     \brief Class for maintaining and updating the WLAN status for the WLAN 
-    Status Control Panel Plugin.
-
+           Status Control Panel Plugin.
 */
 
 // External function prototypes
 
 // Local constants
+
+//! Master WLAN ON/OFF setting key
+static const XQSettingsKey masterWlanKey(
+    XQSettingsKey::TargetCentralRepository,
+    KCRUidWlanDeviceSettingsRegistryId.iUid, 
+    KWlanOnOff);
+    
+//! WLAN  forced OFF setting key
+static const XQSettingsKey wlanForceKey(
+    XQSettingsKey::TargetCentralRepository,
+    KCRUidWlanDeviceSettingsRegistryId.iUid, 
+    KWlanForceDisable);
 
 // ======== LOCAL FUNCTIONS ========
 
@@ -52,18 +65,21 @@
 WlanStatusInfo::WlanStatusInfo(QObject *parent) :
     QObject(parent),
     mWlanQtUtils(new WlanQtUtils()),
+    mSettingsManager(new XQSettingsManager(this)),
     mStatusText(""),
     mStatus(WlanStatusOff)
 {
-    OstTraceFunctionEntry1(WLANSTATUSINFO_WLANSTATUSINFO_ENTRY, this);
+    OstTraceFunctionEntry0(WLANSTATUSINFO_WLANSTATUSINFO_ENTRY);
     
     // Listen for WLAN ON/OFF switching
     bool connectStatus = connect(
-        mWlanQtUtils,
-        SIGNAL(masterWlanStatus(bool)),
-        this,
+        mSettingsManager, 
+        SIGNAL(valueChanged(XQSettingsKey, QVariant)),
+        this, 
         SLOT(updateStatus()));
-    Q_ASSERT(connectStatus == true);
+    Q_ASSERT(connectStatus);
+    mSettingsManager->startMonitoring(masterWlanKey);
+    mSettingsManager->startMonitoring(wlanForceKey);
 
     // Listen for WLAN connection statuses
     connectStatus = connect(
@@ -74,7 +90,7 @@ WlanStatusInfo::WlanStatusInfo(QObject *parent) :
     Q_ASSERT(connectStatus == true);
     connectStatus = connect(
         mWlanQtUtils,
-        SIGNAL(wlanNetworkClosed(int)),
+        SIGNAL(wlanNetworkClosed(int, int)),
         this,
         SLOT(updateStatus()));
     Q_ASSERT(connectStatus == true);
@@ -82,7 +98,7 @@ WlanStatusInfo::WlanStatusInfo(QObject *parent) :
     // Set initial status
     updateStatus();
     
-    OstTraceFunctionExit1(WLANSTATUSINFO_WLANSTATUSINFO_EXIT, this);
+    OstTraceFunctionExit0(WLANSTATUSINFO_WLANSTATUSINFO_EXIT);
 }
 
 /*!
@@ -91,21 +107,21 @@ WlanStatusInfo::WlanStatusInfo(QObject *parent) :
 
 WlanStatusInfo::~WlanStatusInfo()
 {
-    OstTraceFunctionEntry1(DUP1_WLANSTATUSINFO_WLANSTATUSINFO_ENTRY, this);
+    OstTraceFunctionEntry0(DUP1_WLANSTATUSINFO_WLANSTATUSINFO_ENTRY);
     
     delete mWlanQtUtils;
     
-    OstTraceFunctionExit1(DUP1_WLANSTATUSINFO_WLANSTATUSINFO_EXIT, this);
+    OstTraceFunctionExit0(DUP1_WLANSTATUSINFO_WLANSTATUSINFO_EXIT);
 }
 
 /*!
     Function for getting current WLAN status value (WlanStatusInfo::WlanStatus*).
 */
 
-int WlanStatusInfo::status()
+int WlanStatusInfo::status() const
 {
-    OstTraceFunctionEntry1(WLANSTATUSINFO_STATUS_ENTRY, this);    
-    OstTraceFunctionExit1(WLANSTATUSINFO_STATUS_EXIT, this);
+    OstTraceFunctionEntry0(WLANSTATUSINFO_STATUS_ENTRY);    
+    OstTraceFunctionExit0(WLANSTATUSINFO_STATUS_EXIT);
     return mStatus;
 }
 
@@ -113,11 +129,37 @@ int WlanStatusInfo::status()
     Returns the current WLAN status text.
 */
 
-QString WlanStatusInfo::statusText()
+QString WlanStatusInfo::statusText() const
 {
-    OstTraceFunctionEntry1(WLANSTATUSINFO_STATUSTEXT_ENTRY, this);
-    OstTraceFunctionExit1(WLANSTATUSINFO_STATUSTEXT_EXIT, this);
+    OstTraceFunctionEntry0(WLANSTATUSINFO_STATUSTEXT_ENTRY);
+    OstTraceFunctionExit0(WLANSTATUSINFO_STATUSTEXT_EXIT);
     return mStatusText;
+}
+
+/*!
+    Function for checking if WLAN is ON.
+    WLAN is enabled if the WLAN OnOff key is true and the force disable
+    wlan key is false.
+    
+    @return Returns true if WLAN is ON.
+*/
+
+bool WlanStatusInfo::isWlanOn() const
+{
+    OstTraceFunctionEntry0(WLANSTATUSINFO_ISWLANON_ENTRY);
+
+    bool wlanOn = mSettingsManager->readItemValue(masterWlanKey).toBool();
+    bool forcedOff = mSettingsManager->readItemValue(wlanForceKey).toBool();
+
+    OstTraceExt2(
+        TRACE_NORMAL,
+        WLANSTATUSINFO_ISWLANON,
+        "WlanStatusInfo::isWlanOn;wlanOn=%hhu;forcedOff=%hhu",
+        wlanOn,
+        forcedOff);
+    
+    OstTraceFunctionExit0(WLANSTATUSINFO_ISWLANON_EXIT);
+    return wlanOn && !forcedOff;
 }
 
 /*!
@@ -126,21 +168,19 @@ QString WlanStatusInfo::statusText()
 
 void WlanStatusInfo::updateStatus()
 {
-    OstTraceFunctionEntry1(WLANSTATUSINFO_UPDATESTATUS_ENTRY, this);
+    OstTraceFunctionEntry0(WLANSTATUSINFO_UPDATESTATUS_ENTRY);
 
     // Backup old status to detect changes
     QString oldStatusText = mStatusText;
-    int connectedIapId = mWlanQtUtils->connectedWlanId();
-    
+
     // Figure out current WLAN status
-    if (mWlanQtUtils->masterWlan() == false) {
+    if (!isWlanOn()) {
         // WLAN is switched OFF.
         mStatus = WlanStatusOff;
         mStatusText = hbTrId("txt_occ_dblist_wireless_lan_val_off");
-    } else if (connectedIapId != WlanQtUtilsInvalidIapId) {
+    } else if (mWlanQtUtils->connectionStatus() == WlanQtUtils::ConnStatusConnected) { 
         mStatus = WlanStatusConnected;
-        mStatusText = hbTrId("txt_occ_dblist_wireless_lan_val_connected_to_1")
-            .arg(mWlanQtUtils->iap(connectedIapId)->name());
+        mStatusText = mWlanQtUtils->iapName(mWlanQtUtils->activeIap());
     } else {
         mStatus = WlanStatusIdle;
         mStatusText = hbTrId("txt_occ_dblist_wireless_lan_val_wlan_is_on");
@@ -151,5 +191,5 @@ void WlanStatusInfo::updateStatus()
         emit statusUpdated();
     }
     
-    OstTraceFunctionExit1(WLANSTATUSINFO_UPDATESTATUS_EXIT, this);
+    OstTraceFunctionExit0(WLANSTATUSINFO_UPDATESTATUS_EXIT);
 }

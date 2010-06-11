@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hbdocument version="1.0">
+    <widget name="occ_add_wlan_06" type="HbWidget">
+        <widget name="dialog" type="HbLabel">
+            <enums name="textWrapping" value="TextWordWrap"/>
+            <fontspec name="fontSpec" role="Secondary" textheight="var(hb-param-text-height-secondary)"/>
+        </widget>
+        <widget name="progressBar" type="HbProgressBar">
+            <integer name="progressValue" value="0"/>
+            <integer name="minimum" value="0"/>
+            <enums name="orientation" value="Horizontal"/>
+            <integer name="maximum" value="0"/>
+        </widget>
+        <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Expanding" verticalStretch="0"/>
+        <layout type="anchor"/>
+    </widget>
+    <section name="portrait_section">
+        <widget name="occ_add_wlan_06" type="HbWidget">
+            <widget name="dialog" type="HbLabel">
+                <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Preferred" verticalStretch="0"/>
+            </widget>
+            <layout type="anchor">
+                <anchoritem dst="dialog" dstEdge="LEFT" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
+                <anchoritem dst="dialog" dstEdge="TOP" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
+                <anchoritem dst="dialog" dstEdge="RIGHT" spacing="-var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
+                <anchoritem dst="progressBar" dstEdge="LEFT" spacing="0un" src="dialog" srcEdge="LEFT"/>
+                <anchoritem dst="progressBar" dstEdge="TOP" spacing="var(hb-param-margin-gene-middle-vertical)" src="dialog" srcEdge="BOTTOM"/>
+                <anchoritem dst="progressBar" dstEdge="RIGHT" spacing="0un" src="dialog" srcEdge="RIGHT"/>
+            </layout>
+        </widget>
+    </section>
+    <section name="landscape_section">
+        <widget name="occ_add_wlan_06" type="HbWidget">
+            <widget name="dialog" type="HbLabel">
+                <sizepolicy horizontalPolicy="Fixed" horizontalStretch="0" verticalPolicy="Fixed" verticalStretch="0"/>
+                <sizehint type="FIXED" width="expr((var(hb-param-screen-width) - var(hb-param-margin-gene-middle-horizontal))  / 2  - var(hb-param-margin-gene-screen) - var(hb-param-margin-gene-popup))"/>
+            </widget>
+            <layout type="anchor">
+                <anchoritem dst="dialog" dstEdge="LEFT" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
+                <anchoritem dst="dialog" dstEdge="TOP" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
+                <anchoritem dst="progressBar" dstEdge="LEFT" spacing="var(hb-param-margin-gene-middle-horizontal)" src="dialog" srcEdge="RIGHT"/>
+                <anchoritem dst="progressBar" dstEdge="TOP" spacing="0un" src="dialog" srcEdge="TOP"/>
+                <anchoritem dst="progressBar" dstEdge="RIGHT" spacing="-var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
+            </layout>
+        </widget>
+    </section>
+    <metadata activeUIState="portrait" display="NHD portrait" unit="un">
+        <uistate name="Common ui state" sections="#common"/>
+        <uistate name="portrait" sections="#common portrait_section"/>
+        <uistate name="landscape" sections="#common landscape_section"/>
+    </metadata>
+</hbdocument>

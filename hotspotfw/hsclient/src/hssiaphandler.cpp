@@ -30,6 +30,10 @@
 #include <cmmanagerdef.h>
 #include <cmdestinationext.h>
 
+// CONSTANTS
+const TInt  KRetryCount   = 20;
+const TInt  KRetryTimeout = 100000;
+
 using namespace CMManager;
 
 // ============================ MEMBER FUNCTIONS ===============================
@@ -199,9 +203,27 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
             *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL(KCDTIdWlanEnableWpaPsk)) = aSettings.iEnableWpaPsk;
             }
         }
-    // now update the access point
-    iWLANRecord->ModifyL( *dbSession );
+    // Update access point, be prepared that Commsdat might be locked
+    TInt errCode( KErrLocked );
+    TInt retryCount( 0 );
     
+    while( errCode == KErrLocked && retryCount < KRetryCount )
+        {
+        TRAP( errCode, iWLANRecord->ModifyL( *dbSession ) );
+
+        if ( errCode == KErrLocked )
+            {	
+            User::After( KRetryTimeout );
+            }	
+        retryCount++;	        
+        }
+    
+    if ( errCode )
+        {
+        // override previous ret value only when error happened        	    	
+        ret = errCode;
+        }
+
     CleanupStack::PopAndDestroy( dbSession );
     DEBUG("CHssIapHandler::ChangeSettingsL DONE");
 	return ret;

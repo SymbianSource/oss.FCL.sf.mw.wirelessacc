@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -22,11 +22,7 @@
 #include "wlanqtutilsconntestwrapper.h"
 #include "wlanqtutilsconntestwrapper_s60_p.h"
 
-#ifdef WLANQTUTILS_NO_OST_TRACES_FLAG
-#include <opensystemtrace.h>
-#else
 #include "OstTraceDefinitions.h"
-#endif
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanqtutilsconntestwrapper_s60Traces.h"
 #endif
@@ -64,17 +60,13 @@ void ConnTestWrapperPrivate::ConnectivityObserver(
         CONNTESTWRAPPERPRIVATE_CONNECTIVITYOBSERVER,
         "ConnTestWrapperPrivate::ConnectivityObserver;aResult=%u", aResult );
     
-    switch ( aResult ) 
+    if ( aResult == EConnectionOk )
         {
-        case EConnectionOk :
-            q_ptr->connectivityTestDone( ETrue );
-            break;
-        case EHttpAuthenticationNeeded :
-        case EConnectionNotOk :
-        case ETimeout :
-        default:
-            q_ptr->connectivityTestDone( EFalse );
-            break;
+        q_ptr->connectivityTestDone( ETrue );            
+        }
+    else
+        {
+        q_ptr->connectivityTestDone( EFalse );            
         }
     
     delete iIct;

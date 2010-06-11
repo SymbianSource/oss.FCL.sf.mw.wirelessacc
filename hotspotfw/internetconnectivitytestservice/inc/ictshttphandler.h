@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:   Contains implementation for HTTP::HEAD test
+* Description:   Contains implementation for connectivity test with HTTP
 *
 */
 
@@ -31,12 +31,12 @@ class CIctsEngine;
 /**
  *  Handles HTTP related things.
  *
- *  Sends HTTP::HEAD and interact with HTTP FW. Returns results to 
- *  caller.
+ *  Sends HTTP GET using HTTP FW. Returns results to the caller.
  *
  *  @lib ictsclientinterface.lib
  */
-class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback 
+class CIctsHttpHandler : public CTimer, 
+                         public MHTTPTransactionCallback
     {
     
     public:
@@ -53,7 +53,7 @@ class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback
         virtual ~CIctsHttpHandler();
     
         /**
-        * Send HTTP::HEAD request 
+        * Send HTTP GET request 
         *
         * @param aIPAddress IP address
         * @param aIapID IAP id
@@ -61,11 +61,11 @@ class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback
         * @return KErrNone if successful
         */
         TInt SendHttpRequestL( TDesC8& aIPAddress, 
-                            TUint32 aIapID, 
-                             TUint32 aNetworkId );
+                                 TUint32 aIapID, 
+                                   TUint32 aNetworkId );
         
         /**
-        * Cancels HTTP::HEAD request 
+        * Cancels HTTP GET request 
         *
         * @return None
         */
@@ -94,7 +94,6 @@ class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback
         virtual TInt MHFRunError( TInt aError, 
                                     RHTTPTransaction aTransaction, 
                                       const THTTPEvent& aEvent);
-    
 
     protected:  // Functions from base classes
         
@@ -126,7 +125,7 @@ class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback
         * @return None
         */
         void SetHttpConnectionInfoL( RConnection& aConnection, 
-                                     RSocketServ& aSocketServ );
+                                       RSocketServ& aSocketServ );
         /**
         * Send HTTP request 
         *
@@ -142,6 +141,14 @@ class CIctsHttpHandler : public CTimer, public MHTTPTransactionCallback
         * @return ETrue if found, else EFalse
         */ 
         TBool CheckHttp( TDesC8& aIPAddress );
+
+        /**
+        * Checks if HTTP status code is a redirect (301,302,303,307)
+        *
+        * @param aTransaction HTTP transactionL
+        * @return ETrue if found, else EFalse
+        */
+        TBool CheckStatusCodeL( RHTTPTransaction aTransaction );
     
     private: // data
 

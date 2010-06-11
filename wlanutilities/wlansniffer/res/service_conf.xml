@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<service name="com.nokia.services.wlansniffer"  filepath="\sf\mw\wirelessacc\wlanutilities\wlansniffer" >
-  <description>WLAN Sniffer</description>
-  <interface name="list" version="1.0" capabilities="">
-    <description>List View</description>
-  </interface>
-</service>
