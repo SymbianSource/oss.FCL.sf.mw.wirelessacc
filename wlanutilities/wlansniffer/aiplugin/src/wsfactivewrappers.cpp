@@ -117,10 +117,11 @@ void CWsfActiveWrappers::Disconnect()
 // CWsfActiveWrappers::Connect
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::Connect( TUint aIapID, TWsfIapPersistence aPersistence )
+void CWsfActiveWrappers::Connect( TUint aIapID, TBool aConnectOnly, 
+                                  TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::Connect" );
-    iConnectActiveWrapper->Start( aIapID, aPersistence );
+    iConnectActiveWrapper->Start( aIapID, aConnectOnly, aPersistence );
     }
 
 

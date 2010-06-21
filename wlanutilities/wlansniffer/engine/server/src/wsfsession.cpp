@@ -590,8 +590,9 @@ void CWsfSession::ConnectWlanL( const RMessage2& aMessage )
     {
     LOG_ENTERFN( "CWsfSession::ConnectWlanL" );    
     TUint32 iapId( aMessage.Int1() );
-    TWsfIapPersistence persistence( TWsfIapPersistence( aMessage.Int2() ) );
-    TPckgBuf<TInt> p( iServer.Engine()->ConnectWlanL( iapId, persistence ) );
+    TBool connectOnly( aMessage.Int2() );
+    TWsfIapPersistence persistence( TWsfIapPersistence( aMessage.Int3() ) );
+    TPckgBuf<TInt> p( iServer.Engine()->ConnectWlanL( iapId, connectOnly, persistence ) );
     aMessage.WriteL( 0, p );
     }
     

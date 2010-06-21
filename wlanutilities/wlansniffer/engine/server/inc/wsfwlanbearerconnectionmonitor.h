@@ -36,6 +36,7 @@
 //  FORWARD DECLARATIONS
 class MWsfWlanMonitorObserver;
 class MWsfServerCloserAdapter;
+class CWsfIct;
 
 
 //  CLASS DEFINITION
@@ -150,9 +151,14 @@ NONSHARABLE_CLASS( CWsfWlanBearerConnectionMonitor ): public CActive,
         /*
         * Connects to the given IAP
         * @since S60 5.0
+        * @param aIapId WLAN IAP id to connect to.
+        * @param aConnectOnly ETrue if Connect selected
+        * @param aTestAccessPoint ETrue if accesspoint needs testing
         * @return KErrNone on success, error code otherwise
         */
-        TInt ConnectBearer( TUint32 aIapId );
+        TInt ConnectBearer( TUint32 aIapId,
+                            TBool aConnectOnly,
+                            TBool aTestAccessPoint );
 
         /*
         * Disconnects active connection
@@ -400,6 +406,11 @@ NONSHARABLE_CLASS( CWsfWlanBearerConnectionMonitor ): public CActive,
         * Reference to the server closer (not owned)
         */
         MWsfServerCloserAdapter& iServerCloser;
+        
+        /**
+        * Reference to ICT handler
+        */
+        CWsfIct* iIct;
         
     };
 

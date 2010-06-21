@@ -350,6 +350,7 @@ void TWsfMainController::WlanConnectionActivatedL()
             if ( temp )
                 {
                 temp->iConnectionState = EConnected;
+                temp->iIapId = info.iIapId;
                 iInfoArray->SortArrayL();
                 UpdateViewL( iInfoArray );
                 }
@@ -476,26 +477,31 @@ void TWsfMainController::StartBrowsingL()
 
     TInt result( KErrNone );
     
+    TWsfIapPersistence persistence = EIapPersistent;
+    
     if ( !info.Known() && !info.Connected() )
         {
         // if not known yet, create an IAP
         if ( iModel->CreateAccessPointL( info, EFalse ) )
             {
+            persistence = EIapExpireOnDisconnect;
             // update iapID to list
             UpdateIapIdToInfoArrayL( info );
-            
-            // on success, test it and save it as well
-            result = iModel->TestAccessPointL( info, ETrue, EFalse );
             }
         else
             {
             result = KErrGeneral;
             }
         }
-    else if ( info.iIapId && !info.Connected() )
+    
+    if ( info.iIapId && !info.Connected() )
         {
         // hopefully we have a valid IAP id inside
-        result = iModel->ConnectL( info.iIapId );
+        result = iModel->ConnectL( info.iIapId, EFalse, persistence );
+        }
+    else if ( !info.Connected() )
+        {
+        result = KErrGeneral;
         }
     
     // pop cleanup item ReleaseSuppressingKeyEvents
@@ -562,28 +568,24 @@ void TWsfMainController::ConnectL()
         CleanupStack::PopAndDestroy();
         return;
         }
+    
+    TWsfIapPersistence persistence = EIapPersistent;
         
     if ( !info.Known() )
         {
         // a new access point needs to be created
         if ( iModel->CreateAccessPointL( info, EFalse ) )
             {
+            persistence = EIapExpireOnDisconnect;
             // update iapID to list
             UpdateIapIdToInfoArrayL( info );
-
-            // on success, test it and save it as well
-            // (testing actually creates the connection)
-            if ( iModel->TestAccessPointL( info, ETrue, ETrue ) == KErrCancel )
-                {
-                // connection creation was cancelled, refresh the view
-                iModel->RefreshScanL();
-                }
             }
         }
-    else if ( info.iIapId )
+    
+    if ( info.iIapId )
         {
         // hopefully we have a valid IAP id inside
-        iModel->ConnectL( info.iIapId );
+        iModel->ConnectL( info.iIapId, ETrue, persistence );
         }
 
     // pop cleanup item ReleaseSuppressingKeyEvents

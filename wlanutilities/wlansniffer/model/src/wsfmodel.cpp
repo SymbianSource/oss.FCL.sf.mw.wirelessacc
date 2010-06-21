@@ -52,12 +52,6 @@ using namespace CMManager;
 static const TUid KHelperApUid = { 0x10281CEB };
 
 /**
-* UID of Wlan Login application (hsbrowser)
-* used when launching WLAN Login application
-*/
-static const TInt KBrowserUid = { 0x2000AFCC };
-
-/**
 * Estimated overhead for access point creation 
 */
 const TInt KEstimatedOverhead = 8192;
@@ -97,18 +91,6 @@ EXPORT_C CWsfModel* CWsfModel::NewLC( MWsfStateChangeObserver& aObserver,
 EXPORT_C CWsfModel::~CWsfModel()
     {
     LOG_ENTERFN( "CWsfModel::~CWsfModel" );
-    if ( iIct )
-        {
-        LOG_WRITE( "ict cancel" );
-        TRAP_IGNORE( iIct->CancelStartL() );
-        delete iIct;
-        iIct = NULL;
-        }
-    if ( iIctWait.IsStarted() )
-        {
-        LOG_WRITE( "ict wait cancel" );
-        iIctWait.AsyncStop();
-        }
     iSession.CancelNotifyEvent();
     iSession.Close();
     delete iScreenSaverWatcher;
@@ -124,10 +106,7 @@ EXPORT_C CWsfModel::~CWsfModel()
 //
 CWsfModel::CWsfModel(): 
     iEikEnv( CEikonEnv::Static() ),
-    iRefreshing( EFalse ),
-    iIctEnded( EFalse ),
-    iKeepConnection( EFalse ),
-    iConnectOnly( EFalse )
+    iRefreshing( EFalse )
     {
     }
 
@@ -246,7 +225,8 @@ EXPORT_C const TDesC8& CWsfModel::ObservedWlan()
 // CWsfModel::ConnectL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
+EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId, TBool aConnectOnly,
+                                  TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "CWsfModel::ConnectL" );
     
@@ -255,7 +235,7 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
         iObserver->ConnectingL( aIapId );
         }
     
-    TInt err = iSession.ConnectWlanBearerL( aIapId, EIapPersistent );
+    TInt err = iSession.ConnectWlanBearerL( aIapId, aConnectOnly, aPersistence );
     if ( err == KErrNone )
         {
         iConnectedIapId = aIapId;
@@ -273,7 +253,7 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
         iObserver->ConnectingFinishedL( err );
         }
     
-    iRefreshing = iSession.RequestScanL();   
+    iRefreshing = iSession.RequestScanL();
     
     return err;
     }
@@ -283,9 +263,10 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId )
 // CWsfModel::ConnectL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId, 
-                                  TWsfIapPersistence aPersistence,
-                                  TRequestStatus& aStatus )
+EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
+                                   TBool aConnectOnly,
+                                   TWsfIapPersistence aPersistence,
+                                   TRequestStatus& aStatus )
     {
     LOG_ENTERFN( "CWsfModel::ConnectL" );
     
@@ -294,7 +275,7 @@ EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
         iObserver->ConnectingL( aIapId );
         }
     
-    iSession.ConnectWlanBearer( aPckg, aIapId, aPersistence, aStatus );
+    iSession.ConnectWlanBearer( aPckg, aIapId, aConnectOnly, aPersistence, aStatus );
     }
 
 // ----------------------------------------------------------------------------
@@ -324,8 +305,6 @@ EXPORT_C void CWsfModel::DisconnectL()
     TBool disconnected = iSession.DisconnectWlanBearerL();
     LOG_WRITEF( "disconnected = %d", disconnected );
     iConnectedIapId = 0;
-    iConnectedNetId = 0;
-    iConnectOnly = EFalse;
     if ( !disconnected )
         {
         iRefreshing = iSession.RequestScanL(); 
@@ -342,8 +321,6 @@ EXPORT_C void CWsfModel::Disconnect( TPckgBuf<TBool>& aPckg, TRequestStatus& aSt
     LOG_ENTERFN( "CWsfModel::Disconnect" );
     iSession.DisconnectWlanBearer( aPckg, aStatus );
     iConnectedIapId = 0;
-    iConnectedNetId = 0;
-    iConnectOnly = EFalse;
     }
 
 
@@ -457,165 +434,6 @@ EXPORT_C void CWsfModel::ContinueBrowsingL( TUint32 aIapId )
 
 
 // ----------------------------------------------------------------------------
-// CWsfModel::ConnectivityObserver
-// ----------------------------------------------------------------------------
-//
-void CWsfModel::ConnectivityObserver( TIctsTestResult aResult, 
-                                      const TDesC& aString )
-    {
-    LOG_ENTERFN( "CWsfModel::ConnectivityObserver" );
-    LOG_WRITEF( "ICTS result: %d", aResult );
-    
-    TBool makePersistent( EFalse );
-    // check the result
-    switch ( aResult )
-        {
-        case EConnectionOk:
-            {
-            // test succeeded
-            TRAP_IGNORE( MoveToInternetSnapL( iConnectedIapId ) );
-            makePersistent = ETrue;
-            LOG_WRITE( "ICT: EConnectionOk" );
-            break;            
-            }
-            
-        case EConnectionNotOk:
-            {
-            // test was run but it failed
-            LOG_WRITE( "ICT: EConnectionNotOk" );
-            break;
-            }
-        case EHttpAuthenticationNeeded:
-            {
-            // test was run but HTTP authentication is required
-            LOG_WRITE( "ICT: EHttpAuthenticationNeeded" );
-            if ( iConnectOnly )
-                {
-                // Connect selected. WLAN Login needed.
-                TRAP_IGNORE( LaunchWlanLoginL(aString) );
-                }    
-            break;
-            }    
-        case ETimeout:
-            {
-            LOG_WRITE( "ICT: ETimeout" );
-            break;
-            }
-            
-        default:
-            {
-            _LIT( KIctPanic, "ICT result" );
-            User::Panic( KIctPanic, aResult );
-            }
-        }
-
-    if ( makePersistent )
-        {
-        TWsfIapPersistence pt = ( iConnectedIapId )? 
-                                     EIapPersistent: 
-                                     EIapExpireOnShutdown;
-                                     
-        TRAPD( err, MakeIctIapPersistentL( pt ) );
-        if ( err )
-            {
-            LOG_WRITEF( "MakeIctIapPersistentL leaved with error = %d", err );
-            }
-        }
-        
-    LOG_WRITE( "before AsyncStop" );
-    // finally stop blocking the caller
-    iIctEnded = ETrue; 
-    if ( iIctWait.IsStarted() )
-        {
-        LOG_WRITE( "ICT: AsyncStop" );
-        iIctWait.AsyncStop();
-        }
-    
-    }
-
-// -----------------------------------------------------------------------------
-// CWsfModel::LaunchWlanLoginL()
-// -----------------------------------------------------------------------------
-//    
-void CWsfModel::LaunchWlanLoginL( const TDesC& aString )
-    {   
-    LOG_ENTERFN( "WsfModel::LaunchWlanLoginL" );
-    HBufC* param = HBufC::NewLC( KMaxFileName );
-    _LIT(tmpString, "%d, %d, %S");
-    param->Des().Format( tmpString, 
-                         iConnectedIapId, 
-                         iConnectedNetId, 
-                         &aString );
-    TUid uid( TUid::Uid( KBrowserUid ) );
-    TThreadId id;
-    
-    RApaLsSession appArcSession;
-    User::LeaveIfError( appArcSession.Connect() ); 
-    CleanupClosePushL( appArcSession );
-        
-    TInt err = appArcSession.StartDocument( *param, TUid::Uid( KBrowserUid ), id );
-    if ( err != KErrNone )
-        {
-        LOG_ENTERFN( "WsfModel::LaunchWlanLoginL failed" );
-        }
-    CleanupStack::PopAndDestroy( &appArcSession );
-    CleanupStack::PopAndDestroy( param );
-    }
-
-// ----------------------------------------------------------------------------
-// CWsfModel::MakeIctIapPersistentL
-// ----------------------------------------------------------------------------
-//
-void CWsfModel::MakeIctIapPersistentL( TWsfIapPersistence aPersistence )
-    {
-    LOG_ENTERFN( "CWsfModel::MakeIctIapPersistentL" );
-    LOG_WRITEF( "temp ICT IAP id = %d", iIctWlanInfo.iIapId );
-    
-    if ( !iSession.SetIapPersistenceL( aPersistence ) )
-        {
-        LOG_WRITE( "setting temporary flag FAILED" );
-        }
-    
-    }
-
-// ----------------------------------------------------------------------------
-// CWsfModel::MoveToInternetSnapL
-// ----------------------------------------------------------------------------
-//
-void CWsfModel::MoveToInternetSnapL( const TUint32 aIapId )
-    {
-	LOG_ENTERFN( "CWsfModel::MoveToInternetSnapL" );
-    // Read all destination(SNAP) settings into an array
-    RArray<TUint32> destinations;
-    CleanupClosePushL(destinations);
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );      
-    cmManager.AllDestinationsL(destinations);
-    RCmDestinationExt destination;
-    // Loop through each destination
-    for(TInt i = 0; i < destinations.Count(); i++)
-        {
-        destination = cmManager.DestinationL(destinations[i]);
-        CleanupClosePushL(destination); 
-        // Internet destination will always exist in the system.
-        // Internet destination will have ESnapPurposeInternet set in its metadata.
-        if (destination.MetadataL(CMManager::ESnapMetadataPurpose) == CMManager::ESnapPurposeInternet)
-            {
-            RCmConnectionMethodExt iap = cmManager.ConnectionMethodL( aIapId );
-            CleanupClosePushL( iap );     
-            LOG_WRITE( "Move Iap to internet destination" );
-            destination.AddConnectionMethodL( iap );
-            destination.UpdateL();
-            CleanupStack::PopAndDestroy( &iap ); 
-            }
-        CleanupStack::PopAndDestroy( &destination ); 
-        }
-    CleanupStack::PopAndDestroy( &cmManager ); 
-    CleanupStack::PopAndDestroy( &destinations ); 
-    }
-
-// ----------------------------------------------------------------------------
 // CWsfModel::CreateAccessPointL
 // ----------------------------------------------------------------------------
 //
@@ -630,8 +448,7 @@ EXPORT_C TBool CWsfModel::CreateAccessPointL( TWsfWlanInfo& aWlan,
     
     CheckSpaceBelowCriticalLevelL();
     CheckUnknownWapiL( aWlan );
-
-#pragma message("TODO: oursource UI to client interfaces!")        
+      
     CWsfWlanIapWizard* iapWizard = CWsfWlanIapWizard::NewLC();
     
     // the wlaninfo must be persistent to avoid nullpointer crashes due to
@@ -663,233 +480,6 @@ EXPORT_C TBool CWsfModel::CreateAccessPointL( TWsfWlanInfo& aWlan,
     CleanupStack::PopAndDestroy( iapWizard );
     
     return ret;
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::IctsTestPermission
-// ----------------------------------------------------------------------------
-//
-EXPORT_C TInt CWsfModel::IctsTestPermission()
-    {
-    LOG_ENTERFN( "CWsfModel::IctsTestPermission" );
-    TInt ictTestPermission( 0 );
-    CRepository* repository( NULL );
-    
-    TRAPD( err, repository = CRepository::NewL( 
-                                        KCRUidInternetConnectivitySettings ) );
-    if ( err == KErrNone )
-        {
-        repository->Get( KIctsTestPermission, ictTestPermission );
-        delete repository;
-        LOG_WRITEF( "ICT is set to %d", ictTestPermission );
-        }
-    return ictTestPermission;
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::TestAccessPointL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C TInt CWsfModel::TestAccessPointL( TWsfWlanInfo& aWlan,
-                                           TBool aKeepConnection, 
-                                           TBool aConnectOnly )
-    {
-    LOG_ENTERFN( "CWsfModel::TestAccessPointL" );    
-    TInt err( KErrNone );
-    iKeepConnection = aKeepConnection;
-    iConnectOnly = aConnectOnly;
-    if ( !aWlan.iIapId )
-        {
-        // the wlaninfo must already contain a valid IAP id
-        LOG_WRITE( "invalid IAP id" );
-        return KErrCorrupt;
-        }
-    
-    // the wlaninfo must be persistent to avoid nullpointer crashes due to
-    // background refreshing 
-    iIctWlanInfo = aWlan;
-
-    // create connection and test connectivity if needed
-
-    // check ICT settings
-    TInt ictTestPermission( IctsTestPermission() );
-    
-    
-    if ( aKeepConnection || ictTestPermission != EIctsNeverRun )
-        {
-        // make connection if Connect was selected or if ICT needs it
-        LOG_WRITE( "creating connection..." );
-        if ( iObserver )
-            {
-            iObserver->ConnectingL( iIctWlanInfo.iIapId );
-            }
-
-        // create the connection with temporary IAP by default
-        err = iSession.ConnectWlanBearerL( iIctWlanInfo.iIapId, 
-                                           EIapExpireOnDisconnect );
-        
-        if ( err == KErrNone )
-            {
-            LOG_WRITE( "connection OK." )
-            }
-        else
-            {
-            LOG_WRITEF( "connection creation failed with error = %d", err );
-            // either the connection creation failed or was aborted, 
-            // the server already cleaned up the mess, so nothing to do
-            }
-            
-        if ( iObserver )
-            {
-            iObserver->ConnectingFinishedL( err );
-            }
-            
-        }
-
-    if ( err == KErrNone && ictTestPermission != EIctsNeverRun )
-        {
-        // do the connectivity test
-        iConnectedIapId = iIctWlanInfo.iIapId;
-        
-        RCmManagerExt cmManager;
-        cmManager.OpenL();
-        CleanupClosePushL( cmManager );        
-
-        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( 
-                                                            iConnectedIapId );
-        CleanupClosePushL( cm );
-        
-        iConnectedNetId = cm.GetIntAttributeL( CMManager::ECmNetworkId ); 
-
-        CleanupStack::PopAndDestroy( &cm );
-        CleanupStack::PopAndDestroy( &cmManager );
-
-        LOG_WRITE( "starting ICT test..." );
-        CIctsClientInterface* ict = CIctsClientInterface::NewL( 
-                                                    iConnectedIapId, 
-                                                    iConnectedNetId,
-                                                    *this );
-        LOG_WRITE( "ICT created" );
-        CleanupStack::PushL( ict );
-        ict->StartL();
-        LOG_WRITE( "ICT: started" );
-        
-        // enter a waitloop since ICT is a kind of asynchronous service
-        if ( !iIctEnded )
-            {
-            LOG_WRITE( "ICT: iIctWait started" );
-            iIctWait.Start();
-            }
-            
-        iIctEnded = EFalse;
-        CleanupStack::PopAndDestroy( ict );
-        LOG_WRITE( "ICT test done." );
-        }
-    
-        
-    if ( ( err == KErrNone && !aKeepConnection && 
-                                     ictTestPermission != EIctsNeverRun ) ||
-         ( err != KErrNone && err != KErrCancel ) )
-        {
-        // drop the connection in case of Start web browsing, and if an error
-        // different from KErrCancel occured (on cancel the connection is
-        // closed automatically)
-        LOG_WRITE( "disconnecting..." );
-        iSession.DisconnectWlanBearerL();
-        LOG_WRITE( "Disconnected." );
-        }
-        
-    
-        
-    if ( err == KErrNone && ictTestPermission == EIctsNeverRun )
-        {
-        LOG_WRITE( "ICT is set to never run, IAP remains temporary" );
-
-        ConnectivityObserver( EConnectionNotOk, KNullDesC );
-        }
-
-    return err;
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::TestConnectedAccessPointL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C TInt CWsfModel::TestConnectedAccessPointL( TWsfWlanInfo& aWlan,
-                                                    TBool aConnectOnly )
-    {
-    LOG_ENTERFN( "CWsfModel::TestConnectedAccessPointL" );    
-    TInt err( KErrNone );
-    iConnectOnly = aConnectOnly;
-    if ( !aWlan.iIapId )
-        {
-        // the wlaninfo must already contain a valid IAP id
-        LOG_WRITE( "invalid IAP id" );
-        return KErrCorrupt;
-        }
-    
-    // the wlaninfo must be persistent to avoid nullpointer crashes due to
-    // background refreshing 
-    iIctWlanInfo = aWlan;
-
-    // check ICT settings
-    TInt ictTestPermission( IctsTestPermission() );
-
-    if ( ictTestPermission != EIctsNeverRun )
-        {
-        // do the connectivity test
-        iConnectedIapId = iIctWlanInfo.iIapId;
-        
-        RCmManagerExt cmManager;
-        cmManager.OpenL();
-        CleanupClosePushL( cmManager );        
-
-        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( 
-                                                            iConnectedIapId );
-        CleanupClosePushL( cm );
-        
-        iConnectedNetId = cm.GetIntAttributeL( CMManager::ECmNetworkId ); 
-
-        CleanupStack::PopAndDestroy( &cm );
-        CleanupStack::PopAndDestroy( &cmManager );
-
-        LOG_WRITE( "starting ICT test..." );
-        
-        if ( iIct )
-            {
-            iIct->CancelStartL();
-            delete iIct;
-            iIct = NULL;
-            }
-        
-        iIct = CIctsClientInterface::NewL( iConnectedIapId, 
-                                           iConnectedNetId,
-                                           *this );
-        LOG_WRITE( "ICT created" );
-        iIct->StartL();
-        LOG_WRITE( "ICT: started" );
-        
-        // enter a waitloop since ICT is a kind of asynchronous service
-        if ( !iIctEnded )
-            {
-            LOG_WRITE( "ICT: iIctWait started" );
-            iIctWait.Start();
-            }
-        
-        iIctEnded = EFalse;
-        LOG_WRITE( "ICT test done." );
-        }
-
-    if ( ictTestPermission == EIctsNeverRun )
-        {
-        LOG_WRITE( "ICT is set to never run, IAP remains temporary" );
-        ConnectivityObserver( EConnectionNotOk, KNullDesC );
-        }
-
-    return err;
     }
 
 

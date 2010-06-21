@@ -102,12 +102,14 @@ void CWsfConnectActiveWrapper::DoCancel()
 // CWsfConnectActiveWrapper::StartL
 // --------------------------------------------------------------------------
 //
-void CWsfConnectActiveWrapper::Start(TUint aIapID, TWsfIapPersistence aPersistence )
+void CWsfConnectActiveWrapper::Start( TUint aIapID, TBool aConnectOnly, 
+                                      TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "CWsfConnectActiveWrapper::Start" );
     Cancel(); // Cancel any request, just to be sure
     iState = EUninitialized;
     iIapID = aIapID;
+    iConnectOnly = aConnectOnly;
     iPersistence = aPersistence;
     SetActive();
     TRequestStatus* status = &iStatus;
@@ -127,7 +129,7 @@ void CWsfConnectActiveWrapper::RunL()
         if ( iState == EUninitialized )
             {
             LOG_WRITE( "Start connect" );
-            iModel->ConnectL( iPckg, iIapID, iPersistence, iStatus );
+            iModel->ConnectL( iPckg, iIapID, iConnectOnly, iPersistence, iStatus );
             iState = EInitialized;
             SetActive(); // Tell scheduler a request is active
             }

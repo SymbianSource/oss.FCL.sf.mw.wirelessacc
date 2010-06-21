@@ -40,6 +40,7 @@ SOURCE                  wsfsession.cpp
 SOURCE                  wsfservercloser.cpp
 SOURCE                  wsfwlanbearerconnectionmonitor.cpp
 SOURCE                  wsfactivewaiter.cpp
+SOURCE                  wsfict.cpp
 
 
 // own headers
@@ -70,6 +71,7 @@ LIBRARY     commsdat.lib
 LIBRARY     commdb.lib
 LIBRARY     cmmanagerdatabase.lib
 LIBRARY     cmmanager.lib
+LIBRARY     ictsclientinterface.lib
 
 LIBRARY     esock.lib 
 LIBRARY     charconv.lib

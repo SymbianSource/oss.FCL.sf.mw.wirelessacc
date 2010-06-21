@@ -39,6 +39,7 @@
 #include "wsfactivewaiter.h"
 #include "wsfservercloseradapter.h"
 #include "wsfcommon.h"
+#include "wsfict.h"
 
 
 //  LOCAL DEFINITIONS
@@ -148,6 +149,8 @@ CWsfWlanBearerConnectionMonitor::~CWsfWlanBearerConnectionMonitor()
         }
 
     delete iClientPoll;
+    
+    delete iIct;
 
     iCmMgr.Close();
     }
@@ -179,6 +182,7 @@ void CWsfWlanBearerConnectionMonitor::ConstructL()
     iCmMgr.OpenL();
     iMonitor.ConnectL();
     iClientPoll = CPeriodic::NewL( CActive::EPriorityLow );
+    iIct = CWsfIct::NewL();
     FindWlanBearerConnectedL();
     }
     
@@ -425,7 +429,9 @@ void CWsfWlanBearerConnectionMonitor::StopMonitoring()
 // CWsfWlanBearerConnectionMonitor::ConnectBearer
 // ---------------------------------------------------------------------------
 //
-TInt CWsfWlanBearerConnectionMonitor::ConnectBearer( TUint32 aIapId )
+TInt CWsfWlanBearerConnectionMonitor::ConnectBearer( TUint32 aIapId,
+                                                     TBool aConnectOnly,
+                                                     TBool aTestAccessPoint )
     {
     LOG_ENTERFN( "CWsfWlanBearerConnectionMonitor::ConnectBearer" );
     
@@ -445,6 +451,13 @@ TInt CWsfWlanBearerConnectionMonitor::ConnectBearer( TUint32 aIapId )
         iConnectionOwned = ETrue;
         iServerCloser.WaitForOwnedConnection( ETrue );
 
+        TRAPD( err, iIct->InitializeIctL( aTestAccessPoint, aIapId, 
+                                          aConnectOnly ) );
+        if ( err )
+            {
+            LOG_WRITEF( "Ict initialization failed error = %d", err );
+            }
+        
         SetActive();
         TRequestStatus* status = &iStatus;
         User::RequestComplete( status, KErrNone );
@@ -1069,10 +1082,16 @@ void CWsfWlanBearerConnectionMonitor::RunL()
                            TCallBack( CheckClientCount, this ) );
                                 
             LOG_WRITE( "connection client polling started" );
-
+            
             // notify observers of the connection name
             iObserver->ConnectionEstablishedL( iWlanNetworkName );
             
+            TRAPD( err, iIct->TestConnectedAccessPointL( iConnIap ) );
+            if ( err )
+                {
+                LOG_WRITEF( "Ict start failed error = %d", err );
+                }
+
             iConnectingState = ECsConnected;
             break;
             }

@@ -481,6 +481,38 @@ void CWsfEngine::DeleteIapL( TUint32 aIapId )
     RCmManagerExt cmMgr;
     cmMgr.OpenLC();
     
+    RArray<TUint32> cmIds;
+    CleanupClosePushL( cmIds );
+    cmMgr.ConnectionMethodL( cmIds, ETrue, ETrue, EFalse );
+    TBool foundFromUncategorized = EFalse;
+    
+    for ( TInt k = 0; k < cmIds.Count(); k++ )
+        {
+        RCmConnectionMethodExt cm;
+        TRAPD( error, cm = cmMgr.ConnectionMethodL( cmIds[k] ) );
+        if ( KErrNone == error )
+            {
+            CleanupClosePushL( cm );
+
+            TUint iapId = cm.GetIntAttributeL( CMManager::ECmIapId );
+            if ( iapId == aIapId )
+                {
+                LOG_WRITE( "IAP is uncategorized" );
+                foundFromUncategorized = ETrue;
+                }
+            CleanupStack::PopAndDestroy( &cm );
+            }
+        }
+    
+    CleanupStack::PopAndDestroy( &cmIds );
+    
+    if ( !foundFromUncategorized )
+        {
+        LOG_WRITE( "Not deleting IAP since it is in SNAP" );
+        CleanupStack::PopAndDestroy( &cmMgr );
+        return;
+        }
+    
     RCmConnectionMethodExt ictCm = cmMgr.ConnectionMethodL( aIapId );
     CleanupClosePushL( ictCm );
 
@@ -542,7 +574,8 @@ void CWsfEngine::DeleteIapL( TUint32 aIapId )
 // CWsfEngine::ConnectWlanL
 // ----------------------------------------------------------------------------
 //
-TInt CWsfEngine::ConnectWlanL( TUint32 aIapId, 
+TInt CWsfEngine::ConnectWlanL( TUint32 aIapId,
+                               TBool aConnectOnly,
                                TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "CWsfEngine::ConnectWlanL" );
@@ -568,7 +601,9 @@ TInt CWsfEngine::ConnectWlanL( TUint32 aIapId,
         iSuppressIapDeletion = EFalse;
         }
 
-    TInt ret = iWlanBearerMonitor->ConnectBearer( aIapId );
+    TInt ret = iWlanBearerMonitor->ConnectBearer( aIapId, 
+                                                  aConnectOnly,
+                                                  aPersistence != EIapPersistent );
     
     if ( !ret )
         {

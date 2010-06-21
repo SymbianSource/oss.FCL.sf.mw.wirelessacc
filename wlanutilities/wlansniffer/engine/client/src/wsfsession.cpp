@@ -480,7 +480,8 @@ EXPORT_C void RWsfSession::RequestScan(TPckgBuf<TBool>& aPckg, TRequestStatus& a
 // ---------------------------------------------------------------------------
 //
 EXPORT_C TInt RWsfSession::ConnectWlanBearerL( TUint32 aIapId, 
-                                              TWsfIapPersistence aPersistence )
+                                               TBool aConnectOnly,
+                                               TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "RWsfSession::ConnectWlanBearerL" );
     LOG_WRITEF( "IAP id = %d", aIapId );
@@ -495,8 +496,10 @@ EXPORT_C TInt RWsfSession::ConnectWlanBearerL( TUint32 aIapId,
     CWsfActiveWaiter *waiter = CWsfActiveWaiter::NewL();
     CleanupStack::PushL( waiter );
 
-    SendReceive( ESnifferCmdConnect, TIpcArgs( &pckg, aIapId, aPersistence ), 
-                                                             waiter->iStatus );
+    SendReceive( ESnifferCmdConnect, 
+                 TIpcArgs( &pckg, aIapId, aConnectOnly, aPersistence ), 
+                 waiter->iStatus );
+    
     waiter->WaitForRequest();
     LOG_WRITEF( "message[%d] call returned %d", 
                 ESnifferCmdConnect,
@@ -534,6 +537,7 @@ EXPORT_C TInt RWsfSession::ConnectWlanBearerL( TUint32 aIapId,
 //
 EXPORT_C void RWsfSession::ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
                                                TUint32 aIapId, 
+                                               TBool aConnectOnly,
                                                TWsfIapPersistence aPersistence,
                                                TRequestStatus& aStatus )
     {
@@ -544,8 +548,9 @@ EXPORT_C void RWsfSession::ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
     iEventHandler->UnBlockNextConnectedEvent();
     iEventHandler->SetConnecting( ETrue );
 
-    SendReceive( ESnifferCmdConnect, TIpcArgs( &aPckg, aIapId, aPersistence ), 
-                                                aStatus );
+    SendReceive( ESnifferCmdConnect, 
+                 TIpcArgs( &aPckg, aIapId, aConnectOnly, aPersistence ), 
+                 aStatus );
     }
 
 

@@ -80,8 +80,7 @@ TWsfAiController::TWsfAiController():
     iAiModel( NULL ),
     iUi( NULL ),
     iDbObserver( NULL ),
-    iShouldConnectOnly( EFalse ),
-    iTestAccessPoint( EFalse )
+    iConnectOnly( EFalse )
     {
     // null the pointers
     iConnectedWlan.iConnectionState = ENotConnected;
@@ -461,13 +460,9 @@ void TWsfAiController::ConnectionCreationProcessFinishedL( TInt aResult )
     if ( aResult == KErrNone )
         {
         iAiModel->SetConnected( ETrue );
-        if ( !iShouldConnectOnly )
+        if ( !iConnectOnly )
             {
             StartWebBrowserL( iUsedInfo );
-            }
-        if ( iTestAccessPoint )
-            {
-            iModel->TestConnectedAccessPointL( iUsedInfo, iShouldConnectOnly );
             }
         }
     else
@@ -511,7 +506,7 @@ void TWsfAiController::StartBrowsingL( TWsfWlanInfo& aInfo )
     else
         {
         LOG_WRITE("Start browser to connected network...");
-        iShouldConnectOnly = EFalse;
+        iConnectOnly = EFalse;
         StartWebBrowserL( iUsedInfo );
         }
     
@@ -558,8 +553,8 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly,
     LOG_ENTERFN( "TWsfAiController::ConnectL" );
     
     _ASS_D( iModel );
-    iTestAccessPoint = aTestAccessPoint;
-    iShouldConnectOnly = aConnectOnly;
+    TBool testAccessPoint = aTestAccessPoint;
+    iConnectOnly = aConnectOnly;
     iUsedInfo = aInfo;
     
     // Prevent connections to ad-hoc + WPA 
@@ -602,29 +597,31 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly,
             User::Leave( accessPointCreatedError );
             }
         ConnectingL( iUsedInfo.iIapId );
-        iTestAccessPoint = ETrue;
+        testAccessPoint = ETrue;
         }
     else if ( !iUsedInfo.iIapId )
         {
+        testAccessPoint = ETrue;
         // let the helper app do the query if necessary
         LOG_WRITE("AiHelper needs to be launched");
-        iTestAccessPoint = ETrue;
         iActiveWrappers->LaunchHelperApplicationL( iUsedInfo, 
-                                                   iShouldConnectOnly,
-                                                   iTestAccessPoint );
+                                                   iConnectOnly,
+                                                   testAccessPoint );
         }
     
     // Connect
     if ( iUsedInfo.iIapId )
         {
-        if ( iTestAccessPoint )
+        if ( testAccessPoint )
             {
-            iActiveWrappers->Connect( iUsedInfo.iIapId, EIapExpireOnDisconnect );
+            iActiveWrappers->Connect( iUsedInfo.iIapId, iConnectOnly, 
+                                      EIapExpireOnDisconnect );
             
             }
         else
             {
-            iActiveWrappers->Connect( iUsedInfo.iIapId, EIapPersistent );
+            iActiveWrappers->Connect( iUsedInfo.iIapId, iConnectOnly, 
+                                      EIapPersistent );
             }
         }
     // pop cleanup item 

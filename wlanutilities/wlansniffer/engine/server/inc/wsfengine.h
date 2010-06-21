@@ -143,10 +143,13 @@ NONSHARABLE_CLASS( CWsfEngine ): public CBase,
         * Connects to the given IAP
         * @since S60 5.0
         * @param aIapId The IAP to connect to
+        * @param aConnectOnly ETrue if Connect selected
         * @param aPersistence Persistence property of the IAP
         * @return KErrNone if successful, otherwise error code
         */
-        TInt ConnectWlanL( TUint32 aIapId, TWsfIapPersistence aPersistence );
+        TInt ConnectWlanL( TUint32 aIapId,
+                           TBool aConnectOnly,
+                           TWsfIapPersistence aPersistence );
 
         /**
         * Disconnects the active WLAN connection

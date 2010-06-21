@@ -366,12 +366,7 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         /**
          * Indicates whether Connect or Start Web browsing was selected
          */
-        TBool iShouldConnectOnly;
-        
-        /**
-         * Indicates whether access point needs testing
-         */
-        TBool iTestAccessPoint;
+        TBool iConnectOnly;
         
         /**
         * A pointer to CWsfActiveWrappers

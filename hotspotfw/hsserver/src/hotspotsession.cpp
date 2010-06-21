@@ -38,6 +38,10 @@
 class CWlanMgmtClient;
 class MWlanMgmtNotifications;
 
+// Constants
+const TInt KSeparatorsLength = 4;    
+const TInt KBrowserUid = 0x2000AFCC; // WLAN Login UID
+
 // ============================ MEMBER FUNCTIONS ===============================
 
 // -----------------------------------------------------------------------------
@@ -1112,9 +1116,30 @@ void CHotSpotSession::ProcessUiState( const RMessage2& aMessage )
 void CHotSpotSession::AuthenticateL( const TDesC& aString )
     {
     DEBUG("CHotSpotSession::AuthenticateL()");
-
-    const TInt KBrowserUid = 0x2000AFCC; // hotspot browser application
-    HBufC* param = HBufC::NewLC( KMaxFileName );
+    
+    // Count IAP Id length
+    TInt iapIdLength ( 1 );
+    TInt iapId = iIapId;
+    while ( iapId >= 10 )
+        {
+        iapId = iapId / 10;
+        iapIdLength++;
+        }
+    
+    // Count Network Id length
+    TInt netIdLength ( 1 );
+    TInt netId = iNetId;
+    while ( netId >= 10 )
+        {
+        netId = netId / 10;
+        netIdLength++;
+        }
+    
+    TInt length = aString.Length() + 
+                  iapIdLength + 
+                  netIdLength + 
+                  KSeparatorsLength;
+    HBufC* param = HBufC::NewLC( length );
     _LIT(tmpString, "%d, %d, %S");
     param->Des().Format( tmpString, iIapId, iNetId, &aString );
     TUid uid( TUid::Uid( KBrowserUid ) );

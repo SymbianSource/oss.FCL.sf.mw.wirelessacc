@@ -123,6 +123,12 @@ class CHssIapHandler : public CBase
         * @param aEapCode, Eap id code
         */                 
         void GetEapTypeDesC( TUint aEapType, TDes8& aEapString, TChar& aEapCode );
+        
+        /**
+        * Removes brackets from UID
+        * @param aUid, UID of the client
+        */
+        void ModifyClientUid( TDes& aUid );
        
     private: // Data
         

@@ -159,6 +159,7 @@ void CWsfWlanScanner::DoCancel()
     LOG_ENTERFN( "CWsfWlanScanner::DoCancel" );
     iTimer.Cancel();
 #ifndef __WINS__
+    iWlanMgmtClient->CancelGetAvailableIaps();
     iWlanMgmtClient->CancelGetScanResults();
 #endif    
     iScanState = EIdle;    
@@ -176,8 +177,8 @@ void CWsfWlanScanner::RunL()
     /*
      * Scan logic
      * 1. Get available IAPs - state = EIdle
-     * 2. Do broadcast scan - state = EIdle
-     * 3. Process broadcast scan results - state = EBroadcastScan
+     * 2. Do broadcast scan - state = EBroadcastScan
+     * 3. Process broadcast scan results - state = EProcessBroadcastScan
      * 4. Do direct scans for remaining known networks
      *    from step 2. Get available IAPs - state = EDirectScan
      * 5. Add connected network - state = EFinished
@@ -186,7 +187,7 @@ void CWsfWlanScanner::RunL()
 
     if ( iScanState == EIdle )
         {
-        LOG_WRITE( "broadcast scan phase" );
+        LOG_WRITE( "Get available IAPs scan phase" );
 
         // prepare things for direct scans
         PrepareDirectScan();
@@ -196,16 +197,46 @@ void CWsfWlanScanner::RunL()
             {
             iObserver->WlanScanStarted();
             }
-
         
 #ifndef __WINS__
         // get available iaps
         // (this only shows iaps with security mode matching to scan results
         // and  also finds hidden wlans for which an iap has been configured)
         iAvailableIaps.Reset();
-        iWlanMgmtClient->GetAvailableIaps( iAvailableIaps );
+        iWlanMgmtClient->GetAvailableIaps( iCacheLifetime, 
+                                           iMaxDelay, 
+                                           EFalse, 
+                                           iStatus, 
+                                           iAvailableIaps );
+        SetActive();
+#else
+        // for testing
+        SetActive();
+        TRequestStatus* status = &iStatus;
+        User::RequestComplete( status, KErrNone );
+#endif 
+        iScanState = EBroadcastScan;
+        }
         
-		// do broadcast scan
+    else if ( iScanState == EBroadcastScan )
+        {
+        LOG_WRITEF( "GetAvailableIaps returned iStatus=%d", iStatus.Int() );
+        if ( iStatus.Int() )
+            {
+            LOG_WRITE( "Error in getting available IAPs - leave" );
+            User::Leave( iStatus.Int() );
+            }
+        
+#ifdef _DEBUG
+        for ( TInt i = 0; i < iAvailableIaps.Count(); ++i )
+            {
+            LOG_WRITEF( "iAvailableIaps array index[%d] IapId[%d] rssi[%d]", i,
+                        iAvailableIaps[i].iIapId, iAvailableIaps[i].iRssi );
+            }
+#endif
+    
+#ifndef __WINS__ 
+        // do broadcast scan
         iWlanMgmtClient->GetScanResults( iStatus, *iScanInfo );
         SetActive();
 #else
@@ -213,12 +244,11 @@ void CWsfWlanScanner::RunL()
         SetActive();
         TRequestStatus* status = &iStatus;
         User::RequestComplete( status, KErrNone );
-#endif     
-        
-        iScanState = EBroadcastScan;
+#endif 
+        iScanState = EProcessBroadcastScan;
         }
         
-    else if ( iScanState == EBroadcastScan )
+    else if ( iScanState == EProcessBroadcastScan )
         {
         // process broadcast scan results
         DoScanForNetworksL();
@@ -354,6 +384,8 @@ void CWsfWlanScanner::RunL()
             iTimer.After( iStatus, 
                           TTimeIntervalMicroSeconds32( iScanningInterval ) );
             Cancel();
+            iCacheLifetime = 0;
+            iMaxDelay = 0;
             SetActive();
             }
         
@@ -440,6 +472,7 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
                 LOG_WRITE( "Info found" );
                 TWsfWlanInfo* temp = matchArray[0];
                 temp->iConnectionState = EConnected;
+                temp->iIapId = connectedInfo->iIapId;
                 temp->iSsid.Copy( connectedSsidOrIap );
                 temp->iNetworkName.Zero();
                 }
@@ -530,7 +563,7 @@ void CWsfWlanScanner::DumpScanResultsL( CWsfWlanInfoArray* aArray )
                                       &Keap: &KNullDesC );
         HBufC16 *ssid = TWsfWlanInfo::GetSsidAsUnicodeLC( wi->iSsid );
         
-        LOG_WRITEF( "[%S] %S %S %S", ssid, sm, psk, 
+        LOG_WRITEF( "[%S] IapId=%d %S %S %S", ssid, wi->iIapId, sm, psk, 
                     wi->iVisibility? &KNullDesC: &Khidden );
         CleanupStack::PopAndDestroy( ssid );
         }
@@ -565,6 +598,8 @@ TInt CWsfWlanScanner::RunError( TInt aError )
         iTimer.Cancel();
         iTimer.After( iStatus, 
                       TTimeIntervalMicroSeconds32( iScanningInterval ) );
+        iCacheLifetime = 0;
+        iMaxDelay = 0;
         SetActive();    
         }
         
@@ -604,6 +639,8 @@ void CWsfWlanScanner::StartScanningL()
         if ( !iShowAvailability )
             {
             // in case show wlan availability is off, carry out a scan now
+            iCacheLifetime = 0;
+            iMaxDelay = 0;
             SetActive();
             TRequestStatus* status = &iStatus;
             User::RequestComplete( status, KErrNone );
@@ -653,7 +690,8 @@ TBool CWsfWlanScanner::RestartScanning()
         // we have been waiting for the timer to complete
         // cancel it manually
         Cancel();
-        
+        iCacheLifetime = 0;
+        iMaxDelay = 0;
         // then complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -684,6 +722,8 @@ void CWsfWlanScanner::AbortScanning()
             // still, life goes on
             iTimer.After( iStatus, TTimeIntervalMicroSeconds32( 
                                                         iScanningInterval ) );
+            iCacheLifetime = 0;
+            iMaxDelay = 0;
             SetActive();        
             }
         }
@@ -710,6 +750,8 @@ void CWsfWlanScanner::BssidChanged( TWlanBssid& /*aNewBSsid*/ )
     LOG_ENTERFN( "CWsfWlanScanner::BssidChanged" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -727,6 +769,8 @@ void CWsfWlanScanner::BssLost()
     LOG_ENTERFN( "CWsfWlanScanner::BssLost" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -744,6 +788,8 @@ void CWsfWlanScanner::BssRegained()
     LOG_ENTERFN( "CWsfWlanScanner::BssRegained" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -761,6 +807,8 @@ void CWsfWlanScanner::NewNetworksDetected()
     LOG_ENTERFN( "CWsfWlanScanner::NewNetworksDetected" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -778,6 +826,8 @@ void CWsfWlanScanner::OldNetworksLost()
     LOG_ENTERFN( "CWsfWlanScanner::OldNetworksLost" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -795,6 +845,8 @@ void CWsfWlanScanner::TransmitPowerChanged( TUint /*aPower*/ )
     LOG_ENTERFN( "CWsfWlanScanner::TransmitPowerChanged" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -812,6 +864,8 @@ void CWsfWlanScanner::RssChanged( TWlanRssClass /*aRssClass*/, TUint /*aRss*/ )
     LOG_ENTERFN( "CWsfWlanScanner::RssChanged" );
     if ( iScanState == EIdle && !IsActive() )
         {
+        iCacheLifetime = -1;
+        iMaxDelay = 0;
         // complete ourselves
         SetActive();
         TRequestStatus* status = &iStatus;
@@ -957,12 +1011,13 @@ void CWsfWlanScanner::DoScanForNetworksL()
     // start by making sure the scan array is empty
     iScanArray->Reset();    
 
-    LOG_WRITEF( "GetScanResults returned %d", iStatus.Int() );
+    LOG_WRITEF( "GetScanResults returned iStatus=%d", iStatus.Int() );
     
     if ( iStatus.Int() )
         {
         // if the status is not KErrNone, we cannot be sure that iScanInfo
         // doesn't cause a crash, so it's better to leave
+        LOG_WRITE( "Error in getting scan result - leave" );
         User::Leave( iStatus.Int() );
         }
    
@@ -978,7 +1033,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
         TBool addToArray( ETrue ); 
         TWsfWlanInfo* availableInfo = new ( ELeave ) TWsfWlanInfo();       
         CleanupStack::PushL( availableInfo );
-        availableInfo->iIapId = iAvailableIaps[i];
+        availableInfo->iIapId = iAvailableIaps[i].iIapId;
         TRAPD( error, GetWlanInfoFromIapL( *availableInfo ) );
 
         if ( error == KErrNotFound )
@@ -997,7 +1052,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
             LOG_WRITE( "Add to array" );
             availableInfo->iCoverage = 0;
             availableInfo->iVisibility = 1;
-            availableInfo->iStrengthLevel = EWlanSignalUnavailable;
+            availableInfo->iStrengthLevel = iAvailableIaps[i].iRssi;
             availableInfo->iTransferRate = 0;
             availableInfo->iConnectionState = ENotConnected;
             iScanArray->AppendL(availableInfo);
@@ -1005,7 +1060,8 @@ void CWsfWlanScanner::DoScanForNetworksL()
 
             if ( availableInfo->iIapId )
                 {
-                LOG_WRITEF( "Append available iap [%d] for direct scan", availableInfo->iIapId );
+                LOG_WRITEF( "Append available iap[%d] rssi[%d] for direct scan", 
+                         availableInfo->iIapId, availableInfo->iStrengthLevel );
                 iDirectScanIapIDs.Append( availableInfo->iIapId );
                 iDirectScanSsids.Append( availableInfo->iSsid );
                 }
@@ -1018,6 +1074,11 @@ void CWsfWlanScanner::DoScanForNetworksL()
             CleanupStack::PopAndDestroy( availableInfo );
             }
         }
+    
+#ifdef _DEBUG
+        LOG_WRITE( "Dump scan results - available IAPs" );
+        DumpScanResultsL( iScanArray );
+#endif
       
     // Process the scanned results
     for( iScanInfo->First(); !iScanInfo->IsDone(); iScanInfo->Next() )
@@ -1353,6 +1414,7 @@ void CWsfWlanScanner::DoScanForNetworksL()
 void CWsfWlanScanner::GetWlanInfoFromIapL( TWsfWlanInfo& aWlanInfo )
     {
     LOG_ENTERFN( "CWsfWlanScanner::GetWlanInfoFromIapL" );
+    LOG_WRITEF( "Iap Id = %d", aWlanInfo.iIapId );
 
     CCommsDatabase* commsDb = CCommsDatabase::NewL();    
     CleanupStack::PushL( commsDb );
@@ -1391,6 +1453,12 @@ void CWsfWlanScanner::GetWlanInfoFromIapL( TWsfWlanInfo& aWlanInfo )
     // Map Wpa2 to Wpa
     secMode = ( secMode == EWlanSecModeWpa2 )? EWlanSecModeWpa : secMode;
     aWlanInfo.iSecurityMode = static_cast<TWlanSecMode>(secMode);
+    
+    TUint32 usePsk(0);
+    TRAP_IGNORE( wlanTableView->ReadUintL(TPtrC( WLAN_ENABLE_WPA_PSK ), 
+                 usePsk ) );
+    
+    aWlanInfo.SetUsesPreSharedKey( usePsk );
 
     // net mode
     TUint32 netMode(0);
@@ -1862,6 +1930,8 @@ void CWsfWlanScanner::WlanScanIntervalChangedL( TUint aNewScanInterval,
                     }
                 iTimer.After( iStatus, TTimeIntervalMicroSeconds32( 
                         iScanningInterval ) );
+                iCacheLifetime = 0;
+                iMaxDelay = 0;
                 SetActive();
                 } 
             }
@@ -1879,6 +1949,8 @@ void CWsfWlanScanner::WlanScanIntervalChangedL( TUint aNewScanInterval,
             Cancel();
             iTimer.After( iStatus, TTimeIntervalMicroSeconds32( 
                     iScanningInterval ) );
+            iCacheLifetime = 0;
+            iMaxDelay = 0;
             SetActive();
             }        
         }

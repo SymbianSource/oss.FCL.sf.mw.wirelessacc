@@ -188,10 +188,12 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         * then starts a synchronous wait until the connection is established.
         * @since S60 5.0
         * @param aIapId The id of the IAP to connect to
+        * @param aConnectOnly ETrue if Connect selected
         * @param aPersistence The value of the persistence property
         * @return KErrNone if managed to connect, otherwise error code
         */
         IMPORT_C TInt ConnectWlanBearerL( TUint32 aIapId, 
+                                          TBool aConnectOnly,
                            TWsfIapPersistence aPersistence = EIapPersistent );
         
         /**
@@ -199,13 +201,15 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
          * @since S60 5.2
          * @param aPckg request result
          * @param aIapId The id of the IAP to connect to
+         * @param aConnectOnly ETrue if Connect selected
          * @param aPersistence The value of the persistence property
          * @param aStatus The request status object used to contain 
          *        the completion status of the request.
          */
         IMPORT_C void ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
                                          TUint32 aIapId, 
-                                         TWsfIapPersistence aPersistence,
+                                         TBool aConnectOnly,
+                                         TWsfIapPersistence aPersistence, 
                                          TRequestStatus& aStatus );
         
         /**

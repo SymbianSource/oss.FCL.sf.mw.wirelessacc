@@ -81,8 +81,12 @@ public:
     /**
      * Starts connecting
      * @since S60 5.2     
+     * @param aIapId WLAN IAP id to connect to.
+     * @param aConnectOnly ETrue if Connect selected
+     * @param aPersistence Persistence property of the IAP
      */
-    void Connect( TUint aIapID, TWsfIapPersistence aPersistence );
+    void Connect( TUint aIapID, TBool aConnectOnly, 
+                  TWsfIapPersistence aPersistence );
 
     /**
      * Starts refresh scan

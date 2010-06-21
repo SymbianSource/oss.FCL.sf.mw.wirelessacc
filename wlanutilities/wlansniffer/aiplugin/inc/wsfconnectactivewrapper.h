@@ -62,8 +62,12 @@ public:
     /**
      * Function for making the initial request
      * @since S60 5.2     
+     * @param aIapId WLAN IAP id to connect to.
+     * @param aConnectOnly ETrue if Connect selected
+     * @param aPersistence Persistence property of the IAP
      */
-    void Start( TUint aIapID, TWsfIapPersistence aPersistence );
+    void Start( TUint aIapID, TBool aConnectOnly, 
+                TWsfIapPersistence aPersistence );
 
 private:
 
@@ -129,6 +133,11 @@ private:
      * IAP ID
      */
     TUint iIapID;
+    
+    /**
+     * Indicates whether Connect or Start Web browsing was selected
+     */
+    TBool iConnectOnly;
     
     /**
      * Persistence value of IAP

@@ -567,8 +567,8 @@ RESOURCE AVKON_LIST_QUERY r_qtn_connected_details_dialog
                 listtype = EAknCtSingleHeadingPopupMenuListBox;
                 listbox = AVKON_LIST_QUERY_LIST
                     {
-                    flags = EAknListBoxMenuList |
-                    EAknListBoxDisableHighlight;
+                    flags = EAknListBoxDisableItemSpecificMenu |
+                    EAknListBoxViewerFlag;
                     };
                 heading = qtn_wlan_heading_connection_details;
                 };

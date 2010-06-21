@@ -64,7 +64,6 @@ LIBRARY         ws32.lib
 LIBRARY         centralrepository.lib
 LIBRARY         cmmanager.lib
 LIBRARY         cmmanagerdatabase.lib
-LIBRARY         ictsclientinterface.lib
 LIBRARY         sysutil.lib
 LIBRARY         efsrv.lib
 

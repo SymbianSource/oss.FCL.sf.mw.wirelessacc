@@ -23,7 +23,6 @@
 
 //  EXTERNAL INCLUDES
 #include <e32base.h>
-#include <ictsclientinterface.h>
 
 //  INTERNAL INCLUDES
 #include "wsfsession.h"
@@ -54,8 +53,7 @@ class CWsfAsyncOperationQueue;
 NONSHARABLE_CLASS( CWsfModel ): public CBase, 
                                 public MWsfBrowserLaunchObserver, 
                                 public MWsfScreenSaverStateObserver,
-                                public MWsfBrowserLaunchAdapter,
-                                public MIctsObserver
+                                public MWsfBrowserLaunchAdapter
     {
     public:     // Constructors and destructor
 
@@ -162,21 +160,27 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * Connects to the given WLAN IAP
         * @since S60 5.0
         * @param aIapId WLAN IAP id to connect to.
+        * @param aConnectOnly ETrue if Connect selected
+        * @param aPersistence The value of the persistence property
         */
-        IMPORT_C int ConnectL( TUint32 aIapId );
+        IMPORT_C int ConnectL( TUint32 aIapId, 
+                               TBool aConnectOnly,
+                               TWsfIapPersistence aPersistence );
         
         /**
         * Asyncronous request to the server to connect to the given WLAN IAP
         * @since S60 5.2
         * @param aPckg request result
         * @param aIapId WLAN IAP id to connect to.
+        * @param aConnectOnly ETrue if Connect selected
         * @param aPersistence The value of the persistence property
         * @param aStatus The request status object used to contain 
         *        the completion status of the request.
         */
-        IMPORT_C void ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId, 
-                               TWsfIapPersistence aPersistence,
-                               TRequestStatus& aStatus );
+        IMPORT_C void ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
+                                TBool aConnectOnly,
+                                TWsfIapPersistence aPersistence,
+                                TRequestStatus& aStatus );
 
         /**
         * Sets connection result
@@ -266,31 +270,6 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         */
         IMPORT_C TBool CreateAccessPointL( TWsfWlanInfo& aWlan,
                                            TBool aExplicitDefine );
-
-        /**
-        * Tests the WLAN access point and offers to save it to a destination
-        * @since S60 5.0
-        * @param aWlan Reference to wlaninfo to test
-        * @param aKeepConnection Indicates whether to keep alive the connection.
-        * @param aConnectOnly ETrue if the helper app is expected to connect 
-        *                     only, EFalse if it should also launch the browser 
-        *                     on successful connection.
-        * @return KErrNone if successful, system-wide error code otherwise
-        */
-        IMPORT_C TInt TestAccessPointL( TWsfWlanInfo& aWlan,
-                                        TBool aKeepConnection, 
-                                        TBool aConnectOnly );
-        
-        /**
-        * Tests the connected WLAN access point
-        * @since S60 5.0
-        * @param aWlan Reference to wlaninfo to test
-        * @param aConnectOnly ETrue if connect only case, 
-        * EFalse if launch browser case after successful connection.
-        * @return KErrNone if successful, system-wide error code otherwise
-        */
-        IMPORT_C TInt TestConnectedAccessPointL( TWsfWlanInfo& aWlan,
-                                                 TBool aConnectOnly );
 
         /**
         * Requests a rescan for available wlans
@@ -390,13 +369,6 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @since S60 5.0
         */
         IMPORT_C void AbortScanningL();
-
-        /**
-        * Gets the ICTS test permission setting value 
-        * @since S60 5.0
-        * @return The ICTS setting
-        */
-        IMPORT_C static TInt IctsTestPermission();
         
         /**
         * Check if Iap Id is valid
@@ -446,40 +418,9 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @param aScreenSaverActive Current status of the screensaver
         */
         void ScreenSaverStatusChangedL( const TBool aScreenSaverActive );
-
-
-    public:     // from MIctsObserver
-
-        /**
-        * Called by ICTS during/after connectivity test
-        * @since S60 5.0
-        * @param aResult Result code of the connectivity test
-        * @param aString Parameter to hold auxiliary data
-        */
-        void ConnectivityObserver( TIctsTestResult aResult, const TDesC& aString );
-
+        
 
     private:  // New methods
-        
-        /**
-        * Starts WLAN Login application
-        * @param aString Contains redirect URL
-        */  
-        void LaunchWlanLoginL( const TDesC& aString );
-        
-        /**
-        * Makes the temporary IAP created for ICT persistent, i.e. notifies
-        * the server not to delete it when the connection terminates.
-        * @since S60 5.0
-        * @param aPersistence The persistence property for the IAP
-        */    
-        void MakeIctIapPersistentL( TWsfIapPersistence aPersistence );
-        
-        /**
-        * Moves the IAP to internet SNAP
-        * @param aIapId Id of the connection method
-        */  
-        void MoveToInternetSnapL( const TUint32 aIapId );
         
         /**
         * Check if there is disk space left 
@@ -542,11 +483,6 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * Id of currently connected IAP (if applicable)
         */
         TUint iConnectedIapId;
-        
-        /**
-        * Network id of currently connected IAP (if applicable)
-        */
-        TUint iConnectedNetId;
 
         /**
         * Refreshing status
@@ -554,40 +490,10 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         TBool iRefreshing;
         
         /**
-        * Persistent WlanInfo for ICT cleanup
-        */
-        TWsfWlanInfo iIctWlanInfo;
-        
-        /**
         * Indicates whether connection creation has been started but not
         * finished yet.
         */
         TBool iConnecting;
-        
-        /**
-        * Waiter for ICT
-        */
-        CActiveSchedulerWait iIctWait;
-        
-        /**
-        * Indicates that connectivity test if over.
-        */
-        TBool iIctEnded;
-        
-        /**
-        * Indicates if connection will be kept when launching browser.
-        */
-        TBool iKeepConnection;
-        
-        /**
-        * Indicates if "Connect" or "Start Web browsing" is selected.
-        */
-        TBool iConnectOnly;
-        
-		/**
-        * ICT class. Owned.
-        */
-        CIctsClientInterface* iIct;
 
     };
 

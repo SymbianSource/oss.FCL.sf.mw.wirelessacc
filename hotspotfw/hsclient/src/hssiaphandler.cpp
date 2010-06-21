@@ -31,6 +31,10 @@
 #include <cmmanagerdef.h>
 #include <cmdestinationext.h>
 
+// CONSTANTS
+const TInt  KRetryCount   = 20;
+const TInt  KRetryTimeout = 100000;
+
 using namespace CMManager;
 
 // ============================ MEMBER FUNCTIONS ===============================
@@ -276,12 +280,31 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
 	            eaps->SetL( enabledEapList );
             	}
         }
-    // now update the access point
-    iWLANRecord->ModifyL( *dbSession );
+    
+    // Update access point, be prepared that Commsdat might be locked
+    TInt errCode( KErrLocked );
+    TInt retryCount( 0 );
+    
+    while( errCode == KErrLocked && retryCount < KRetryCount )
+        {
+        TRAP( errCode, iWLANRecord->ModifyL( *dbSession ) );
+
+        if ( errCode == KErrLocked )
+            {	
+            User::After( KRetryTimeout );
+            }	
+        retryCount++;	        
+        }
+    
+    if ( errCode )
+        {
+        // override previous ret value only when error happened        	    	
+        ret = errCode;
+        }
     
     CleanupStack::PopAndDestroy( dbSession );
     DEBUG("CHssIapHandler::ChangeSettingsL DONE");
-	return ret;
+    return ret;
     }
  
 // -----------------------------------------------------------------------------
@@ -557,8 +580,11 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
     {
     DEBUG("CHssIapSettingsHandler::GetClientsIapsL");
     TBuf<32> buffer;                    // Temporary buffer for found UID from destination.
-    TUidName uidClient = aUId.Name();   // UID of the client.
     TUint32 iapId = 0;                  // IAP Identifiier.
+    TBuf<KIapNameLength> uidClient;     // UID of the client.
+    
+    uidClient.Copy( aUId.Name() );
+    ModifyClientUid( uidClient );
 
     RArray<TUint32> destArray = RArray<TUint32>( 10 );  // KCmArrayGranularity instead of 10
     CleanupClosePushL( destArray );
@@ -608,6 +634,25 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
 
     CleanupStack::PopAndDestroy( &cmManager );
     CleanupStack::PopAndDestroy( &destArray );
+    }
+
+// -----------------------------------------------------------------------------
+// ModifyClientUid
+// -----------------------------------------------------------------------------
+//
+void CHssIapHandler::ModifyClientUid( TDes& aUid )
+    {
+    DEBUG("CHssIapHandler::ModifyClientUid");
+    TInt indx = aUid.Find( KMark1 );
+    if ( KErrNotFound != indx )
+        {
+        aUid.Delete( indx, 1 );
+        indx = aUid.Find( KMark2 );
+        if ( KErrNotFound != indx )
+            {
+            aUid.Delete( indx, 1 );
+            }
+        }
     }
 
 // End of File

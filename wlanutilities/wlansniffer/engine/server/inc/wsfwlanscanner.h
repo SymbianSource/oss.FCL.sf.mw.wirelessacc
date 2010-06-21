@@ -136,9 +136,14 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
             EIdle,
             
             /**
-            * Processing broadcast scan results
+            * Do broadcast scan
             */
             EBroadcastScan,
+            
+            /**
+            * Processing broadcast scan results
+            */
+            EProcessBroadcastScan,
             
             /**
             * Processing direct scan results
@@ -572,9 +577,24 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
         TBuf8<KWlanMaxAccessPointNameLength> iConnectedSsidOrIap;
         
 		/**
-        * Array containing the available IAP IDs 
+        * Array containing the available IAP IDs and Signal Strengths
         */
-        RArray<TUint> iAvailableIaps;
+        RArray<TWlanIapAvailabilityData> iAvailableIaps;
+        
+        /**
+        * Cache lifetime.
+        * Parameter needed for issuing "get available WLAN IAPs"
+        * request.
+        */
+        TInt iCacheLifetime;
+        
+        /**
+        * Max Delay.
+        * Parameter needed for issuing "get available WLAN IAPs"
+        * request.
+        */
+        TUint iMaxDelay; 
+
         
     };
 
