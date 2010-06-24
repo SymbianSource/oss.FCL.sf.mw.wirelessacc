@@ -15,7 +15,7 @@
  * 
  */
 
-#include <QTranslator>
+#include <HbTranslator>
 #include <QLocale>
 #include <QtCore/qplugin.h>
 #include <QtCore/QString>
@@ -96,11 +96,7 @@ HbIndicatorInterface* WlanIndicatorPlugin::createIndicator(
     Q_UNUSED(indicatorType)
     
     // Install localization
-    QTranslator *translator = new QTranslator(this);
-    QString lang = QLocale::system().name(); 
-    QString path = "Z:/resource/qt/translations/"; 
-    translator->load("wlanindicatorplugin_" + lang, path);
-    qApp->installTranslator(translator);
+    HbTranslator *translator(new HbTranslator("wlanindicatorplugin"));
     
     OstTraceFunctionExit1(WLANINDICATORPLUGIN_CREATEINDICATOR_EXIT, this);
     return this;
@@ -125,14 +121,11 @@ bool WlanIndicatorPlugin::handleInteraction(InteractionType type)
     OstTraceFunctionEntry1(WLANINDICATORPLUGIN_HANDLEINTERACTION_ENTRY, this);
 
     bool handled = false;
+    QVariantMap data;
     switch (type) {
     case InteractionActivated: 
-        //connect error() to slot processError() to get error, 
-        QObject::connect( &process, SIGNAL(error(QProcess::ProcessError)),                       
-                          this, SLOT(processError(QProcess::ProcessError)));
-
-        // Show WLAN list view
-        process.start("WlanSniffer");
+        // Emit a signal that will inform the client to start the wlan list view 
+        emit userActivated(data);
         handled = true;
         break;
     default:
@@ -228,25 +221,3 @@ QVariant WlanIndicatorPlugin::indicatorData(int role) const
     return qvariant;
 }
 
-/*!
-    The processError is a handler for error codes.
-*/
-void WlanIndicatorPlugin::processError(QProcess::ProcessError err)
-    {
-    OstTraceFunctionEntry1(WLANINDICATORPLUGIN_PROCESSERROR_ENTRY, this);
-  
-    switch (err) {   
-        case QProcess::FailedToStart: 
-        case QProcess::Crashed: 
-        case QProcess::Timedout: 
-        case QProcess::ReadError: 
-        case QProcess::WriteError: 
-        case QProcess::UnknownError:
-            OstTrace1( WLANINDICATORPLUGIN_ERR,PROCESSERROR_KNOWN,"Process Error %u", err);
-            break;  
-        default:
-        OstTrace1( WLANINDICATORPLUGIN_ERR,PROCESSERROR_UNKNOWN,"Unknown Process Error %u", err);
-            break;
-        }
-    OstTraceFunctionExit1(WLANINDICATORPLUGIN_PROCESSERROR_EXIT, this);
-    }

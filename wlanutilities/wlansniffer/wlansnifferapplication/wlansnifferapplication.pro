@@ -17,7 +17,6 @@
 
 TEMPLATE = app
 TARGET = wlansniffer
-TARGET.CAPABILITY = CAP_APPLICATION NetworkControl
 DEPENDPATH += .
 # Own headers
 INCLUDEPATH += \
@@ -69,6 +68,7 @@ SERVICE.OPTIONS = embeddable
 LIBS += -lwlanqtutilities -lxqservice -lxqserviceutil -lqtsysteminfo -lwlanwizard -lxqsettingsmanager
 
 symbian*: {
+    TARGET.CAPABILITY = CAP_APPLICATION NetworkControl
     TARGET.UID3 = 0x10281CAA
     
     BLD_INF_RULES.prj_exports += "rom/wlansniffer.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlansniffer.iby)"

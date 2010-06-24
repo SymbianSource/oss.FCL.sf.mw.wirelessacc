@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard: Private implementation.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard: Private implementation.
+*/
 
 #ifndef WLANWIZARD_P_H
 #define WLANWIZARD_P_H
@@ -43,7 +42,7 @@ class WlanWizard;
 class EapWizard;
 class WpsWizard;
 
-class TestWlanWizardUi;
+class TestWlanWizardContext;
 
 // External data types
 
@@ -91,8 +90,9 @@ public:
     // from WlanWizardHelper, for all wizards
     virtual QVariant configuration(ConfigurationId confId) const;
     virtual void setConfiguration(ConfigurationId confId, const QVariant &value);
+    virtual void clearConfiguration(ConfigurationId confId);
+    virtual bool configurationExists(ConfigurationId confId);
     virtual void enableNextButton(bool enable);
-    virtual void enablePrevButton(bool enable);
     virtual void addPage(int pageId, WlanWizardPage *page);
     virtual void nextPage();
     virtual HbMainWindow* mainWindow() const;
@@ -102,6 +102,8 @@ public:
 signals:
     
 public slots:
+
+    void cancelTriggered();
     
 protected:
 
@@ -112,7 +114,6 @@ private:
     static const int PageTimeout = 1500;
 
 private slots:
-    void cancelTriggered();
     void previousTriggered();
     void nextTriggered();
     void finishTriggered();
@@ -165,9 +166,9 @@ private:
     QScopedPointer<HbDocumentLoader> mDocLoader;
     //! Extensible Authentication Protocol (EAP) Wizard plugin, instantiated
     //! when required
-    EapWizard* mEapWizard;
+    QScopedPointer<EapWizard> mEapWizard;
     //! Wifi Protected Setup (WPS) Wizard plugin, instantiated when required
-    WpsWizard* mWpsWizard;
+    QScopedPointer<WpsWizard> mWpsWizard;
     //! Maps UI object of page into a control object
     QHash<HbWidget* , WlanWizardPage *> mPageMapper;
     //! Maps page id to control object of page.
@@ -184,7 +185,7 @@ private:
     
     // Friend classes
     friend class WlanWizard;
-    friend class TestWlanWizardUi;
+    friend class TestWlanWizardContext;
 };
 
 /*! @} */

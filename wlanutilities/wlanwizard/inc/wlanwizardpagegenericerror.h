@@ -45,9 +45,9 @@ public:
 
 public: // From WlanWizardPage
     HbWidget* initializePage();
-    int nextId(bool &removeFromStack) const;
     bool showPage();
-
+    int previousTriggered();
+    
 signals:
     
 public slots:

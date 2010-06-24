@@ -27,7 +27,7 @@
 // Forward declarations
 class HbMainWindow;
 class WlanWizardPrivate;
-class TestWlanWizardUi;
+class TestWlanWizardContext;
 
 // External data types
 
@@ -80,7 +80,7 @@ private:
     
     // Friend classes
     friend class WlanWizardPrivate;
-    friend class TestWlanWizardUi;    
+    friend class TestWlanWizardContext;    
 };
 
 /*! @} */

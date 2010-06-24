@@ -85,9 +85,6 @@ WlanSnifferMainWindow::WlanSnifferMainWindow(WlanSnifferEngine *engine) :
 WlanSnifferMainWindow::~WlanSnifferMainWindow()
 {
     OstTraceFunctionEntry0(WLANSNIFFERMAINWINDOW_WLANSNIFFERMAINWINDOWDESTR_ENTRY);
-    
-    delete mWizard;
-    
     OstTraceFunctionExit0(WLANSNIFFERMAINWINDOW_WLANSNIFFERMAINWINDOWDESTR_EXIT);
 }
 
@@ -132,7 +129,7 @@ void WlanSnifferMainWindow::addListView()
 /*!
     Starts WLAN Wizard for new WLAN IAP creation.
     
-    @param [in] ap WLAN Access Point to create.
+    @param [in] ap WLAN Access Point to create, or NULL for adding WLAN manually.
  */
 
 void WlanSnifferMainWindow::startWlanWizard(const WlanQtUtilsAp *ap)
@@ -144,28 +141,34 @@ void WlanSnifferMainWindow::startWlanWizard(const WlanQtUtilsAp *ap)
     // Stop WLAN scanning for the duration of WLAN Wizard
     mEngine->stopWlanScanning();
     
-    mWizard = new WlanWizard(this);
+    mWizard = QSharedPointer<WlanWizard>(new WlanWizard(this));
     bool connectStatus = connect(
-        mWizard,
+        mWizard.data(),
         SIGNAL(finished(int,bool)),
         this,
-        SLOT(handleWlanWizardComplete(int,bool)));
+        SLOT(handleWlanWizardComplete(int,bool)),
+        Qt::QueuedConnection);
     Q_ASSERT(connectStatus == true);
     
     connectStatus = connect(
-        mWizard,
+        mWizard.data(),
         SIGNAL(cancelled()),
         this,
-        SLOT(handleWlanWizardCancelled()));
+        SLOT(handleWlanWizardCancelled()),
+        Qt::QueuedConnection);
     Q_ASSERT(connectStatus == true);
     
-    mWizard->setParameters(
-        ap->value(WlanQtUtilsAp::ConfIdSsid).toString(),
-        ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
-        ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
-        ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),
-        ap->value(WlanQtUtilsAp::ConfIdHidden).toBool(),
-        ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool());
+    // Create an IAP for a specific AP
+    if (ap) {
+        mWizard->setParameters(
+            ap->value(WlanQtUtilsAp::ConfIdSsid).toString(),
+            ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
+            ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
+            ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),
+            ap->value(WlanQtUtilsAp::ConfIdHidden).toBool(),
+            ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool());
+    }
+    // else: Add WLAN IAP manually
     
     mWizard->show();
 
@@ -185,29 +188,25 @@ void WlanSnifferMainWindow::handleWlanWizardComplete(
 {
     OstTraceFunctionEntry0(WLANSNIFFERMAINWINDOW_HANDLEWLANWIZARDCOMPLETE_ENTRY);
 
-    // Enable scanning again
-    mEngine->startWlanScanning();
-    
-    // TODO: Will be needed in "Adding WLAN network manually" subfeature
-    Q_UNUSED(connected);
-    
-    // The IAP ID must be valid
-    Q_ASSERT(iapId != WlanQtUtils::IapIdNone);
-    
-    // Connect (share) the new IAP in order to keep the connection open when
-    // deleting Wizard.
-    // Todo: this needs some checking when "Adding WLAN IAP manually" subfeature
-    // is implemented, because we don't want to connect the IAP, if Wizard didn't
-    // connect it.
-    mEngine->wlanQtUtils()->connectIap(iapId, false);
-    
     // The wizard must exist
     Q_ASSERT(mWizard);
     
-    // Delete the Wizard instance, but only when returning to event loop, because
-    // execution returns back to Wizard after this slot.
-    mWizard->deleteLater();
-    mWizard = NULL;
+    // Enable scanning again
+    mEngine->startWlanScanning();
+
+    if (connected) {
+        // The IAP ID must be valid
+        Q_ASSERT(iapId != WlanQtUtils::IapIdNone);
+        
+        // Connect (share) the new IAP in order to keep the connection open when
+        // deleting Wizard.
+        mEngine->wlanQtUtils()->connectIap(iapId, false);
+    }
+    // else: created IAP not connected at all, or already dropped
+    // (probably due to being out of coverage) so don't try to share it
+    
+    // Delete the Wizard instance. This is OK since the connect is Qt::QueuedConnection.
+    mWizard.clear();
     
     OstTraceFunctionExit0(WLANSNIFFERMAINWINDOW_HANDLEWLANWIZARDCOMPLETE_EXIT);
 }
@@ -220,16 +219,14 @@ void WlanSnifferMainWindow::handleWlanWizardCancelled()
 {
     OstTraceFunctionEntry0(WLANSNIFFERMAINWINDOW_HANDLEWLANWIZARDCANCELLED_ENTRY);
 
-    // Enable scanning again
-    mEngine->startWlanScanning();
-    
     // The wizard must exist
     Q_ASSERT(mWizard);
     
-    // Delete the Wizard instance, but only when returning to event loop, because
-    // execution returns back to Wizard after this slot.
-    mWizard->deleteLater();
-    mWizard = NULL;
+    // Enable scanning again
+    mEngine->startWlanScanning();
+    
+    // Delete the Wizard instance. This is OK since the connect is Qt::QueuedConnection.
+    mWizard.clear();
     
     OstTraceFunctionExit0(WLANSNIFFERMAINWINDOW_HANDLEWLANWIZARDCANCELLED_EXIT);
 }

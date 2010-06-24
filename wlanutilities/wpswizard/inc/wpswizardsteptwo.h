@@ -19,6 +19,7 @@
 
 // System includes
 #include <QObject>
+#include <HbDocumentLoader>
 
 // User includes
 #include "wpswizardpage.h"
@@ -29,61 +30,63 @@ class HbWidget;
 class HbLabel;
 class WpsWizardPrivate;
 
-
 // External data types
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
 
 // Class declaration
 class WpsPageStepTwo : public WpsWizardPage
     {
 Q_OBJECT
+
 public:
-    WpsPageStepTwo(WpsWizardPrivate* parent);
+    explicit WpsPageStepTwo(WpsWizardPrivate* parent);
     ~WpsPageStepTwo();
 
 public:
-    /*!
-     * Creates a visualization of the page.
-     */
     HbWidget* initializePage();
-    /*!
-     * Returns id of next page. updates settings EapWizard.
-     */
+
     int nextId(bool &removeFromStack) const;
-    /*!
-     * Returns how many steps should be gone backwards. 
-     */
-    int stepsBackwards();
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    void previousTriggered();
-    /*!
-     * This method is called when Cancel button has been pressed.
-     */
+
+    int previousTriggered();
+
     void cancelTriggered();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    bool validate() const;
+
+    bool showPage();
+	
+signals:
 
 public slots:
-    /*!
-     * To receive the signal when an item is selected in the list view
-     */
     void itemSelected(int index);
+    
+    void loadDocmlSection(Qt::Orientation orientation);
+
+protected:
+
+protected slots:
 
 private:
     Q_DISABLE_COPY(WpsPageStepTwo)
-    
+
+private slots:   
+
+private: //data
+    //! Pointer to the widget object
     HbWidget *mWidget;
+    //! Radio button list object
     HbRadioButtonList *mRadio;
-    HbLabel *mTitle;
+    //! Label object used to display the heading
     HbLabel *mHeading;
+    //! Variable used to determine whether to enable next button or not
     bool mValid;
+    //! Variable used to store the item selected.
     int mItemSelected;
+    //! Document loader object.
+    HbDocumentLoader* mLoader;
     };
 
 

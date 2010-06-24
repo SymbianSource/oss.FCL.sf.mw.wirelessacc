@@ -23,9 +23,7 @@
 
 // User includes
 #include "wlanwizardpageinternal.h"
-#ifdef ICT_RESULT_ENUM
 #include "wlanqtutils.h"
-#endif
 
 // Forward declarations
 class HbDocumentLoader;
@@ -60,11 +58,7 @@ signals:
 public slots:
     void loadDocmlSection(Qt::Orientation orientation);
     void wlanNetworkClosed(int iapId, int reason);
-#ifdef ICT_RESULT_ENUM
-    void ictResult(int iapId, WlanLoginIctsResultType result);
-#else
-    void ictResult(int iapId, bool result);
-#endif
+    void ictResult(int iapId, int result);
     void wlanNetworkOpened(int iapId);
     
 protected:

@@ -110,6 +110,8 @@ private slots:
     
     void handleWlanToggled();
     
+    void startWlanWizard();
+    
     void handleWlanEnableDialogClosed(HbAction *action);
 
 private: // data

@@ -23,6 +23,7 @@
 #include <HbLabel>
 #include <HbLineEdit>
 #include <HbEditorInterface>
+#include <HbParameterLengthLimiter>
 
 // User includes
 #include "wlanwizard.h"
@@ -125,8 +126,9 @@ HbWidget* WlanWizardPageKeyQuery::initializePage()
     }
     
     mLabelTitle->setPlainText(
-        hbTrId("txt_occ_dialog_enter_key_for_1").arg(mWizard->configuration(
-            WlanWizardPrivate::ConfSsid).toString()));
+        HbParameterLengthLimiter(
+            hbTrId("txt_occ_dialog_enter_key_for_1")).arg(
+                mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
     
     return mWidget;
 }
@@ -139,19 +141,12 @@ HbWidget* WlanWizardPageKeyQuery::initializePage()
  */
 void WlanWizardPageKeyQuery::loadDocmlSection(Qt::Orientation orientation)
 {
-    bool ok = false;
-    
-    // Load the orientation specific section
-    if (orientation == Qt::Horizontal) {
-        mDocLoader->load(
-            ":/docml/occ_add_wlan_01_04.docml", "landscape_section", &ok);
-        Q_ASSERT(ok);
-    } else {
-        Q_ASSERT(orientation == Qt::Vertical);
-        mDocLoader->load(
-            ":/docml/occ_add_wlan_01_04.docml", "portrait_section", &ok);
-        Q_ASSERT(ok);
-    }
+    WlanWizardPageInternal::loadDocmlSection(
+        mDocLoader,
+        orientation,
+        ":/docml/occ_add_wlan_01_04.docml", 
+        "portrait_section",
+        "landscape_section");
 }
 
 /*!
@@ -169,7 +164,7 @@ void WlanWizardPageKeyQuery::loadDocmlSection(Qt::Orientation orientation)
 int WlanWizardPageKeyQuery::nextId(bool &removeFromStack) const
 {
     WlanWizardUtils::KeyStatus status(WlanWizardUtils::KeyStatusOk);
-    int pageId = WlanWizardPage::PageNone;
+    int pageId = WlanWizardPage::nextId(removeFromStack);
     int secMode = mWizard->configuration(
         WlanWizardPrivate::ConfSecurityMode).toInt();
     
@@ -252,7 +247,6 @@ QString WlanWizardPageKeyQuery::keyStatusToErrorString(
         break;
 
     case WlanWizardUtils::KeyStatusWpaTooShort:
-    case WlanWizardUtils::KeyStatusWpaTooLong:
         errorString = hbTrId("txt_occ_dialog_preshared_key_too_short_at_least");
         break;
 
@@ -260,7 +254,6 @@ QString WlanWizardPageKeyQuery::keyStatusToErrorString(
         errorString = hbTrId("txt_occ_dialog_key_is_of_incorrect_length_please");
         break;
 
-    case WlanWizardUtils::KeyStatusOk:
     default:
         Q_ASSERT(WlanWizardUtils::KeyStatusOk == status);
         // nothing to do here.

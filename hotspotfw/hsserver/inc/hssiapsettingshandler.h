@@ -135,11 +135,6 @@ class CHssIapSettingsHandler : public CBase
                                const TDesC& aUid );
         
         /**
-        * Create new IAP to Internet SNAP.
-        */
-        void CreateIapL();
-        
-        /**
         * Deletes the IAP
         * @param aIapID, IAP id
         */

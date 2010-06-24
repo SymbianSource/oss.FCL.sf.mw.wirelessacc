@@ -18,13 +18,18 @@
 #define MWPSACTIVERUNNERCALLBACK_H_
 
 // System includes
-#include<e32base.h>
-#include<wlanmgmtcommon.h>
+#include <QList>
+#include <wlanmgmtcommon.h>
 
 // User includes
 // Forward declarations
 // External data types
 // Constants
+
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
 
 // Class declaration
 class MWpsActiveRunnerCallback
@@ -33,9 +38,9 @@ public:
     /*!
      * Callback to notify the completion of middleware API call
      */
-    IMPORT_C virtual void WpsActiveRunnerStopped(QList<
-            TWlanProtectedSetupCredentialAttribute>& aCredentials,
-            TInt aError) = 0;
+    virtual void WpsActiveRunnerStopped(
+        QList<TWlanProtectedSetupCredentialAttribute>& aCredentials,
+        TInt aError) = 0;
     };
 
 #endif /* MWPSACTIVERUNNERCALLBACK_H_ */

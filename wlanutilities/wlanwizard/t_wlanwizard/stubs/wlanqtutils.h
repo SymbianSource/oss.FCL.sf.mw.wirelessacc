@@ -36,6 +36,38 @@ public:
     //! "None" IAP ID value (e.g. for "not found" cases)
     static const int IapIdNone = -1;
     
+    /*!
+        WLAN connection status.
+        Remember to update traces/trace.properties when modifying this enum.
+    */
+    enum ConnStatus {
+        ConnStatusNone = 0,         //!< Reserved.
+        ConnStatusConnecting,       //!< Connecting.
+        ConnStatusConnected,        //!< Connected.
+        ConnStatusDisconnected      //!< Disconnected.
+    };
+    
+    /*!
+        WLAN scan status
+        Remember to update traces/trace.properties when modifying this enum.
+    */
+    enum ScanStatus {
+        ScanStatusOk = 0,           //!< Scan succeeded.
+        ScanStatusCancelled,        //!< Scan was cancelled.
+        ScanStatusError             //!< Scan failed.
+    };
+    
+    /*! 
+        Internet Connectivity Test status.
+        Remember to update traces/trace.properties when modifying this enum.
+    */        
+    enum IctStatus {
+        IctPassed = 0,              //!< Normal ICT passed.
+        IctHotspotPassed,           //!< Hotspot ICT passed.
+        IctCancelled,               //!< ICT was cancelled.
+        IctFailed                   //!< ICT failed.
+    }; 
+
 public:
     WlanQtUtils();
     
@@ -65,21 +97,20 @@ public:
 
 signals:
     
-    void wlanScanApReady();
+    void wlanScanApReady(int scanStatus);
    
-    void wlanScanDirectReady();
+    void wlanScanDirectReady(int scanStatus);
     
     void wlanNetworkOpened(int iapId);
 
     void wlanNetworkClosed(int iapId, int reason);
 
-#ifdef ICT_RESULT_ENUM
-    void ictResult(int iapId, WlanLoginIctsResultType result);
-#else
-    void ictResult(int iapId, bool result);
-#endif
+    void ictResult(int iapId, int result);
 
 private: // Return values for all methods.
+    
+    void emitScanApsReady();
+    
     QList<QSharedPointer<WlanQtUtilsAp> > mScanWlanAps;
     QList<QSharedPointer<WlanQtUtilsAp> > mScanWlanDirect;
     QList<QSharedPointer<WlanQtUtilsAp> > *mScanResult;
@@ -90,19 +121,23 @@ private: // Return values for all methods.
     int mWlanNetworkOpenedIapId;
     int mWlanNetworkActiveIapId;
     int mWlanNetworkClosedIapId;
-    bool mWlanNetworkClosedReason;
+    int mWlanNetworkClosedReason;
+    
+    int mActiveWlanIapReturn;
     
     int mIctResultIapId;
-#ifdef ICT_RESULT_ENUM
-    WlanLoginIctsResultType mIctResultResults;
-#else
-    bool mIctResultResults;
-#endif
+    WlanQtUtils::IctStatus mIctResultResults;
+
     bool mConnectionSuccess;
     
     QStringList mCalledMethods;
     
     WlanQtUtilsAp *mWlanAp;
+    
+    bool mEmitScanApReady;
+    
+    int mScanApStatus;
+    int mScanDirectStatus;
 };
 
 #endif /* WLANQTUTILS_H */

@@ -26,6 +26,7 @@ MW_LAYER_SYSTEMINCLUDE
 SOURCEPATH   ../src
 SOURCE       main.cpp
 SOURCE       wsfkeepalive.cpp
+SOURCE       wsfkeepalivecmm.cpp
 SOURCE       wsfkeepaliveconnmon.cpp
 SOURCE       wsfkeepaliveconnmondisc.cpp
 SOURCE       wsfkeepaliveesock.cpp
@@ -36,6 +37,7 @@ LIBRARY      connmon.lib
 LIBRARY      esock.lib
 LIBRARY      extendedconnpref.lib
 LIBRARY      netmeta.lib
+LIBRARY		 cmmanager.lib
 
 CAPABILITY   CAP_APPLICATION NetworkControl
 

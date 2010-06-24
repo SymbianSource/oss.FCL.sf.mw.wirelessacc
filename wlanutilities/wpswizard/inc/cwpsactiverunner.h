@@ -19,8 +19,6 @@
 #define CWPSACTIVERUNNER_H_
 
 // System includes
-#include <QObject>
-#include <QStringList>
 #include <e32base.h>
 #include <wlanmgmtclient.h>
 
@@ -31,39 +29,41 @@
 // External data types
 // Constants
 
-
-/*! 
- * The wrapper class for wlan management engine calls  
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
  */
 // Class declaration
 class CWpsActiveRunner : public CActive
-    {
-
+{
 public:
     static CWpsActiveRunner* NewL(MWpsActiveRunnerCallback& aObserver);
     virtual ~CWpsActiveRunner();
 public:
-    
-    void InitL();
+
     void RunL();
     void DoCancel();
     TInt RunError(TInt aError);
     void StartSetup(RBuf8& aSsid, int aPin);
+	
+protected:
 
 private:
-    CWpsActiveRunner(MWpsActiveRunnerCallback& aObserver);
+    explicit CWpsActiveRunner(MWpsActiveRunnerCallback& aObserver);
     void ConstructL();
     void InitializeL();
 private:    
+
+    //! observer for notification of WPS setup completion
     MWpsActiveRunnerCallback& iObserver;
-#ifdef __arm
+    //! To know if cancel was called before the completion
+    TBool isCancelTriggered;
+    //! WLAN management client object
     CWlanMgmtClient* iWLANMgmtClient;
+    //! Array to hold the results of the WPS setup
     CArrayFixSeg<TWlanProtectedSetupCredentialAttribute>* iIapParametersArray;
-#else
-    //Temporary for testing in WINSCW.
-    RTimer iTimer;
-    void RunProtectedSetup_Stub();
-#endif    
-    };
+    
+    friend class TestWlanWizardContext;
+};
 
 #endif /* CWPSACTIVERUNNER_H_ */

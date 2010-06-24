@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QString>
 #include <HbMainWindow>
+#include <QSharedPointer>
 
 // User includes
 
@@ -81,7 +82,7 @@ private: // data
 
     // Owned data
 
-    WlanWizard *mWizard;                //!< WLAN Wizard object
+    QSharedPointer<WlanWizard> mWizard; //!< WLAN Wizard object
     WlanSnifferListView *mListView;     //!< List view object
 
     // Not owned data

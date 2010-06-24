@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RCC>
+    <qresource prefix="/docml">
+        <file>occ_wps_01_05.docml</file>
+        <file>occ_wps_02_03.docml</file>
+        <file>occ_wps_P4.docml</file>
+    </qresource>
+</RCC>

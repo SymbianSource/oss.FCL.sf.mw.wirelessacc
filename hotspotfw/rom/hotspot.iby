@@ -36,12 +36,6 @@ ECOM_PLUGIN( NetCfgExtnHotSpot.dll, 10282EC9.rss )
 ECOM_PLUGIN( HssMgmtImpl.dll, 10282ecc.rsc )
 ECOM_PLUGIN( wlanagthotspotimpl.dll, 1028309b.rss )
 
-S60_APP_EXE( HsBrowser )
-S60_APP_AIF_RSC( HsBrowser )
-
-// appshell icon
-S60_APP_AIF_ICONS( hsbrowsericon )
-
 data=ZPRIVATE\10282EC5\backup_registration.xml	private\10282EC5\backup_registration.xml
 data=DATAZ_\system\install\hotspotfwstub.sis  system\install\hotspotfwstub.sis
 data=DATAZ_\system\install\ictsstub.sis  system\install\ictsstub.sis

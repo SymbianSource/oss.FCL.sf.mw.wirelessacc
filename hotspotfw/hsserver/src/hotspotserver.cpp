@@ -25,12 +25,12 @@
 #include <e32std.h>
 #include <commsdattypesv1_1.h>
 
-#include <cmconnectionmethodext.h>
+#include <cmconnectionmethod.h>
 #include <cmconnectionmethoddef.h>
 #include <cmpluginwlandef.h>
-#include <cmmanagerext.h>
+#include <cmmanager.h>
 #include <cmmanagerdef.h>
-#include <cmdestinationext.h>
+#include <cmdestination.h>
 
 #include "hotspotserver.h"
 #include "am_debug.h"
@@ -158,8 +158,7 @@ void CHotSpotServer::ConstructL()
     iLoginValue = ETrue;
     iAssociationValue = EFalse;
     iClientIapsChecked = KErrNone;
-    iEasyWlanId = KEasyWlanServiceId; // Set to default value just in case
-
+    
     TRAP( iClientIapsChecked, FindClientIapsL() );
  
     // Activate notifications for IAP check purposes. Done with every server startup.
@@ -204,7 +203,7 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
 void CHotSpotServer::FindClientIapsL()
     {
     DEBUG("CHotSpotServer::FindClientIapsL()");
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL(cmManager);
            
@@ -218,7 +217,7 @@ void CHotSpotServer::FindClientIapsL()
     
     for( TInt i = 0; i < cmArray.Count(); i++ )
         {
-        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( cmArray[i] );
+        RCmConnectionMethod cm = cmManager.ConnectionMethodL( cmArray[i] );
         CleanupClosePushL( cm );
         HBufC* daemonName = cm.GetStringAttributeL( 
                                                 ECmConfigDaemonManagerName );
@@ -243,11 +242,8 @@ void CHotSpotServer::FindClientIapsL()
         CleanupStack::PopAndDestroy( &cm );
         }
     CleanupStack::PopAndDestroy( &cmArray );
-    
-    // Read Easy WLAN IAP ID
-    iEasyWlanId = cmManager.EasyWlanIdL();
     CleanupStack::PopAndDestroy( &cmManager );
-    DEBUG1("CHotSpotServer::FindClientIapsL() iEasyWlanId: % d", iEasyWlanId);
+    DEBUG("CHotSpotServer::FindClientIapsL() Done");
     }
 
 // -----------------------------------------------------------------------------
@@ -280,11 +276,11 @@ void CHotSpotServer::CheckIapsL()
         if ( error == KErrNotFound )
             {
             // Remove from database
-            RCmManagerExt cmManager;
+            RCmManager cmManager;
             cmManager.OpenL();
             CleanupClosePushL(cmManager);
             
-            RCmConnectionMethodExt cm;
+            RCmConnectionMethod cm;
             cm = cmManager.ConnectionMethodL( iClientIaps[i].iIapId );
             CleanupClosePushL( cm );
             cmManager.RemoveAllReferencesL( cm );
@@ -663,16 +659,6 @@ void CHotSpotServer::RemoveClientIap( TUint aIapId )
             }
         i++;
         }
-    }
-
-// -----------------------------------------------------------------------------
-// GetEasyWlanId
-// -----------------------------------------------------------------------------
-//
-TInt CHotSpotServer::GetEasyWlanId()
-    {
-    DEBUG("CHotspotServer::GetEasyWlanId()");
-    return iEasyWlanId;
     }
 
 // ========================== OTHER EXPORTED FUNCTIONS =========================

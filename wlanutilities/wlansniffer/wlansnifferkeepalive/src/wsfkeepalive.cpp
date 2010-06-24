@@ -22,6 +22,7 @@
 // User include files
 
 #include "wsfkeepalivetimer.h"
+#include "wsfkeepalivecmm.h"
 #include "wsfkeepaliveconnmon.h"
 #include "wsfkeepaliveconnmondisc.h"
 #include "wsfkeepaliveesock.h"
@@ -44,11 +45,15 @@ static const int KKeepaliveInactivityInterval = 300;
 // UID of Wlan sniffer application
 static const TUid KWlanSnifferUid = { 0x10281CAA };
 
+// UID of Wlan login application
+static const TUid KWlanloginUid = { 0x2002E6D0 };
+
 // List of UIDs of clients not considered as "real"
 static const TUid KDiscardedClientUids[] = 
     {
         { 0x2002FF5F }, // Sniffer keepalive process, that is, us
         KWlanSnifferUid, // Sniffer application (wlansniffer.exe)
+        KWlanloginUid, //   Wlan Login application (wlanlogin.exe)
         { 0x101fD9C5 }  // DHCP server (dhcpserv.exe)
     };
 
@@ -75,6 +80,7 @@ CWsfKeepalive::~CWsfKeepalive()
 
     delete iEsock;
     delete iConnMonDisc;
+    delete iCmMgr;
     delete iConnMon;
     delete iTimer;
     
@@ -163,6 +169,7 @@ void CWsfKeepalive::WlanConnectionOpenedL( TUint aConnectionId, TUint aIapId )
         // Start to monitor this connection, and add us as a user to the
         // connection
         iConnectionId = aConnectionId;
+        iIapId = aIapId;
         iEsock->ConnectL( aIapId );
 
         // Assume there are no real clients yet. Setup timer for polling
@@ -192,6 +199,30 @@ void CWsfKeepalive::WlanConnectionClosed()
     // Stop also the polling timer
     iTimer->Stop();
     
+    OstTrace1(
+        TRACE_NORMAL,
+        CWSFKEEPALIVE_WLANCONNECTIONCLOSED_IAPID,
+        "CWsfKeepalive::WlanConnectionClosed iapId=%d",
+        iIapId );
+    
+    // If connected to hotspot IAP, the IAP must be deleted
+    if ( iCmMgr->GetHotspotInfoL( iIapId ) )
+        {
+        OstTrace0(
+            TRACE_NORMAL,
+            CWSFKEEPALIVE_WLANCONNECTIONCLOSED_HOTSPOTDETECTED,
+            "CWsfKeepalive::WlanConnectionClosed Hotspot IAP detected" );
+
+        if ( !iCmMgr->DeleteHotspotIapL( iIapId ) )
+            {
+            OstTrace0(
+                TRACE_NORMAL,
+                CWSFKEEPALIVE_WLANCONNECTIONCLOSED_HOTSPOTDELETEFAILED,
+                "CWsfKeepalive::WlanConnectionClosed Hotspot delete failed" );
+            }
+        iIapId = 0;
+        }
+    
     OstTraceFunctionExit0( CWSFKEEPALIVE_WLANCONNECTIONCLOSED_EXIT );
     }
 
@@ -201,7 +232,8 @@ void CWsfKeepalive::WlanConnectionClosed()
 //
 CWsfKeepalive::CWsfKeepalive() :
     iConnectionId( KInvalidConnectionId ),
-    iState( EInactive )
+    iState( EInactive ),
+    iIapId( 0 )
     {
     OstTraceFunctionEntry0( CWSFKEEPALIVE_CWSFKEEPALIVE_ENTRY );
     OstTraceFunctionExit0( CWSFKEEPALIVE_CWSFKEEPALIVE_EXIT );
@@ -219,6 +251,7 @@ void CWsfKeepalive::ConstructL()
     iConnMon = CWsfKeepaliveConnMon::NewL( *this );
     iConnMonDisc = CWsfKeepaliveConnMonDisc::NewL();
     iEsock = CWsfKeepaliveEsock::NewL();
+    iCmMgr = CWsfKeepaliveCmm::NewL();
     
     OstTraceFunctionExit0( CWSFKEEPALIVE_CONSTRUCTL_EXIT );
     }

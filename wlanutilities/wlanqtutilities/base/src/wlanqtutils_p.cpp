@@ -27,7 +27,7 @@
 #include "wlanqtutilsiapsettings.h"
 #include "wlanqtutilsconmonwrapper.h"
 #include "wlanqtutilsesockwrapper.h"
-#include "wlanqtutilsconntestwrapper.h"
+#include "wlanqtutilsscan.h"
 
 #include "wlanqtutils.h"
 #include "wlanqtutils_p.h"
@@ -63,8 +63,10 @@ WlanQtUtilsPrivate::WlanQtUtilsPrivate(WlanQtUtils *q_ptr) :
     q_ptr(q_ptr),
     mSettings(new WlanQtUtilsIapSettings(this)),
     mConMonWrapper(new WlanQtUtilsConMonWrapper(this)),
+    mScanWrapper(new WlanQtUtilsScan(this)),
     mEsockWrapper(new WlanQtUtilsEsockWrapper(this)),
-    mConnTestWrapper(new ConnTestWrapper(this)),
+    mIctService(),
+    mScanMode(ScanModeNone),
     mWlanScanList(),
     mToBeTestedIapId(WlanQtUtils::IapIdNone), 
     mConnectingIapId(WlanQtUtils::IapIdNone),
@@ -74,12 +76,17 @@ WlanQtUtilsPrivate::WlanQtUtilsPrivate(WlanQtUtils *q_ptr) :
 
     // Make all connections.
     bool connectStatus = connect(
-        mConMonWrapper, 
-        SIGNAL(availableWlanApsFromWrapper(
-            QList< QSharedPointer<WlanQtUtilsAp> >&)), 
+        mScanWrapper, 
+        SIGNAL(availableWlanAps(QList< QSharedPointer<WlanQtUtilsAp> >&)), 
         this, 
-        SLOT(updateAvailableWlanAps(
-            QList< QSharedPointer<WlanQtUtilsAp> >&)));
+        SLOT(updateAvailableWlanAps(QList< QSharedPointer<WlanQtUtilsAp> >&)));
+    Q_ASSERT(connectStatus);
+    
+    connectStatus = connect(
+        mScanWrapper,
+        SIGNAL(scanFailed(int)),
+        this,
+        SLOT(reportScanResult(int)));
     Q_ASSERT(connectStatus);
 
     connectStatus = connect(
@@ -87,13 +94,6 @@ WlanQtUtilsPrivate::WlanQtUtilsPrivate(WlanQtUtils *q_ptr) :
         SIGNAL(connectionStatusFromWrapper(bool)), 
         this,
         SLOT(updateConnectionStatus(bool)));
-    Q_ASSERT(connectStatus);
-
-    connectStatus = connect(
-        mConnTestWrapper, 
-        SIGNAL(connectivityTestResult(bool)), 
-        this,
-        SLOT(updateConnectivityTestResult(bool)));
     Q_ASSERT(connectStatus);
 
     connectStatus = connect(
@@ -142,8 +142,12 @@ void WlanQtUtilsPrivate::scanWlans()
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_SCANWLANS_ENTRY, this);
 
-    // Just forward the request to wrapper, which triggers a single WLAN scan
-    mConMonWrapper->scanAvailableWlanAPs();
+    // Scanning while there is an ongoing scan is not supported
+    Q_ASSERT(mScanMode == ScanModeNone);
+    
+    // Just forward the request to wrapper, which triggers a broadcast WLAN scan
+    mScanMode = ScanModeAvailableWlans;
+    mScanWrapper->scanWlanAps();
 
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_SCANWLANS_EXIT, this);
 }
@@ -156,8 +160,12 @@ void WlanQtUtilsPrivate::scanWlanAps()
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_SCANWLANAPS_ENTRY, this);
     
-    emit q_ptr->wlanScanApReady();
-    // TODO: implement me (wizard requires this)
+    // Scanning while there is an ongoing scan is not supported
+    Q_ASSERT(mScanMode == ScanModeNone);
+    
+    // Just forward the request to wrapper, which triggers a broadcast WLAN scan
+    mScanMode = ScanModeAvailableWlanAps;
+    mScanWrapper->scanWlanAps();
 
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_SCANWLANAPS_EXIT, this);
 }
@@ -169,11 +177,13 @@ void WlanQtUtilsPrivate::scanWlanAps()
 void WlanQtUtilsPrivate::scanWlanDirect(const QString &ssid)
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_SCANWLANDIRECT_ENTRY, this);
+
+    // Scanning while there is an ongoing scan is not supported
+    Q_ASSERT(mScanMode == ScanModeNone);
     
-    Q_UNUSED(ssid);
-    
-    emit q_ptr->wlanScanDirectReady();
-    // TODO: implement me (wizard requires this)
+    // Just forward the request to wrapper, which triggers a direct WLAN scan
+    mScanMode = ScanModeDirect;
+    mScanWrapper->scanWlanDirect(ssid);
     
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_SCANWLANDIRECT_EXIT, this);
 }
@@ -186,7 +196,14 @@ void WlanQtUtilsPrivate::stopWlanScan()
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_STOPWLANSCAN_ENTRY, this);
     
-    mConMonWrapper->stopScan();
+    if (mScanMode != ScanModeNone) {
+        // Inform that scan was cancelled
+        reportScanResult(WlanQtUtils::ScanStatusCancelled);
+        
+        // Stop the scan
+        mScanMode = ScanModeNone;
+        mScanWrapper->stopScan();
+    }
     
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_STOPWLANSCAN_EXIT, this);
 }
@@ -205,13 +222,13 @@ void WlanQtUtilsPrivate::availableWlans(
     wlanApList.clear();
 
     // Read the list of configured IAPs
-    QList<QSharedPointer<WlanQtUtilsIap> > configuredIapList;
+    QList< QSharedPointer<WlanQtUtilsIap> > configuredIapList;
     mSettings->fetchIaps(configuredIapList);
 
     // Match IAPs against WLAN scan results
     foreach (QSharedPointer<WlanQtUtilsIap> iap, configuredIapList) {
         foreach (QSharedPointer<WlanQtUtilsAp> scanAp, mWlanScanList) {
-            if (WlanQtUtilsAp::compare(iap.data(), scanAp.data()) == true) {
+            if (WlanQtUtilsAp::compare(iap.data(), scanAp.data()) == 0) {
                 // IAP found, add it to caller's list of known IAPs
                 // (signal strength needs to be updated manually since
                 // the IAP in our list does not have that information yet)
@@ -249,8 +266,8 @@ void WlanQtUtilsPrivate::availableWlanAps(
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_AVAILABLEWLANAPS_ENTRY, this);
     
-    Q_UNUSED(wlanApList);
-    // TODO: implement me (wizard requires this)
+    // Just copy the results
+    wlanApList = mWlanScanList;
     
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_AVAILABLEWLANAPS_EXIT, this);
 }
@@ -341,7 +358,8 @@ void WlanQtUtilsPrivate::disconnectIap(int iapId)
     OstTrace1(
         TRACE_BORDER,
         WLANQTUTILSPRIVATE_DISCONNECTIAP,
-        "WlanQtUtilsPrivate::disconnectIap;IAP ID=%d", iapId );
+        "WlanQtUtilsPrivate::disconnectIap;IAP ID=%d",
+        iapId);
 
     if (iapId != WlanQtUtils::IapIdNone) {
         // Close our RConnection handle, if needed. Wrapper ignores call, if
@@ -437,7 +455,7 @@ bool WlanQtUtilsPrivate::wlanIapExists(
     bool match = false;     // Return value
     
     foreach (QSharedPointer<WlanQtUtilsIap> iap, list) {
-        if (WlanQtUtilsAp::compare(iap.data(), ap) == true) {
+        if (WlanQtUtilsAp::compare(iap.data(), ap) == 0) {
             // Match found
             match = true;
             break;
@@ -468,7 +486,7 @@ void WlanQtUtilsPrivate::traceIapsAndAps(
         OstTraceExt3(
             TRACE_NORMAL,
             WLANQTUTILSPRIVATE_TRACEAVAILABLEWLANAPS_IAP,
-            "WlanQtUtilsPrivate::traceAvailableWlanAps IAP;name=%S;iap->securityMode()=%d;iap->signalStrength()=%d",
+            "WlanQtUtilsPrivate::traceAvailableWlanAps IAP;name=%S;secMode=%{WlanSecMode};signalStrength=%d",
             name,
             iap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
             iap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt());
@@ -479,10 +497,10 @@ void WlanQtUtilsPrivate::traceIapsAndAps(
         OstTraceExt3(
             TRACE_NORMAL,
             WLANQTUTILSPRIVATE_TRACEAVAILABLEWLANAPS_AP,
-            "WlanQtUtilsPrivate::traceAvailableWlanAps AP;ssid=%S;ap->securityMode()=%d;ap->signalStrength()=%d",
+            "WlanQtUtilsPrivate::traceAvailableWlanAps AP;ssid=%S;secMode=%{WlanSecMode};signalStrength=%d",
             ssid,
             ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
-            ap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt() );
+            ap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt());
     }
 #endif
 }
@@ -495,7 +513,7 @@ void WlanQtUtilsPrivate::traceIapsAndAps(
 */
 
 void WlanQtUtilsPrivate::updateAvailableWlanAps(
-    QList<QSharedPointer<WlanQtUtilsAp> > &availableWlanList)
+    QList< QSharedPointer<WlanQtUtilsAp> > &availableWlanList)
 {
     OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_UPDATEAVAILABLEWLANAPS_ENTRY, this);
 
@@ -507,7 +525,7 @@ void WlanQtUtilsPrivate::updateAvailableWlanAps(
         for (int j = 0; j < mWlanScanList.count(); j++) {
             if (WlanQtUtilsAp::compare(
                 availableWlanList[i].data(),
-                mWlanScanList[j].data()) == true) {
+                mWlanScanList[j].data()) == 0) {
                 duplicate = true;
                 break;
             }
@@ -517,14 +535,58 @@ void WlanQtUtilsPrivate::updateAvailableWlanAps(
         }
     }
 
-    // The information is forwarded to the UI
-    OstTrace0(
-        TRACE_BORDER,
-        WLANQTUTILSPRIVATE_WLANSCANREADY,
-        "WlanQtUtilsPrivate::emit wlanScanReady");
-    emit q_ptr->wlanScanReady();
+    // The information is forwarded to the client
+    reportScanResult(WlanQtUtils::ScanStatusOk);
+    
+    // Scan is complete
+    mScanMode = ScanModeNone;
     
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_UPDATEAVAILABLEWLANAPS_EXIT, this);
+}
+
+/*!
+    Scan result handler. Reports the scanning result to the client.
+        
+    @param [in] status Scan status code (WlanQtUtils::ScanStatus).
+*/
+
+void WlanQtUtilsPrivate::reportScanResult(int status)
+{
+    switch (mScanMode) {
+    case ScanModeAvailableWlans:
+        OstTrace1(
+            TRACE_BORDER,
+            WLANQTUTILSPRIVATE_WLANSCANREADY,
+            "WlanQtUtilsPrivate::reportScanResult emit wlanScanReady;status=%{ScanStatus};",
+            status);
+        emit q_ptr->wlanScanReady(status);
+        break;
+
+    case ScanModeAvailableWlanAps:
+        OstTrace1(
+            TRACE_BORDER,
+            WLANQTUTILSPRIVATE_WLANSCANAPREADY,
+            "WlanQtUtilsPrivate::reportScanResult emit wlanScanApReady;status=%{ScanStatus};",
+            status);
+        emit q_ptr->wlanScanApReady(status);
+        break;
+
+    case ScanModeDirect:
+        OstTrace1(
+            TRACE_BORDER,
+            WLANQTUTILSPRIVATE_WLANSCANDIRECTREADY,
+            "WlanQtUtilsPrivate::reportScanResult emit wlanScanDirectReady;status=%{ScanStatus};",
+            status);
+        emit q_ptr->wlanScanDirectReady(status);
+        break;
+
+#ifndef QT_NO_DEBUG
+    default:
+        // Invalid scan mode detected
+        Q_ASSERT(0);
+        break;
+#endif        
+    }
 }
 
 /*!
@@ -556,8 +618,7 @@ void WlanQtUtilsPrivate::updateConnectionStatus(bool isOpened)
     } else {
         // Opening succeeded, update connection status and inform UI
         if (mConnection) {
-            mConnection->setConnectionStatus(
-                WlanQtUtils::ConnStatusConnected);
+            mConnection->setConnectionStatus(WlanQtUtils::ConnStatusConnected);
         }
         
         OstTrace1(
@@ -569,9 +630,30 @@ void WlanQtUtilsPrivate::updateConnectionStatus(bool isOpened)
 
         // Start ICT, if needed
         if (mConnectingIapId == mToBeTestedIapId) {
-            QSharedPointer<WlanQtUtilsIap> iap = 
-                mSettings->fetchIap(mToBeTestedIapId);
-            mConnTestWrapper->startConnectivityTest(
+            QSharedPointer<WlanQtUtilsIap> iap(mSettings->fetchIap(mConnectingIapId));
+            
+            mIctService = QSharedPointer<IctsWlanLoginInterface>(
+                new IctsWlanLoginInterface(this));
+            
+            // IctsWlanLoginInterface instance is created for each connectivity test
+            // Note: Queued connection is required since mIctService is deleted
+            // when signal comes
+            bool connectStatus = connect(
+                mIctService.data(),
+                SIGNAL(ictsResult(int)),
+                this,
+                SLOT(updateIctResult(int)),
+                Qt::QueuedConnection); 
+            Q_ASSERT(connectStatus);            
+            connectStatus = connect(
+                mIctService.data(),
+                SIGNAL(hotspotCase()),
+                this,
+                SLOT(updateIctHotspotCase()),
+                Qt::QueuedConnection);
+            Q_ASSERT(connectStatus);
+            
+            mIctService->start(
                 mToBeTestedIapId,
                 iap->value(WlanQtUtilsIap::ConfIdNetworkId).toInt());
         }
@@ -583,36 +665,71 @@ void WlanQtUtilsPrivate::updateConnectionStatus(bool isOpened)
 }
 
 /*!
-    Slot for handling connectivity test result event from wrapper. Tested
-    IAP is stored to Internet SNAP, if test was successful.
+    Slot for handling internet connectivity test result event from wrapper.
+    Tested IAP is stored to Internet SNAP, if test was successful. If the
+    IAP needs Hotspot authentication, it remains ungategorized.
 
-    @param [in] result Was the test successful?
+    @param [in] result Result of internet connectivity test and hotspot
+                       authentication (IctsWlanLoginInterface::ictsResultType).
 */
 
-void WlanQtUtilsPrivate::updateConnectivityTestResult(bool result)
+void WlanQtUtilsPrivate::updateIctResult(int ictsResult)
 {
-    OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_UPDATECONNECTIVITYTESTRESULT_ENTRY, this);
+    OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_UPDATEICTRESULT_ENTRY, this);
 
-    if (result == true) {
+    Q_ASSERT(mToBeTestedIapId != WlanQtUtils::IapIdNone);
+    WlanQtUtils::IctStatus result = WlanQtUtils::IctFailed;
+    
+    if (ictsResult == IctsWlanLoginInterface::IctsPassed) {
         // Move the tested IAP to Internet SNAP since the test passed
         Q_ASSERT(mToBeTestedIapId != WlanQtUtils::IapIdNone);
         mSettings->moveIapToInternetSnap(mToBeTestedIapId);
-    } // else: do nothing, IAP remains to be uncategorized
-
+        result = WlanQtUtils::IctPassed;
+    } else if (ictsResult == IctsWlanLoginInterface::IctsHotspotPassed) {
+        Q_ASSERT(mToBeTestedIapId != WlanQtUtils::IapIdNone);
+        result = WlanQtUtils::IctHotspotPassed;
+    } else if (ictsResult == IctsWlanLoginInterface::IctsCanceled) {
+        Q_ASSERT(mToBeTestedIapId != WlanQtUtils::IapIdNone);
+        result = WlanQtUtils::IctCancelled;
+    } else {
+        // ICTS failed - IAP remains to be uncategorized and mIctService is deleted.
+        mIctService.clear();
+    }
+    
     // Inform UI
     OstTraceExt2(
         TRACE_NORMAL,
         WLANQTUTILSPRIVATE_ICTRESULT,
-        "WlanQtUtilsPrivate::emit ictResult;result=%hhu;IAP ID=%d",
-        result,
-        mToBeTestedIapId);
+        "WlanQtUtilsPrivate::emit ictResult;iapId=%d;result=%{IctStatus}",
+        mToBeTestedIapId,
+        result);
 
     emit q_ptr->ictResult(mToBeTestedIapId, result);
 
     // This IAP is now tested
     mToBeTestedIapId = WlanQtUtils::IapIdNone;
 
-    OstTraceFunctionExit1(WLANQTUTILSPRIVATE_UPDATECONNECTIVITYTESTRESULT_EXIT, this);
+    OstTraceFunctionExit1(WLANQTUTILSPRIVATE_UPDATEICTRESULT_EXIT, this);
+}
+
+/*!
+    Slot for setting IAP to be tested as hotspot IAP.
+*/
+
+void WlanQtUtilsPrivate::updateIctHotspotCase()
+{
+    OstTraceFunctionEntry1(WLANQTUTILSPRIVATE_UPDATEICTHOTSPOTCASE_ENTRY, this);
+
+    mSettings->setAsHotspotIap(mToBeTestedIapId);
+  
+    Q_ASSERT(mToBeTestedIapId != WlanQtUtils::IapIdNone);
+    OstTrace1(
+        TRACE_BORDER,
+        WLANQTUTILSPRIVATE_UPDATEICTHOTSPOTCASE,
+        "WlanQtUtilsPrivate::updateIctHotspotCase set as hotspot IAP;iapId=%d",
+        mToBeTestedIapId);
+        
+    OstTraceFunctionExit1(WLANQTUTILSPRIVATE_UPDATEICTHOTSPOTCASE_EXIT, this);
 }
 
 /*!
@@ -668,7 +785,7 @@ void WlanQtUtilsPrivate::removeActiveConnection(uint connectionId)
             OstTraceExt2(
                 TRACE_BORDER,
                 DUP1_WLANQTUTILSPRIVATE_WLANNETWORKCLOSED,
-                "WlanQtUtilsPrivate::emit wlanNetworkClosed;IAP ID=%d;status=%d",
+                "WlanQtUtilsPrivate::emit wlanNetworkClosed;iapID=%d;status=%d",
                 closedIapId,
                 KErrNone);
             emit q_ptr->wlanNetworkClosed(closedIapId, KErrNone);
@@ -695,7 +812,7 @@ void WlanQtUtilsPrivate::updateActiveConnection(
     OstTraceExt2(
         TRACE_BORDER,
         WLANQTUTILSPRIVATE_UPDATEACTIVECONNECTION,
-        "WlanQtUtilsPrivate::updateActiveConnection;connectionId=%u;connectionStatus=%u",
+        "WlanQtUtilsPrivate::updateActiveConnection;connectionId=%u;connectionStatus=%{ConnStatus}",
         connectionId,
         (uint)connectionStatus);
 
@@ -708,7 +825,7 @@ void WlanQtUtilsPrivate::updateActiveConnection(
             OstTrace1(
                 TRACE_BORDER,
                 DUP1_WLANQTUTILSPRIVATE_WLANNETWORKOPENED,
-                "WlanQtUtilsPrivate::emit wlanNetworkOpened;IAP ID=%d",
+                "WlanQtUtilsPrivate::emit wlanNetworkOpened;iapId=%d",
                 mConnection->iapId());
             emit q_ptr->wlanNetworkOpened(mConnection->iapId());
         }

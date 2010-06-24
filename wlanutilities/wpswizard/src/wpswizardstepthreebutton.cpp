@@ -2,7 +2,7 @@
  * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * This component and the accompanying materials are made available
- * under the terms of the License "Eclipse Public License v1.0"
+ * under the terms of "Eclipse Public License v1.0"
  * which accompanies this distribution, and is available
  * at the URL "http://www.eclipse.org/legal/epl-v10.html".
  *
@@ -17,11 +17,12 @@
  */
 
 // System includes
-#include <hbdocumentloader.h>
-#include <hbwidget.h>
-#include <hbradiobuttonlist.h>
-#include <hblineedit.h>
-#include <hblabel.h>
+#include <HbDocumentLoader>
+#include <HbWidget>
+#include <HbRadioButtonList>
+#include <HbLineEdit>
+#include <HbLabel>
+#include <HbMainwindow>
 
 // User includes
 #include "wpswizardstepthreebutton.h"
@@ -30,129 +31,135 @@
 // Trace includes
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
-#include "wpspagestepthreebuttonTraces.h"
+#include "wpswizardstepthreebuttonTraces.h"
 #endif
 
+// External function prototypes
+
+// Local constants
 
 /*!
- * Constructor for WPS page three button
- * 
- * \param WpsWizardPrivate* Pointer to the WPS wizard private implementation 
+   \class WpsPageStepThreeButton
+   \brief Implementation of wps wizard page for step three button press mode.
+ */
+
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
+
+/*!
+   Constructor for WPS page three button
+   
+   @param [in] parent Pointer to the WPS wizard private implementation 
  */
 WpsPageStepThreeButton::WpsPageStepThreeButton(WpsWizardPrivate* parent) :
-    WpsWizardPage(parent), mWidget(NULL), mRadio(NULL), mValid(true)
+    WpsWizardPage(parent), 
+    mWidget(NULL), 
+    mHeading(NULL),
+    mLoader(NULL)
 {
-OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_ENTRY, this)
-OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_EXIT, this)
+    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_ENTRY, this); 
+    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_EXIT, this);
 
 }
 
 /*!
- * Destructor
+   Destructor
  */
 WpsPageStepThreeButton::~WpsPageStepThreeButton()
 {
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_ENTRY, this)
-
-    delete mWidget;
-
-OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_EXIT, this)
+    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_DESTRUCTOR_ENTRY, this);
+    delete mLoader;
+    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_WPSPAGESTEPTHREEBUTTON_DESTRUCTOR_EXIT, this);
 }
 
 /*!
-  * Loads the page with all the widgets
-  * 
-  * \return HbWidget* Returns the view widget
+   Loads the page with all the widgets
+   
+   @return HbWidget* Returns the view widget
  */
 HbWidget* WpsPageStepThreeButton::initializePage()
 {
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_INITIALIZEPAGE_ENTRY, this)
+    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_INITIALIZEPAGE_ENTRY, this);
 
     if (!mWidget) {
         bool ok;
-        HbDocumentLoader loader;
-        loader.load(":/docml/occ_wps_P2.docml", &ok);
-        Q_ASSERT_X(ok, "WPS Wizard", "Invalid docml file");
+        mLoader = new HbDocumentLoader(mWizard->mainWindow());
+        
+        mLoader->load(":/docml/occ_wps_02_03.docml", &ok);
+        Q_ASSERT(ok);
+        
+        // Initialize orientation
+        loadDocmlSection(mWizard->mainWindow()->orientation());
 
-        mWidget = qobject_cast<HbWidget*> (loader.findWidget("occ_wps_P2"));
-        Q_ASSERT_X(mWidget != 0, "WPS Wizard", "View not found");
+        mWidget = qobject_cast<HbWidget*> (mLoader->findWidget("occ_wps_P2"));
+        Q_ASSERT(mWidget);
 
-        //mTitle = qobject_cast<HbLabel*> (loader.findWidget("label_title"));
-        //Q_ASSERT_X(mTitle != 0, "WPS wizard", "title not found");
-
-        mHeading = qobject_cast<HbLabel*> (loader.findWidget("label_heading"));
-        Q_ASSERT_X(mHeading != 0, "WPS wizard", "Header not found");
-
-        mWizard->enableNextButton(true);
-    }
-    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_INITIALIZEPAGE_EXIT, this)
-
+        mHeading = qobject_cast<HbLabel*> (mLoader->findWidget("label_heading"));
+        Q_ASSERT(mHeading);
+        
+        mHeading->setPlainText(hbTrId("txt_occ_dialog_first_press_button_on_the_wireless"));
+        
+        bool connectOk = connect(
+            mWizard->mainWindow(), 
+            SIGNAL(orientationChanged(Qt::Orientation)),
+            this, 
+            SLOT(loadDocmlSection(Qt::Orientation)));
+       Q_ASSERT(connectOk);
+    } 
+    
+    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_INITIALIZEPAGE_EXIT, this);
     return mWidget;
 }
 
 /*!
-  * Funtion to determine the next page to be displayed in the wizard process
-  * 
-  * \param bool& RemoveFromStack indicating whether the current page should be 
-  * removed from the stack
-  * 
-  * \return int Page Id of the next page to be displayed.
+   Funtion to determine the next page to be displayed in the wizard process
+   
+   @param [out] removeFromStack bool indicating whether the current page should be 
+   removed from the stack
+   
+   @return int Page Id of the next page to be displayed.
  */
 int WpsPageStepThreeButton::nextId(bool &removeFromStack) const
 {
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_NEXTID_ENTRY, this)
-    int id = WlanWizardPage::PageNone;
+    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_NEXTID_ENTRY, this);
     removeFromStack = false;
-    id = WpsWizardPage::PageWpsWizardStep4;
-    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_NEXTID_EXIT, this)
+    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_NEXTID_EXIT, this);
 
-    return id;
+    return WpsWizardPage::PageWpsWizardStep4;
 }
 
 /*!
- * Determines the Number of steps to move backwards when 'Prev' Button
- * is clicked
- * 
- * \return int Number of pages to move backwards
-*/
-int WpsPageStepThreeButton::stepsBackwards()
+   Determines the Number of steps to move backwards when 'Prev' Button
+   is clicked
+   
+   @return int Number of pages to move backwards
+ */
+int WpsPageStepThreeButton::previousTriggered()
 {
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_STEPSBACKWARDS_ENTRY, this)
-    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_STEPBACKWARDS_EXIT, this)
-
+    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_PREVIOUSTRIGGERED_ENTRY, this); 
+    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_PREVIOUSTRIGGERED_EXIT, this);
     return (PageWpsWizardStep3_Button - PageWpsWizardStep2);
 }
 
 /*!
-  * Callback when the previous button is clicked
+   Loads docml at initialization phase and when HbMainWindow sends 
+   orientation() signal.
+   
+   @param [in] orientation orientation to be loaded.
  */
-void WpsPageStepThreeButton::previousTriggered()
+void WpsPageStepThreeButton::loadDocmlSection(Qt::Orientation orientation)
 {
-OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_PREVIOUSTRIGGERED_ENTRY, this)
-OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_PREVIOUSTRIGGERED_EXIT, this)
-
-}
-
-/*!
-  * CallBack when the cancel button is clicked
- */
-void WpsPageStepThreeButton::cancelTriggered()
-{
-OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_CANCELTRIGGERED_ENTRY, this)
-OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_CANCELTRIGGERED_EXIT, this)
-
-}
-
-/*!
- * Validates the content of the pages
- * 
- * \return bool Indicating the result of the operation
-*/
-bool WpsPageStepThreeButton::validate() const
-{
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREEBUTTON_VALIDATE_ENTRY, this)
-    OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_VALIDATE_EXIT, this)
-
-    return mValid;
+    bool ok = false;
+    
+    // Load the orientation specific section
+    if (orientation == Qt::Horizontal) {
+        mLoader->load(":/docml/occ_wps_02_03.docml", "landscape", &ok);
+        Q_ASSERT(ok);
+    } else {
+        Q_ASSERT(orientation == Qt::Vertical);
+        mLoader->load(":/docml/occ_wps_02_03.docml", "portrait", &ok);
+        Q_ASSERT(ok);
+    }
 }
 

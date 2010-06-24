@@ -1,26 +1,26 @@
 /*
-* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description: Step 3 Number mode
-*
-*/
+ * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+ * All rights reserved.
+ * This component and the accompanying materials are made available
+ * under the terms of "Eclipse Public License v1.0"
+ * which accompanies this distribution, and is available
+ * at the URL "http://www.eclipse.org/legal/epl-v10.html".
+ *
+ * Initial Contributors:
+ * Nokia Corporation - initial contribution.
+ *
+ * Contributors:
+ *
+ * Description: Step 3 Number mode
+ *
+ */
 
 #ifndef WPSWIZARDSTEPTHREENUMBER_H_
 #define WPSWIZARDSTEPTHREENUMBER_H_
 
-
 // System includes
 #include <QObject>
+#include <HbDocumentLoader>
 
 // User includes
 #include "wpswizardpage.h"
@@ -34,61 +34,57 @@ class WpsWizardPrivate;
 // External data types
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
+
 // Class declaration
 class WpsPageStepThreeNumber : public WpsWizardPage
-    {
-    Q_OBJECT
-    public:
-    WpsPageStepThreeNumber(WpsWizardPrivate* parent);
+{
+Q_OBJECT
+
+public:
+    explicit WpsPageStepThreeNumber(WpsWizardPrivate* parent);
     ~WpsPageStepThreeNumber();
-    public:
-    /*!
-     * Creates a visualization of the page.
-     */
+
+public:
     HbWidget* initializePage();
-    /*!
-     * Returns id of next page. updates settings EapWizard.
-     */
+
     int nextId(bool &removeFromStack) const;
-    /*!
-     * Returns how many steps should be gone backwards. 
-     */
-    int stepsBackwards();
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    void previousTriggered();
-    /*!
-     * This method is called when Cancel button has been pressed.
-     */
+
+    int previousTriggered();
+
     void cancelTriggered();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    bool validate() const;
 
-    private:
-    /*!
-     * This method computes a random number based on current syste time
-     */
+    bool showPage();
+
+private:
     int computeRandNumber();
-    /*!
-     * This method computes the check sum on the input number
-     */
-    int computeCheckSum(int aPin);
-    
-    private slots:
-    
-    private: // data
-    Q_DISABLE_COPY(WpsPageStepThreeNumber)
-     HbWidget *mWidget;
-     HbRadioButtonList *mRadio;
-     HbLabel *mTitle;
-     HbLabel *mHeading;
-     bool mValid;
-    };
 
-/*! @} */
+    int computeCheckSum(int aPin);
+
+signals:
+
+public slots:
+    void loadDocmlSection(Qt::Orientation orientation);
+
+protected:
+
+protected slots:
+
+private:
+    Q_DISABLE_COPY(WpsPageStepThreeNumber)
+
+private slots:
+
+private: //data
+    //! Pointer to the widget object.
+    HbWidget *mWidget;
+    //! Label object used for displaying the heading.
+    HbLabel *mHeading;
+    //! Document loader object
+    HbDocumentLoader *mLoader;
+};
 
 #endif /* WPSWIZARDSTEPTHREENUMBER_H_ */

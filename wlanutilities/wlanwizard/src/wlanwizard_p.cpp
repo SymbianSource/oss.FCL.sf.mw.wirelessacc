@@ -31,13 +31,8 @@
 #include <HbStyleLoader>
 
 // User includes
-#ifdef WLAN_WIZARD_RND_EAP
 #include "eapwizard.h"
-#endif
-
-#ifdef WLAN_WIZARD_RND_WPS
 #include "wpswizard.h"
-#endif
 #include "wlanqtutils.h"
 #include "wlanqtutilsap.h"
 #include "wlanwizardplugin.h"
@@ -48,13 +43,10 @@
 #include "wlanwizardpagesummary.h"
 #include "wlanwizardpageprocessingsettings.h"
 #include "wlanwizardpagegenericerror.h"
-
-#ifdef WLAN_WIZARD_RND
 #include "wlanwizardpagessid.h"
 #include "wlanwizardpagenetworkmode.h"
 #include "wlanwizardpagescanning.h"
 #include "wlanwizardpagesecuritymode.h"
-#endif
 
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
@@ -128,6 +120,14 @@ WlanWizardPrivate::WlanWizardPrivate(
     // Creates the control object of the wlan wizard pages. 
     createPages();
 
+    // EAP Wizard will add wizard pages at construction phase using
+    // WlanWizardHelper::addPage()
+    mEapWizard.reset(new EapWizard(this) );
+
+    // WPS Wizard will add wizard pages at construction phase using
+    // WlanWizardHelper::addPage()
+    mWpsWizard.reset(new WpsWizard(this));
+
     // First page is SSID query, unless client sets configurations via
     // setParameters(), which decides the first page..
     mFirstPageId = WlanWizardPageInternal::PageSsid;
@@ -165,16 +165,15 @@ WlanWizardPrivate::~WlanWizardPrivate()
     // parent of the objects.
     mPages.clear();
     
-#ifdef WLAN_WIZARD_RND_EAP
-    delete mEapWizard;
-#endif
-#ifdef WLAN_WIZARD_RND_WPS
-    delete mWpsWizard;
-#endif
     // timer is cancelled/deleted automatically when the parent (this) is deleted 
     
     // TODO: See TSW Error: MTAA-854DK8 and loadDocml()
     HbStyleLoader::unregisterFilePath(":/css/custom.css");
+    
+    mDialog->setAttribute( Qt::WA_DeleteOnClose, true );
+    mDialog->close();
+    // Remove the pointer from QScopedPointer to prevent double deallocation
+    mDialog.take();
     
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_DWLANWIZARDPRIVATE_DONE,
         "WlanWizardPrivate::~WlanWizardPrivate-Done;this=%x",
@@ -272,10 +271,8 @@ WlanWizardPlugin* WlanWizardPrivate::wlanWizardPlugin() const
     WlanWizardPlugin* plugin = NULL;
 
     if (isEapEnabled()) {
-#ifdef WLAN_WIZARD_RND_EAP
-        plugin = mEapWizard;
+        plugin = mEapWizard.data();
         Q_ASSERT(plugin);
-#endif
     }
     
     OstTrace1( TRACE_NORMAL, WLANWIZARDPRIVATE_WLANWIZARDPLUGIN, 
@@ -325,6 +322,15 @@ bool WlanWizardPrivate::handleIap()
     int securityMode = configuration(ConfSecurityMode).toInt();
     WlanQtUtilsAp wlanAp;
    
+    // Set default values
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true );
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, CMManagerShim::WepKeyIndex1 );
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey1, QString());
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey2, QString());
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey3, QString());
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey4, QString());
+    
     // Set configuration
     wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, configuration(ConfSsid));
     wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, 
@@ -440,6 +446,30 @@ void WlanWizardPrivate::setConfiguration(
 }
 
 /*!
+ * See WlanWizardHelper::clearConfiguration().
+ */
+void WlanWizardPrivate::clearConfiguration(ConfigurationId confId)
+{
+    OstTrace1( TRACE_FLOW, WLANWIZARDPRIVATE_CLEARCONFIGURATION,
+        "WlanWizardPrivate::clearConfiguration;confId=%{ConfigurationId}",
+        (uint)confId );
+    
+    mConfigurations.remove(confId);
+}
+
+/*!
+ * See WlanWizardHelper::configurationExists().
+ */
+bool WlanWizardPrivate::configurationExists(ConfigurationId confId)
+{
+    OstTrace1( TRACE_DUMP, WLANWIZARDPRIVATE_CONFIGURATIONEXISTS,
+        "WlanWizardPrivate::configurationExists;confId=%{ConfigurationId}",
+        (uint)confId );
+    
+    return mConfigurations[confId].isValid();
+}
+    
+/*!
    See WlanWizardHelper::enableNextButton().
  */
 void WlanWizardPrivate::enableNextButton(bool enable)
@@ -448,18 +478,6 @@ void WlanWizardPrivate::enableNextButton(bool enable)
         "WlanWizardPrivate::enableNextButton;this=%x;enable=%x",
         (unsigned)this, (uint)enable );
     mActionNext->setEnabled(enable);
-}
-
-/*!
-   See WlanWizardHelper::enablePrevButton().
- */
-void WlanWizardPrivate::enablePrevButton(bool enable)
-{
-    OstTraceExt2( TRACE_FLOW, WLANWIZARDPRIVATE_ENABLEPREVBUTTON,
-        "WlanWizardPrivate::enablePrevButton;this=%x;enable=%x", 
-        (unsigned)this, (uint)(enable) );
-    
-    mActionPrevious->setEnabled(enable);
 }
 
 /*!
@@ -519,55 +537,38 @@ bool WlanWizardPrivate::isCurrentPage(const HbWidget *page) const
 int WlanWizardPrivate::nextPageId(bool useWps)
 {
     int ret;
-    int secMode = configuration(WlanWizardHelper::ConfSecurityMode).toInt();
-    switch (secMode) {
-    case CMManagerShim::WlanSecModeWep:
-        ret = WlanWizardPageInternal::PageKeyQuery;
-        break;
-        
-    case CMManagerShim::WlanSecModeWpa:
-    case CMManagerShim::WlanSecModeWpa2:
-        if (configuration(WlanWizardHelper::ConfUsePsk).toBool()) {
-            ret = WlanWizardPageInternal::PageKeyQuery;
-        } else {
-#ifdef WLAN_WIZARD_RND_EAP
-            ret = WlanWizardPage::PageEapStart;
-#else
-            ret = WlanWizardPageInternal::PageProcessSettings;
-            setConfiguration(ConfSecurityMode, CMManagerShim::WlanSecModeOpen);
-#endif
-
-        }
-        break;
-        
-    case CMManagerShim::WlanSecMode802_1x:
-#ifdef WLAN_WIZARD_RND_EAP
-        ret = WlanWizardPage::PageEapStart;
-#else
-        ret = WlanWizardPageInternal::PageProcessSettings;
-        setConfiguration(ConfSecurityMode, CMManagerShim::WlanSecModeOpen);
-#endif
-        break;
-        
-    case CMManagerShim::WlanSecModeWapi:
-    case CMManagerShim::WlanSecModeOpen:
-    default:
-        Q_ASSERT(
-            secMode == CMManagerShim::WlanSecModeOpen || 
-            secMode == CMManagerShim::WlanSecModeWapi);
-        
-        setConfiguration(ConfSecurityMode, CMManagerShim::WlanSecModeOpen);
-        ret = WlanWizardPageInternal::PageProcessSettings;
-        break;
-    }
-
-    Q_UNUSED(useWps);
-#ifdef WLAN_WIZARD_RND_WPS
-    // TODO: WPS: and switch case above to else branch
     if (useWps) {
         ret = WlanWizardPage::PageWpsStart;
+    } else {
+        int secMode = configuration(WlanWizardHelper::ConfSecurityMode).toInt();
+        switch (secMode) {
+        case CMManagerShim::WlanSecModeWep:
+            ret = WlanWizardPageInternal::PageKeyQuery;
+            break;
+            
+        case CMManagerShim::WlanSecModeWpa:
+        case CMManagerShim::WlanSecModeWpa2:
+            if (configuration(WlanWizardHelper::ConfUsePsk).toBool()) {
+                ret = WlanWizardPageInternal::PageKeyQuery;
+            } else {
+                ret = WlanWizardPage::PageEapStart;
+            }
+            break;
+            
+        case CMManagerShim::WlanSecMode802_1x:
+            ret = WlanWizardPage::PageEapStart;
+            break;
+            
+        default:
+            Q_ASSERT(
+                secMode == CMManagerShim::WlanSecModeOpen || 
+                secMode == CMManagerShim::WlanSecModeWapi);
+            
+            setConfiguration(ConfSecurityMode, CMManagerShim::WlanSecModeOpen);
+            ret = WlanWizardPageInternal::PageProcessSettings;
+            break;
+        }
     }
-#endif
 
     OstTraceExt3( TRACE_NORMAL, WLANWIZARDPRIVATE_NEXTPAGEID,
         "WlanWizardPrivate::nextPageId;this=%x;useWps=%x;ret=%{PageIds}",
@@ -607,12 +608,6 @@ void WlanWizardPrivate::cancelTriggered()
         
         // if IAP deletion fails, there is nothing we can do with it
         mWlanQtUtils->deleteIap(referenceId);
-        WlanWizardPlugin* plugin = wlanWizardPlugin();
-        if (plugin) {
-            // if deletion of plugin specific configuration fails we are not
-            // able to do anything
-            plugin->deleteSettings();
-        }
         setConfiguration(ConfIapId, WlanQtUtils::IapIdNone);
     }
     closeViews();
@@ -812,6 +807,10 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
                 setConfiguration(
                     ConfGenericErrorString, 
                     hbTrId("txt_occ_dialog_unable_to_save_settings_please_ret"));
+                
+                setConfiguration(
+                    ConfGenericErrorPageStepsBackwards, 
+                    WlanWizardPage::OneStepBackwards);
             }
             OstTraceExt2( TRACE_FLOW, WLANWIZARDPRIVATE_SHOWPAGE_UPDATE,
                 "WlanWizardPrivate::showPage - change page;this=%x;"
@@ -819,25 +818,6 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
                 ( unsigned )this, pageId);
         }
     }
-    
-#ifdef WLAN_WIZARD_RND_EAP
-    if (pageId == WlanWizardPage::PageEapStart) {
-        if (!mEapWizard) {
-            // EAP Wizard will add wizard pages at construction phase using
-            // WlanWizardHelper::addPage()
-            mEapWizard = new EapWizard(this);
-        }
-    }
-#endif
-#ifdef WLAN_WIZARD_RND_WPS
-    if (pageId == WlanWizardPage::PageWpsStart) {
-        if (!mWpsWizard) {
-            // WPS Wizard will add wizard pages at construction phase using
-            // WlanWizardHelper::addPage()
-            mWpsWizard = new WpsWizard(this);
-        }
-    }
-#endif
 
     // Create visualization of next page and store it to mappers
     WlanWizardPage* page = mPages[pageId];
@@ -882,33 +862,42 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
  */
 void WlanWizardPrivate::createPages()
 {
-    OstTrace0( TRACE_NORMAL, WLANWIZARDPRIVATE_CREATEPAGES,
-        "WlanWizardPrivate::createPages" );
+    OstTrace0(
+        TRACE_NORMAL,
+        WLANWIZARDPRIVATE_CREATEPAGES,
+        "WlanWizardPrivate::createPages");
     
-    addPage(WlanWizardPageInternal::PageKeyQuery, 
+    addPage(
+        WlanWizardPageInternal::PageKeyQuery, 
         new WlanWizardPageKeyQuery(this));
     
-    addPage(WlanWizardPageInternal::PageProcessSettings, 
+    addPage(
+        WlanWizardPageInternal::PageProcessSettings, 
         new WlanWizardPageProcessingSettings(this));
     
-    addPage(WlanWizardPageInternal::PageSummary, 
+    addPage(
+        WlanWizardPageInternal::PageSummary, 
         new WlanWizardPageSummary(this));
 
-    addPage(WlanWizardPageInternal::PageGenericError, 
+    addPage(
+        WlanWizardPageInternal::PageGenericError, 
         new WlanWizardPageGenericError(this));
     
-#ifdef WLAN_WIZARD_RND
-    addPage(WlanWizardPageInternal::PageSsid, new WlanWizardPageSsid(this));
+    addPage(
+        WlanWizardPageInternal::PageSsid,
+        new WlanWizardPageSsid(this));
     
-    addPage(WlanWizardPageInternal::PageScanning, 
+    addPage(
+        WlanWizardPageInternal::PageScanning, 
         new WlanWizardPageScanning(this));
     
-    addPage(WlanWizardPageInternal::PageNetworkMode, 
+    addPage(
+        WlanWizardPageInternal::PageNetworkMode, 
         new WlanWizardPageNetworkMode(this));
     
-    addPage(WlanWizardPageInternal::PageNetworkSecurity, 
+    addPage(
+        WlanWizardPageInternal::PageNetworkSecurity, 
         new WlanWizardPageSecurityMode(this));
-#endif
 }
 
 /*!
@@ -918,8 +907,8 @@ void WlanWizardPrivate::createPages()
  */
 void WlanWizardPrivate::closeViews()
 {
+    mDialog->hide();
     mClosed = true;
-    mDialog->close();
 }
 
 /*!

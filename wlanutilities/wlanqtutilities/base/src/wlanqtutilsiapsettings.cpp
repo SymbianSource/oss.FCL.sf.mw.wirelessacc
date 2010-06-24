@@ -52,6 +52,11 @@
 
 // Local constants
 
+//! IAP trace types
+#define WLANQTUTILS_IAP_TRACE_FETCH     1
+#define WLANQTUTILS_IAP_TRACE_CREATE    2
+#define WLANQTUTILS_IAP_TRACE_UPDATE    3
+
 // WEP key lengths used to determine key format
 static const int WepHex64BitMaxLength = 10;
 static const int WepHex128BitMaxLength = 26;
@@ -115,7 +120,16 @@ void WlanQtUtilsIapSettings::fetchIaps(
             error);
     }
 
-    foreach (int iapId, iapIds) {
+#ifdef OST_TRACE_COMPILER_IN_USE
+    int iapCount = iapIds.count();
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANQTUTILSIAPSETTINGS_FETCHIAPS_COUNT,
+        "WlanQtUtilsIapSettings::fetchIaps;iapCount=%d",
+        iapCount);
+#endif
+
+    foreach (uint iapId, iapIds) {
         QSharedPointer<WlanQtUtilsIap> wlanIap = fetchIap(iapId);
         if (wlanIap) {
             iapList.append(wlanIap);
@@ -133,16 +147,10 @@ void WlanQtUtilsIapSettings::fetchIaps(
     @return Found IAP, NULL if not found.
 */
 
-QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(int iapId) const
+QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(uint iapId) const
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_FETCHIAP_ENTRY);
-    
-    OstTrace1(
-        TRACE_NORMAL,
-        WLANQTUTILSIAPSETTINGS_FETCHIAP,
-        "WlanQtUtilsIapSettings::fetchIap;iapId=%d",
-        iapId);
-    
+
     QSharedPointer<WlanQtUtilsIap> wlanIap;
     try {
         QScopedPointer<CmConnectionMethodShim> iap(
@@ -154,6 +162,7 @@ QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(int iapId) const
             int netId = iap->getIntAttribute(CMManagerShim::CmNetworkId);
             QString name = iap->getStringAttribute(CMManagerShim::CmName);
             QString ssid = iap->getStringAttribute(CMManagerShim::WlanSSID);
+            int connMode = iap->getIntAttribute(CMManagerShim::WlanConnectionMode);
             int secMode = iap->getIntAttribute(
                 CMManagerShim::WlanSecurityMode);
             bool wpaPskUse = iap->getBoolAttribute(
@@ -165,8 +174,15 @@ QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(int iapId) const
             wlanIap->setValue(WlanQtUtilsIap::ConfIdNetworkId, netId);
             wlanIap->setValue(WlanQtUtilsIap::ConfIdName, name);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
+            wlanIap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, connMode);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, secMode);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, wpaPskUse);
+            
+            // Trace the fetched IAP
+            traceIap(
+                wlanIap.data(),
+                WLANQTUTILS_IAP_TRACE_FETCH,
+                iapId);
         }
     } catch (const std::exception &ex) {
         int error = qt_symbian_exception2Error(ex);
@@ -201,6 +217,12 @@ int WlanQtUtilsIapSettings::createIap(const WlanQtUtilsAp *wlanAp)
             mCmManager->createConnectionMethod(KUidWlanBearerType));
         storeSettings(wlanAp, iap.data());
         iapId = iap->getIntAttribute(CMManagerShim::CmIapId);
+        
+        // Trace the created IAP
+        traceIap(
+            wlanAp,
+            WLANQTUTILS_IAP_TRACE_CREATE,
+            iapId);
     } catch (const std::exception &ex) {
         // Trace error cause and return failure (default value) to caller.
         int error = qt_symbian_exception2Error(ex);
@@ -238,6 +260,11 @@ bool WlanQtUtilsIapSettings::updateIap(
         QScopedPointer<CmConnectionMethodShim> iap(
             mCmManager->connectionMethod(iapId));
         storeSettings(wlanAp, iap.data());
+        // Trace the updated IAP
+        traceIap(
+            wlanAp,
+            WLANQTUTILS_IAP_TRACE_UPDATE,
+            iapId);
         success = true;
     } catch (const std::exception &ex) {
         // Trace error cause and return failure (default value) to caller.
@@ -325,6 +352,36 @@ void WlanQtUtilsIapSettings::moveIapToInternetSnap(int iapId)
 }
 
 /*!
+    Set Hotspot metadata to the Hotspot IAP given as parameter.
+    
+    @param [in] iapId ID of IAP to set.
+*/
+
+void WlanQtUtilsIapSettings::setAsHotspotIap(int iapId)
+{
+    OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_SETASHOTSPOTIAP_ENTRY);
+        
+    try {
+        QScopedPointer<CmConnectionMethodShim> iap(
+            mCmManager->connectionMethod(iapId));
+        iap->setBoolAttribute(CMManagerShim::CmMetaHotSpot, true);
+        iap->update();
+    } catch (const std::exception &ex) {
+        // Just trace error cause. It is not fatal, if we are not able to
+        // set IAP as hotspot IAP. No need to retry, since errors should be very
+        // rare and it does not prevent connection opening of the hotspot IAP.
+        int error = qt_symbian_exception2Error(ex);
+        OstTrace1(
+            TRACE_NORMAL,
+            WLANQTUTILSIAPSETTINGS_SETASHOTSPOTIAP_EXCEPTION,
+            "WlanQtUtilsIapSettings::setAsHotspotIap exception;error=%d",
+            error);
+    }
+                 
+    OstTraceFunctionExit0(WLANQTUTILSIAPSETTINGS_SETASHOTSPOTIAP_EXIT);
+}
+
+/*!
     Stores the given Wlan AP settings to database using CM Manager Shim.
    
     @param [in] wlanAp WLAN AP settings to store.
@@ -336,66 +393,57 @@ void WlanQtUtilsIapSettings::storeSettings(
     CmConnectionMethodShim *iap)
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_STORESETTINGS_ENTRY);
-    
+
     int secMode = wlanAp->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt();
     QString ssid = wlanAp->value(WlanQtUtilsAp::ConfIdSsid).toString();
-    
-    // Store general values
+
+    // Store general settings
     iap->setStringAttribute(CMManagerShim::CmName, ssid);
     iap->setStringAttribute(CMManagerShim::WlanSSID, ssid);
     iap->setIntAttribute(CMManagerShim::WlanSecurityMode, secMode);
     iap->setIntAttribute(
         CMManagerShim::WlanConnectionMode, 
         wlanAp->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt());
-    
-    switch (secMode) {
-    case CMManagerShim::WlanSecModeWep:
-        // Store the 4 WEP keys (function does nothing, if a key is not set)
-        storeWepKey(
-            wlanAp->value(WlanQtUtilsAp::ConfIdWepKey1).toString(),
-            1,
-            iap);
-        storeWepKey(
-            wlanAp->value(WlanQtUtilsAp::ConfIdWepKey2).toString(),
-            2,
-            iap);
-        storeWepKey(
-            wlanAp->value(WlanQtUtilsAp::ConfIdWepKey3).toString(),
-            3,
-            iap);
-        storeWepKey(
-            wlanAp->value(WlanQtUtilsAp::ConfIdWepKey4).toString(),
-            4,
-            iap);
-        
-        iap->setIntAttribute(
-            CMManagerShim::WlanWepKeyIndex,
-            wlanAp->value(WlanQtUtilsAp::ConfIdWepDefaultIndex).toInt());
-        break;
 
-    case CMManagerShim::WlanSecModeWpa:
-    case CMManagerShim::WlanSecModeWpa2:
-        // Store WPA PSK values
-        bool usePsk = wlanAp->value(WlanQtUtilsAp::ConfIdWpaPskUse).toBool();
-        iap->setBoolAttribute(CMManagerShim::WlanEnableWpaPsk, usePsk);
-        if (usePsk) {
-            QString wpaKey(wlanAp->value(WlanQtUtilsAp::ConfIdWpaPsk ).toString());
-            iap->setString8Attribute(CMManagerShim::WlanWpaPreSharedKey, wpaKey);
-        }
-        break;
-    }
-    
+    // Store the WEP settings
+    storeWepKey(
+        wlanAp->value(WlanQtUtilsAp::ConfIdWepKey1).toString(),
+        1,
+        iap);
+    storeWepKey(
+        wlanAp->value(WlanQtUtilsAp::ConfIdWepKey2).toString(),
+        2,
+        iap);
+    storeWepKey(
+        wlanAp->value(WlanQtUtilsAp::ConfIdWepKey3).toString(),
+        3,
+        iap);
+    storeWepKey(
+        wlanAp->value(WlanQtUtilsAp::ConfIdWepKey4).toString(),
+        4,
+        iap);
+    iap->setIntAttribute(
+        CMManagerShim::WlanWepKeyIndex,
+        wlanAp->value(WlanQtUtilsAp::ConfIdWepDefaultIndex).toInt());
+
+    // Store WPA PSK settings
+    bool usePsk = wlanAp->value(WlanQtUtilsAp::ConfIdWpaPskUse).toBool();
+    iap->setBoolAttribute(CMManagerShim::WlanEnableWpaPsk, usePsk);
+    QString wpaKey(wlanAp->value(WlanQtUtilsAp::ConfIdWpaPsk).toString());
+    iap->setString8Attribute(CMManagerShim::WlanWpaPreSharedKey, wpaKey);
+
+    // Write the settings.
     iap->update();
 
     OstTraceFunctionExit0(WLANQTUTILSIAPSETTINGS_STORESETTINGS_EXIT);
 }
 
 /*!
-    Stores the given valid WEP key to database using CM Manager Shim. Ignores
-    keys with zero length.
+    Stores the given valid WEP key to database using CM Manager Shim. If key
+    is not used an empty key must be provided.
   
-    @note This method MUST not be called for invalid WEP Keys. Wlanwizard
-          validates keys, before accepting user input.
+    @note This method MUST not be called for invalid WEP Keys and/or indexes.
+          Wlanwizard validates keys, before accepting user input.
           
     @param [in] key Key to write.
     @param [in] index Key index. Valid range is [0,4].
@@ -409,69 +457,171 @@ void WlanQtUtilsIapSettings::storeWepKey(
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_STOREWEPKEY_ENTRY);
     
-    // Default value is set just to silence compiler, Q_ASSERTs take care
-    // that valid attribute is set below
-    CMManagerShim::ConnectionMethodAttribute attribute = 
-        CMManagerShim::WlanWepKey1InHex;
-    
     int length = key.length();
     if (length == WepHex64BitMaxLength || length == WepHex128BitMaxLength) {
         // HEX
-        switch (index) {
-        case 1:
-            attribute = CMManagerShim::WlanWepKey1InHex;
-            break;
-            
-        case 2:
-            attribute = CMManagerShim::WlanWepKey2InHex;
-            break;
-            
-        case 3:
-            attribute = CMManagerShim::WlanWepKey3InHex;
-            break;
-            
-        case 4:
-            attribute = CMManagerShim::WlanWepKey4InHex;
-            break;
-            
-#ifndef QT_NO_DEBUG
-        default:
-            // Invalid key index detected
-            Q_ASSERT(0);
-            break;
-#endif            
-        }
+        iap->setString8Attribute(mapWepKeyIndexHex(index), key);
     } else if (length == WepAscii64BitMaxLength || length == WepAscii128BitMaxLength) {
         // ASCII
-        switch (index) {
-        case 1:
-            attribute = CMManagerShim::WlanWepKey1InAscii;
-            break;
-            
-        case 2:
-            attribute = CMManagerShim::WlanWepKey2InAscii;
-            break;
-            
-        case 3:
-            attribute = CMManagerShim::WlanWepKey3InAscii;
-            break;
-
-        case 4:
-            attribute = CMManagerShim::WlanWepKey4InAscii;
-            break;
-            
-#ifndef QT_NO_DEBUG
-        default:
-            // Invalid key index detected
-            Q_ASSERT(0);
-            break;
-#endif            
-        }
+        iap->setString8Attribute(mapWepKeyIndexAscii(index), key);
+    } else {
+        // Length must always be a valid one or zero
+        Q_ASSERT(length == 0);
+        
+        // Write default value. Note that the key is stored in the same data
+        // field regardless of the format so writing only one key is enough.
+        iap->setString8Attribute(mapWepKeyIndexHex(index), key);
     }
-    
-    if (length > 0) {
-        iap->setString8Attribute(attribute, key);
-    } // else: key is not set, ignore
 
     OstTraceFunctionExit0(WLANQTUTILSIAPSETTINGS_STOREWEPKEY_EXIT);
+}
+
+/*!
+    Maps given Hex WEP key index into the corresponding CM Manager Connection
+    Method attribute.
+    
+    @param [in] index Hex WEP key index [1,4].
+    
+    @return Connection Method attribute. 
+*/
+
+CMManagerShim::ConnectionMethodAttribute WlanQtUtilsIapSettings::mapWepKeyIndexHex(
+    int index)
+{
+    CMManagerShim::ConnectionMethodAttribute attribute = 
+        CMManagerShim::WlanWepKey1InHex;
+    
+    switch (index) {
+    case 1:
+        attribute = CMManagerShim::WlanWepKey1InHex;
+        break;
+        
+    case 2:
+        attribute = CMManagerShim::WlanWepKey2InHex;
+        break;
+        
+    case 3:
+        attribute = CMManagerShim::WlanWepKey3InHex;
+        break;
+        
+    case 4:
+        attribute = CMManagerShim::WlanWepKey4InHex;
+        break;
+        
+#ifndef QT_NO_DEBUG
+    default:
+        // Invalid key index detected
+        Q_ASSERT(0);
+        break;
+#endif
+    }
+
+    return attribute;
+}
+
+/*!
+    Maps given Ascii WEP key index into the corresponding CM Manager Connection
+    Method attribute.
+    
+    @param [in] index Ascii WEP key index [1,4].
+    
+    @return Connection Method attribute. 
+*/
+
+CMManagerShim::ConnectionMethodAttribute WlanQtUtilsIapSettings::mapWepKeyIndexAscii(
+    int index)
+{
+    CMManagerShim::ConnectionMethodAttribute attribute = 
+        CMManagerShim::WlanWepKey1InAscii;
+
+    switch (index) {
+    case 1:
+        attribute = CMManagerShim::WlanWepKey1InAscii;
+        break;
+        
+    case 2:
+        attribute = CMManagerShim::WlanWepKey2InAscii;
+        break;
+        
+    case 3:
+        attribute = CMManagerShim::WlanWepKey3InAscii;
+        break;
+
+    case 4:
+        attribute = CMManagerShim::WlanWepKey4InAscii;
+        break;
+        
+#ifndef QT_NO_DEBUG
+    default:
+        // Invalid key index detected
+        Q_ASSERT(0);
+        break;
+#endif            
+    }
+
+    return attribute;
+}
+
+/*
+    Traces given IAP (which is taken in as an AP).
+
+    @param [in] ap IAP to trace.
+    @param [in] traceType Trace type (WLANQTUTILS_IAP_TRACE_*).
+    @param [in] iapId IAP ID.
+*/
+
+void WlanQtUtilsIapSettings::traceIap(
+    const WlanQtUtilsAp *ap,
+    int traceType,
+    uint iapId) const
+{
+#ifndef OST_TRACE_COMPILER_IN_USE
+    Q_UNUSED(ap);
+    Q_UNUSED(traceType);
+    Q_UNUSED(iapId);
+#else    
+    QString ssid_string(ap->value(WlanQtUtilsAp::ConfIdSsid).toString());
+    TPtrC16 ssid(ssid_string.utf16(), ssid_string.length());
+    int secMode = ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt();
+    int connMode = ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt();    
+    bool useWpaPsk = ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toBool();
+    
+    switch (traceType) {
+    case WLANQTUTILS_IAP_TRACE_FETCH:
+        OstTraceExt5(
+            TRACE_NORMAL,
+            WLANQTUTILSIAPSETTINGS_TRACEIAP_FETCH,
+            "WlanQtUtilsIapSettings::traceIap Fetched;iapId=%u;ssid=%S;secMode=%{WlanSecMode};useWpaPsk=%u;connMode=%{WlanConnMode}",
+            iapId,
+            ssid,
+            secMode,
+            useWpaPsk,
+            connMode);
+        break;
+
+    case WLANQTUTILS_IAP_TRACE_CREATE:
+        OstTraceExt5(
+            TRACE_NORMAL,
+            WLANQTUTILSIAPSETTINGS_TRACEIAP_CREATE,
+            "WlanQtUtilsIapSettings::traceIap Created;iapId=%u;ssid=%S;secMode=%{WlanSecMode};useWpaPsk=%u;connMode=%{WlanConnMode}",
+            iapId,
+            ssid,
+            secMode,
+            useWpaPsk,
+            connMode);
+        break;
+
+    case WLANQTUTILS_IAP_TRACE_UPDATE:
+        OstTraceExt5(
+            TRACE_NORMAL,
+            WLANQTUTILSIAPSETTINGS_TRACEIAP_UPDATE,
+            "WlanQtUtilsIapSettings::traceIap Updated;iapId=%u;ssid=%S;secMode=%{WlanSecMode};useWpaPsk=%u;connMode=%{WlanConnMode}",
+            iapId,
+            ssid,
+            secMode,
+            useWpaPsk,
+            connMode);
+        break;
+    }
+#endif
 }

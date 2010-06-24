@@ -59,7 +59,11 @@ WlanQtUtils::~WlanQtUtils()
 
 /*!
     Function for requesting a single WLAN scan to be triggered.
-    Signal wlanScanReady() is emitted when new scan results are available.
+    
+    Signal wlanScanReady(int) is emitted when new scan results are available.
+    
+    NOTE: Requesting a new scan while there is an ongoing scan (for this
+    WlanQtUtils instance) is not allowed.
 */
 
 void WlanQtUtils::scanWlans()
@@ -69,7 +73,11 @@ void WlanQtUtils::scanWlans()
 
 /*!
     Function for requesting a WLAN AP scan to be triggered.
+    
     Signal availableWlanAps() is emitted when new scan results are available.
+    
+    NOTE: Requesting a new scan while there is an ongoing scan (for this
+    WlanQtUtils instance) is not allowed.
 */
 
 void WlanQtUtils::scanWlanAps()
@@ -80,8 +88,11 @@ void WlanQtUtils::scanWlanAps()
 /*!
     Function for requesting a direct WLAN scan with given SSID.
 
-    Signal wlanScanDirectReady() is emitted when new scan results are
+    Signal wlanScanDirectReady(int) is emitted when new scan results are
     available.
+    
+    NOTE: Requesting a new scan while there is an ongoing scan (for this
+    WlanQtUtils instance) is not allowed.
 
     @param [in] ssid Network name to be found
 */
@@ -92,8 +103,10 @@ void WlanQtUtils::scanWlanDirect(const QString &ssid)
 }
 
 /*!
-    Function for stopping a (possibly) ongoing WLAN scan. No scan result
-    signal will be sent before a new scan request is made.
+    Function for stopping a (possibly) ongoing WLAN scan.
+    This function can also be called when there is no scan in progres.
+    If a scan is actually cancelled, the corresponding scan result signal
+    is sent with ScanStatusCancelled status.
 */
 
 void WlanQtUtils::stopWlanScan()
@@ -103,7 +116,7 @@ void WlanQtUtils::stopWlanScan()
 
 /*!
     Function to request details of available WLAN networks. Can be called 
-    at any time. Calling right after wlanScanReady() signal ensures you get
+    at any time. Calling right after wlanScanReady(int) signal ensures you get
     the most recent results.
 
     @param [out] wlanIapList List of available WLAN IAPs.
@@ -120,8 +133,8 @@ void WlanQtUtils::availableWlans(
 /*!
     Function to request details of available WLAN networks. This function is
     used to get the results that are informed by following signals:
-    -wlanScanApReady()
-    -wlanScanDirectReady()
+    -wlanScanApReady(int)
+    -wlanScanDirectReady(int)
 
     @param [out] wlanApList List of unknown WLAN APs.
 */

@@ -21,15 +21,11 @@
 #include <QHash>
 #include <QVariant>
 #include <QDebug>
+#include <cmmanagerdefines_shim.h>
 
 // User includes
 
 #include "wlanqtutilsap.h"
-
-#include "OstTraceDefinitions.h"
-#ifdef OST_TRACE_COMPILER_IN_USE
-#include "wlanqtutilsapTraces.h"
-#endif
 
 /*!
     \class WlanQtUtilsApPrivate
@@ -99,23 +95,9 @@ WlanQtUtilsAp::~WlanQtUtilsAp()
 
 QVariant WlanQtUtilsAp::value(int identifier) const
 {
+    // The configuration must exist
     Q_ASSERT(d_ptr->mConfigurations.contains(identifier));
     Q_ASSERT(d_ptr->mConfigurations[identifier].isValid());
-    
-#ifdef OST_TRACE_COMPILER_IN_USE
-    QString tmp;
-    QDebug tmpStream(&tmp);
-    tmpStream << d_ptr->mConfigurations[identifier];
-    TPtrC16 string(tmp.utf16(), tmp.length());
-    
-    OstTraceExt2(
-        TRACE_DUMP,
-        WLANQTUTILSAP_VALUE,
-        "WlanQtUtilsAp::value;identifier=%{ConfId};string=%S",
-        (TUint)identifier,
-        string);
-#endif
-    
     return d_ptr->mConfigurations[identifier];
 }
 
@@ -128,48 +110,64 @@ QVariant WlanQtUtilsAp::value(int identifier) const
 
 void WlanQtUtilsAp::setValue(int identifier, QVariant value)
 {
-#ifdef OST_TRACE_COMPILER_IN_USE
-    QString tmp;
-    QDebug tmpStream(&tmp);
-    tmpStream << value;
-    TPtrC16 string(tmp.utf16(), tmp.length());
-    
-    OstTraceExt2(
-        TRACE_DUMP,
-        WLANQTUTILSAP_SETVALUE,
-        "WlanQtUtilsAp::setValue;identifier=%{ConfId};string=%S",
-        (TUint)identifier,
-        string);
-#endif
-    
     d_ptr->mConfigurations[identifier] = value;
 }
 
 /*!
-    AP comparison function.
+    AP comparison function. Does AP comparison based on following configs:
+    -SSID.
+    -Security mode.
+    -WPA PSK usage.
+    -Connection mode.
 
     @param [in] ap1 First AP to compare.
     @param [in] ap2 Second AP to compare.
+    @param [in] comparator String comparator for SSID.
+                Default comparator is QString::compare() direct memory
+                comparison which does not take the localization into account.
 
-    @return TRUE, if APs are considered to be same.
+    @return Zero (0), if APs are considered to be same,
+            Negative (>0) if ap1 is considered to be "greater than" ap2. 
+            Negative (<0) if ap1 is considered to be "less than" ap2. 
 */
 
-bool WlanQtUtilsAp::compare(
+int WlanQtUtilsAp::compare(
     const WlanQtUtilsAp *ap1,
-    const WlanQtUtilsAp *ap2)
+    const WlanQtUtilsAp *ap2,
+    StringComparator comparator)
 {
-    bool equal = false;
-    
-    // SSID (case sensitive) and security mode (with or without PSK)
-    // are the values, which identify a unique access point.
-    if (ap1->value(WlanQtUtilsAp::ConfIdSsid) ==
-        ap2->value(WlanQtUtilsAp::ConfIdSsid)
-        && ap1->value(WlanQtUtilsAp::ConfIdSecurityMode) == 
-           ap2->value(WlanQtUtilsAp::ConfIdSecurityMode)
-           && ap1->value(WlanQtUtilsAp::ConfIdWpaPskUse) ==
-              ap2->value(WlanQtUtilsAp::ConfIdWpaPskUse)) {
-        equal = true;
+    int result = 0;
+
+    // Compare SSID
+    QString ssid1 = ap1->value(WlanQtUtilsAp::ConfIdSsid).toString();
+    QString ssid2 = ap2->value(WlanQtUtilsAp::ConfIdSsid).toString();
+    if (comparator != NULL) {
+        result = comparator(ssid1, ssid2);
+    } else {
+        result = QString::compare(ssid1, ssid2);
     }
-    
-    return equal;
+
+    // Compare security mode
+    if (result == 0) {
+        result = ap1->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt();
+        result -= ap2->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt();
+    }
+
+    // Compare WPA PSK usage
+    int secMode = ap1->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(); 
+    if (result == 0 &&
+        (secMode == CMManagerShim::WlanSecModeWpa ||
+         secMode == CMManagerShim::WlanSecModeWpa2)) {
+        // WPA PSK value is boolean, but it can be converted to integer
+        result = ap1->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt();
+        result -= ap2->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt();
+    }
+
+    // Compare connection mode
+    if (result == 0) {
+        result = ap1->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt();
+        result -= ap2->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt();
+    }
+
+    return result;
 }

@@ -30,7 +30,6 @@ _LIT(KHotSpotServerImg,"HotSpotServer");
 
 _LIT( KHotSpotPlugin, "NetCfgExtnHotSpot" );
 _LIT( KDhcpPlugin, "NetCfgExtnDhcp" );
-const TUint KEasyWlanServiceId = 1;
 const TUid KHotspotServerUid3={0x10282ECB};
 
 const TUint KHssShutdown  = 777;

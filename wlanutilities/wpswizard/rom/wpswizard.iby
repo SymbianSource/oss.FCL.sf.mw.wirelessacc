@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:
+* Description:IBY file for WPS Wizard
 *
 */
 
@@ -20,10 +20,10 @@
 
 #include <bldvariant.hrh>
 
-//#ifdef __PROTOCOL_WLAN
+#ifdef __PROTOCOL_WLAN
 
-file=ABI_DIR\BUILD_DIR\wpswizard.dll SHARED_LIB_DIR\wpswizard.dll
+file=ABI_DIR/BUILD_DIR/wpswizard.dll SHARED_LIB_DIR/wpswizard.dll
 
-//#endif // __PROTOCOL_WLAN
+#endif // __PROTOCOL_WLAN
 
 #endif // WPSWIZARD_IBY

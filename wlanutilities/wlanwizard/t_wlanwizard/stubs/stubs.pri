@@ -18,13 +18,30 @@
 
 DEFINES += BUILD_WLANQTUTILITIES_DLL
 
-HEADERS   += \
-             stubs/wlanqtutils.h \
-             stubs/wlanqtutilscommon.h \
-             stubs/wlanqtutilsap.h \
-             stubs/context_wlanqtutils.h
-             
-SOURCES   += \
-             stubs/stub_wlanqtutils.cpp \
-             stubs/stub_wlanqtutilsap.cpp \
-             stubs/context_wlanqtutils.cpp
+HEADERS += \
+    stubs/eapqtcertificateinfo.h \
+    stubs/eapqtconfig.h \
+    stubs/eapqtconfiginterface.h \
+    stubs/eapqtconfiginterface_context.h \
+    stubs/eapqtpacstoreconfig.h \
+    stubs/eapqtvalidator.h \
+    stubs/eapqtvalidator_stub.h \
+    stubs/wlanmgmtclient.h \
+    stubs/wlanmgmtclient_context.h \
+    stubs/wlanqtutils.h \
+    stubs/wlanqtutils_context.h \
+    stubs/wlanqtutilsap.h \
+    stubs/wlanqtutilscommon.h
+    
+SOURCES += \
+    stubs/eapqtcertificateinfo_stub.cpp \
+    stubs/eapqtconfig_stub.cpp \
+    stubs/eapqtconfiginterface_stub.cpp \
+    stubs/eapqtconfiginterface_context.cpp \
+    stubs/eapqtpacstoreconfig_stub.cpp \
+    stubs/eapqtvalidator_stub.cpp \
+    stubs/wlanmgmtclient_stub.cpp \
+    stubs/wlanmgmtclient_context.cpp \
+    stubs/wlanqtutils_context.cpp \
+    stubs/wlanqtutils_stub.cpp \
+    stubs/wlanqtutilsap_stub.cpp 

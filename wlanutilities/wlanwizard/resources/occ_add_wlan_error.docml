@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hbdocument version="1.0">
+<hbdocument version="1.1">
     <widget name="occ_add_wlan_error" type="HbWidget">
         <widget name="dialog" type="HbLabel">
             <enums name="textWrapping" value="TextWordWrap"/>
@@ -13,7 +13,7 @@
             <anchoritem dst="dialog" dstEdge="TOP" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
         </layout>
     </widget>
-    <metadata activeUIState="Common ui state" display="NHD portrait" unit="un">
+    <metadata activeUIState="Common ui state" display="NHD-3.2-inch_portrait" unit="un">
         <uistate name="Common ui state" sections="#common"/>
     </metadata>
 </hbdocument>

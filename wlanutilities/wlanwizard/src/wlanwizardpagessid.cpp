@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard Page: SSID Selection.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard Page: SSID Selection.
+*/
 
 // System includes
 #include <HbDocumentLoader>
@@ -35,14 +34,14 @@
 #endif
 
 /*!
- * Constructor. Member initialization.
+ * Constructor method for the SSID query view object.
+ * @param [in] parent pointer to parent object.
  */
 WlanWizardPageSsid::WlanWizardPageSsid(WlanWizardPrivate* parent) :
     WlanWizardPageInternal(parent),
     mWidget(NULL),
     mLabel(NULL),
     mSsid(NULL),
-    mLabelError(NULL),
     mLoader(NULL)
 {
 
@@ -59,178 +58,131 @@ WlanWizardPageSsid::~WlanWizardPageSsid()
 
 /*!
  * Page initialization. If view is already loaded, does nothing.
+ * @return pointer to widget "occ_add_wlan_01".
  */
 HbWidget* WlanWizardPageSsid::initializePage()
 {
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESSID_INITIALIZEPAGE,
         "WlanWizardPageSsid::initializePage" );
 
-    if (mWidget == NULL) {
-        bool ok;
-
-        mLoader = new HbDocumentLoader(mWizard->mainWindow());
-
-        mLoader->load(":/docml/occ_add_wlan_01_04.docml", &ok);
-        Q_ASSERT_X(ok, "WlanWizardPageSsid", "Invalid docml file");
-
-        // Load orientation
-        loadDocml(mWizard->mainWindow()->orientation());
-
-        // Load widgets
-        mWidget = qobject_cast<HbWidget*> (mLoader->findWidget(
-            "occ_add_wlan_01"));
-        Q_ASSERT_X(mWidget != NULL, "WlanWizardPageSsid", "View not found");
-
-        mLabel = qobject_cast<HbLabel*> (mLoader->findWidget("dialog"));
-        Q_ASSERT_X(mLabel != NULL, "WlanWizardPageSsid", "dialog not found");
-
-        mSsid = qobject_cast<HbLineEdit*> (mLoader->findWidget("lineEditKey"));
-        Q_ASSERT_X(mSsid != NULL, "WlanWizardPageSsid", "lineEditKey not found");
-
-        mLabelError = qobject_cast<HbLabel*> (mLoader->findWidget(
-            "labelErrorNote"));
-        Q_ASSERT_X(mLabelError != NULL, "WlanWizardPageSsid",
-            "labelErrorNote not found");
-
-        mLabel->setPlainText(hbTrId(
-            "txt_occ_dialog_insert_the_name_of_the_new_wlan_net"));
-
-        // Connect orientation signal from the main window to orientation
-        // loader.
-        ok &= connect(mWizard->mainWindow(),
-            SIGNAL(orientationChanged(Qt::Orientation)), this,
-            SLOT(loadDocml(Qt::Orientation)));
-
-        // Connect text change-signal from input dialog to handler function
-        ok &= connect(mSsid, SIGNAL(textChanged(const QString &)), this,
-            SLOT(textChanged(const QString &)));
-
-        Q_ASSERT(ok);
-
-        HbEditorInterface editInterface(mSsid);
-        editInterface.setInputConstraints(HbEditorConstraintLatinAlphabetOnly);
-
-
-        editInterface.setSmileyTheme(HbSmileyTheme());
-        //editInterface.setEditorClass(HbInputEditorClassNetworkName);
-        mSsid->setInputMethodHints(
-            Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase);
-        mSsid->setMaxLength(WlanWizardUtils::SsidMaxLength);
-        mSsid->installEventFilter(this);
-    }
-	
-	// Open virtual keyboard by setting focus to line edit
-	mSsid->setFocus();
-
-    return mWidget;
-}
-
-/*!
- * Selection of the next page.
- */
-int WlanWizardPageSsid::nextId(bool &removeFromStack) const
-{
-    int pageId = WlanWizardPage::PageNone;
-    removeFromStack = false;
-
-    WlanWizardUtils::SsidStatus status = WlanWizardUtils::validateSsid(
-        mSsid->text());
-
-    if (status != WlanWizardUtils::SsidStatusOk) {
-        mLabelError->setPlainText(SsidStatusToErrorString(status));
-    }
-    else {
-        // SSID is stored into configuration
-        mWizard->setConfiguration(WlanWizardPrivate::ConfSsid, mSsid->text());
-        pageId = WlanWizardPageInternal::PageScanning;
-    }
-
-    return pageId;
-}
-
-/*!
- * Load the document with given screen orientation.
- */
-void WlanWizardPageSsid::loadDocml(Qt::Orientation orientation)
-{
-    OstTrace1( TRACE_FLOW, WLANWIZARDPAGESSID_LOADDOCML,
-        "WlanWizardPageSsid::loadDocml - orientation ;orientation=%x",
-        ( TUint )( orientation ) );
+    // It is not possible for this method to be called more than once during
+    // wizard lifetime.
+    Q_ASSERT(mWidget == NULL);
 
     bool ok;
-    // Then load the orientation specific section
-    if (orientation == Qt::Horizontal) {
-        qDebug("Loading landscape section for wlan_01_04");
-        mLoader->load(":/docml/occ_add_wlan_01_04.docml", "landscape_section",
-            &ok);
-        Q_ASSERT(ok);
-    }
-    else {
-        Q_ASSERT(orientation == Qt::Vertical);
-        qDebug("Loading portrait section for wlan_01_04");
-        mLoader->load(":/docml/occ_add_wlan_01_04.docml", "portrait_section",
-            &ok);
-        Q_ASSERT(ok);
-    }
+
+    mLoader = new HbDocumentLoader(mWizard->mainWindow());
+
+    mLoader->load(":/docml/occ_add_wlan_01_04.docml", &ok);
+    Q_ASSERT(ok);
+
+    // Load orientation
+    loadDocmlSection(mWizard->mainWindow()->orientation());
+
+    // Load widgets
+    mWidget = qobject_cast<HbWidget*> (mLoader->findWidget(
+        "occ_add_wlan_01"));
+    Q_ASSERT(mWidget != NULL);
+
+    mLabel = qobject_cast<HbLabel*> (mLoader->findWidget("dialog"));
+    Q_ASSERT(mLabel != NULL);
+
+    mSsid = qobject_cast<HbLineEdit*> (mLoader->findWidget("lineEditKey"));
+    Q_ASSERT(mSsid != NULL);
+
+    mLabel->setPlainText(hbTrId(
+        "txt_occ_dialog_insert_the_name_of_the_new_wlan_net"));
+
+    // Connect orientation signal from the main window to orientation
+    // loader.
+    ok = connect(mWizard->mainWindow(),
+        SIGNAL(orientationChanged(Qt::Orientation)), this,
+        SLOT(loadDocmlSection(Qt::Orientation)));
+    Q_ASSERT(ok);
+
+    // Connect text change-signal from input dialog to handler function
+    ok = connect(mSsid, SIGNAL(textChanged(const QString &)), this,
+        SLOT(textChanged(const QString &)));
+    Q_ASSERT(ok);
+
+    HbEditorInterface editInterface(mSsid);
+    
+    // TODO: remove (HbEditorConstraints) type cast when 
+    // Q_DECLARE_OPERATORS_FOR_FLAGS(HbEditorConstraints) is defined (SDK xxx)
+    editInterface.setInputConstraints(
+        (HbEditorConstraints)(HbEditorConstraintAutoCompletingField |
+            HbEditorConstraintLatinAlphabetOnly));
+    
+    editInterface.setSmileyTheme(HbSmileyTheme());
+    editInterface.setEditorClass(HbInputEditorClassNetworkName);
+    mSsid->setInputMethodHints(
+        Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase);
+    mSsid->setMaxLength(WlanWizardUtils::SsidMaxLength);
+
+	return mWidget;
 }
 
 /*!
- * Actions, when user makes changes to the text editor widget.
- */
-void WlanWizardPageSsid::textChanged(const QString & /* text */)
-{
-    OstTrace0( TRACE_FLOW, WLANWIZARDPAGESSID_TEXTCHANGED,
-        "WlanWizardPageSsid::textChanged in text edit widget" );
-
-    mWizard->enableNextButton(showPage());
-}
-
-/*!
- * Returns true, if the text editor widget contains any characters.
+ * This method is overrides the default implementation from WlanWizardPage.
+ * It indicates whether the Next-button should be enabled or not.
+ * @return true, if mSsid edit field is not empty.
  */
 bool WlanWizardPageSsid::showPage()
 {
     // Initiate the scanning of public APs here.
     mWizard->wlanQtUtils()->scanWlanAps();
+    
+    // Open virtual keyboard by setting focus to line edit
+    mSsid->setFocus();
 
-   return !(mSsid->text().isEmpty());
+    return !(mSsid->text().isEmpty());
 }
 
 /*!
- * Filter to catch focus event to the text editor widget.
+ * Stores the SSID selection in the configuration.
+ * @param [out] removeFromStack returns false.
+ * @return WlanWizardPageScanning page id.
  */
-bool WlanWizardPageSsid::eventFilter(QObject *obj, QEvent *event)
+int WlanWizardPageSsid::nextId(bool &removeFromStack) const
 {
-    if (obj == mSsid && event->type() == QEvent::FocusIn) {
-        OstTrace0( TRACE_BORDER, WLANWIZARDPAGESSID_EVENTFILTER,
-            "WlanWizardPageSsid::eventFilter text edit widget received focus" );
+    removeFromStack = false;
 
-        mLabelError->setPlainText("");
-    }
-    return false;
+    // SSID is stored into configuration
+    mWizard->setConfiguration(WlanWizardPrivate::ConfSsid, mSsid->text());
+    
+    return WlanWizardPageInternal::PageScanning;
 }
 
 /*!
- * Conversion function from SsidStatus to plain text.
+ * Loads the document orientation information from occ_add_wlan_01_04.docml
+ * This is called each time phone orientation changes.
+ * @param [in] orientation indicates whether the phone is in portrait or
+ * landscape mode.
  */
-QString WlanWizardPageSsid::SsidStatusToErrorString(
-    WlanWizardUtils::SsidStatus status) const
+void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
 {
-    QString errorString;
-    switch (status) {
-    case WlanWizardUtils::SsidStatusIllegalCharacters:
-        errorString = hbTrId(
-            "txt_occ_dialog_illegal_characters_in_key_please_c");
-        break;
-    case WlanWizardUtils::SsidStatusInvalidLength:
-        errorString
-            = hbTrId("txt_occ_dialog_key_is_of_incorrect_length_please");
-        break;
-    case WlanWizardUtils::SsidStatusOk:
-    default:
-        Q_ASSERT(WlanWizardUtils::SsidStatusOk == status);
-        break;
-    }
-    return errorString;
+    OstTrace1( TRACE_FLOW, WLANWIZARDPAGESSID_LOADDOCML,
+        "WlanWizardPageSsid::loadDocml - orientation ;orientation=%x",
+        ( TUint )( orientation ) );
+
+    WlanWizardPageInternal::loadDocmlSection(
+        mLoader,
+        orientation,
+        ":/docml/occ_add_wlan_01_04.docml", 
+        "portrait_section",
+        "landscape_section");
 }
 
+/*!
+ * Executed when changes have been made to the mSsid field (and the field is
+ * not empty).
+ * @param [in] text is not used at this point.
+ */
+void WlanWizardPageSsid::textChanged(const QString &text)
+{
+    Q_UNUSED(text);
+    OstTrace0( TRACE_FLOW, WLANWIZARDPAGESSID_TEXTCHANGED,
+        "WlanWizardPageSsid::textChanged in text edit widget" );
+
+    mWizard->enableNextButton(!(mSsid->text().isEmpty()));
+}

@@ -22,17 +22,16 @@
 
 // User includes
 
-#include "wlanqtutilsconmonwrapperdisconnect_s60_p.h"
-#include "wlanqtutilsconmonwrapperinfo_s60_p.h"
-#include "wlanqtutilsconmonwrapperscan_s60_p.h"
+#include "wlanqtutilsconmonwrapperdisconnect_symbian.h"
+#include "wlanqtutilsconmonwrapperinfo_symbian.h"
 #include "wlanqtutilsconmonwrapper.h"
 
 /*!
     \class WlanQtUtilsConMonWrapper
     \brief Wrapper for Symbian Connection Monitor library.
 
-    Provides functionality to scan WLAN networks, to retrieve connection 
-    information, and to disconnect connections.
+    Provides functionality to retrieve connection information,
+    and to disconnect connections.
 */
 
 // External function prototypes
@@ -51,7 +50,6 @@
 
 WlanQtUtilsConMonWrapper::WlanQtUtilsConMonWrapper(QObject *parent) :
     QObject(parent),
-    d_ptrScan(new WlanQtUtilsConMonWrapperScan(this)),
     d_ptrInfo(new WlanQtUtilsConMonWrapperInfo(this)),
     d_ptrDisconnect(new WlanQtUtilsConMonWrapperDisconnect(this))
 {
@@ -63,24 +61,6 @@ WlanQtUtilsConMonWrapper::WlanQtUtilsConMonWrapper(QObject *parent) :
 
 WlanQtUtilsConMonWrapper::~WlanQtUtilsConMonWrapper()
 {
-}
-
-/*!
-   Start a WLAN scan.
-*/
-
-void WlanQtUtilsConMonWrapper::scanAvailableWlanAPs()
-{
-    d_ptrScan->ScanAvailableWlanAPs();
-}
-
-/*!
-   Stop a (possibly) ongoing WLAN scan.
-*/
-
-void WlanQtUtilsConMonWrapper::stopScan()
-{
-    d_ptrScan->StopScan();
 }
 
 /*!

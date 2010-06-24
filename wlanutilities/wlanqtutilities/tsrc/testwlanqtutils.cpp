@@ -29,9 +29,7 @@
 #include "wlanqtutils.h"
 #include "wlanqtutils_p.h"
 #include "wlanqtutilsconmonwrapper.h"
-#include "wlanqtutilsconmonwrapperinfo_s60_p.h"
-#include "wlanqtutilsconntestwrapper.h"
-#include "wlanqtutilsconntestwrapper_s60_p.h"
+#include "wlanqtutilsconmonwrapperinfo_symbian.h"
 #include "testwlanqtutils.h"
 #include "wlanqtutilstestcontext.h"
 
@@ -67,7 +65,9 @@ int main(int argc, char *argv[])
 void TestWlanQtUtils::initTestCase()
 {
     wlanQtUtils_ = NULL;
-    signalScanReady_ = NULL;
+    mSignalScanReady = NULL;
+    mSignalScanApReady = NULL;
+    mSignalScanDirectReady = NULL;
     signalWlanNetworkOpened_ = NULL;
     signalWlanNetworkClosed_ = NULL;
     signalIctResult_ = NULL;
@@ -99,7 +99,9 @@ void TestWlanQtUtils::init()
     testContext.initialize();
 
     QVERIFY(wlanQtUtils_ == NULL);
-    QVERIFY(signalScanReady_ == NULL);
+    QVERIFY(mSignalScanReady == NULL);
+    QVERIFY(mSignalScanApReady == NULL);
+    QVERIFY(mSignalScanDirectReady == NULL);
     QVERIFY(signalWlanNetworkOpened_ == NULL);
     QVERIFY(signalWlanNetworkClosed_ == NULL);
     QVERIFY(signalIctResult_ == NULL);
@@ -114,9 +116,17 @@ void TestWlanQtUtils::cleanup()
     delete wlanQtUtils_;
     wlanQtUtils_ = NULL;
 
-    QCOMPARE(signalScanReady_->count(), 0);
-    delete signalScanReady_;
-    signalScanReady_ = NULL;
+    QCOMPARE(mSignalScanReady->count(), 0);
+    delete mSignalScanReady;
+    mSignalScanReady = NULL;
+
+    QCOMPARE(mSignalScanApReady->count(), 0);
+    delete mSignalScanApReady;
+    mSignalScanApReady = NULL;
+
+    QCOMPARE(mSignalScanDirectReady->count(), 0);
+    delete mSignalScanDirectReady;
+    mSignalScanDirectReady = NULL;
 
     QCOMPARE(signalWlanNetworkOpened_->count(), 0);
     delete signalWlanNetworkOpened_;
@@ -140,20 +150,20 @@ void TestWlanQtUtils::cleanup()
  */
 void TestWlanQtUtils::testAvailableWlan()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(4);
+    testContext.mScan.createDefaultWlanScanResultList(4);
     
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get and verify the list of available WLAN APs.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
     QList< QSharedPointer<WlanQtUtilsAp> > aps;
     wlanQtUtils_->availableWlans(iaps, aps);
 
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 }
@@ -164,27 +174,30 @@ void TestWlanQtUtils::testAvailableWlan()
  * Two scan results have the same SSID but different security mode
  * Two scan results have the same SSID and security mode but different WpaPsk value
  * and both are included in the results.
+ * Two scan results have the same SSID but different connection mode
  */
 void TestWlanQtUtils::testAvailableWlanDuplicates()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(10);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[2]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID, different SecMode");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[5]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID, different SecMode");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeOpen);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[7]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID & SecMode diff Psk");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[7]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[9]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID & SecMode diff Psk");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[9]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[9]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
+    testContext.mScan.createDefaultWlanScanResultList(11);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID");
+    testContext.mScan.mWlanScanResultList[2]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID");
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID, different SecMode");
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
+    testContext.mScan.mWlanScanResultList[6]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID, different SecMode");
+    testContext.mScan.mWlanScanResultList[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeOpen);
+    testContext.mScan.mWlanScanResultList[7]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID & SecMode diff Psk");
+    testContext.mScan.mWlanScanResultList[7]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID & SecMode diff Psk");
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
+    testContext.mScan.mWlanScanResultList[10]->setValue(WlanQtUtilsAp::ConfIdSsid, "Same SSID");
+    testContext.mScan.mWlanScanResultList[10]->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Adhoc);
 
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get and verify the list of available WLAN APs.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
@@ -192,8 +205,8 @@ void TestWlanQtUtils::testAvailableWlanDuplicates()
     wlanQtUtils_->availableWlans(iaps, aps);
 
     // First remove AP that has duplicate SSID.
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_.removeAt(2);
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.mWlanScanResultList.removeAt(2);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 }
@@ -204,27 +217,31 @@ void TestWlanQtUtils::testAvailableWlanDuplicates()
  */
 void TestWlanQtUtils::testAvailableWlanSecModes()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(9);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeOpen);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Adhoc);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[1]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWep);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[2]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecMode802_1x);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[3]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[4]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[4]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[5]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa2);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[7]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWapi);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[8]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWapi);
+    testContext.mScan.createDefaultWlanScanResultList(11);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Adhoc);
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWep);
+    testContext.mScan.mWlanScanResultList[2]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWep);
+    testContext.mScan.mWlanScanResultList[3]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecMode802_1x);
+    testContext.mScan.mWlanScanResultList[4]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
+    testContext.mScan.mWlanScanResultList[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa2);
+    testContext.mScan.mWlanScanResultList[7]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa2);
+    testContext.mScan.mWlanScanResultList[7]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
+    testContext.mScan.mWlanScanResultList[8]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWapi);
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWapi);
     // Let's trick the stub to return WapiPsk by putting WpaPskUse on *
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[8]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
+    testContext.mScan.mWlanScanResultList[10]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa2);
+    testContext.mScan.mWlanScanResultList[10]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
+    testContext.mScan.mWlanScanResultList[10]->setValue(WlanQtUtilsAp::ConfIdWpsSupported, true);
 
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get and verify the list of available WLAN APs.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
@@ -232,8 +249,8 @@ void TestWlanQtUtils::testAvailableWlanSecModes()
     wlanQtUtils_->availableWlans(iaps, aps);
 
     // Remove the trick *. WapiPsk and Wapi both map to just Wapi
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[8]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,false);
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.mWlanScanResultList[9]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,false);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 }
@@ -244,18 +261,18 @@ void TestWlanQtUtils::testAvailableWlanSecModes()
  */
 void TestWlanQtUtils::testAvailableWlanSsids()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(6);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[1]->setValue(WlanQtUtilsAp::ConfIdSsid, "           ");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[2]->setValue(WlanQtUtilsAp::ConfIdSsid, "    whitespace around ssid  ");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[3]->setValue(WlanQtUtilsAp::ConfIdSsid, QString(QChar()));
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[4]->setValue(WlanQtUtilsAp::ConfIdSsid, "maximum length ssid that is 32 c");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "A");
+    testContext.mScan.createDefaultWlanScanResultList(6);
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSsid, "           ");
+    testContext.mScan.mWlanScanResultList[2]->setValue(WlanQtUtilsAp::ConfIdSsid, "    whitespace around ssid  ");
+    testContext.mScan.mWlanScanResultList[3]->setValue(WlanQtUtilsAp::ConfIdSsid, QString(QChar()));
+    testContext.mScan.mWlanScanResultList[4]->setValue(WlanQtUtilsAp::ConfIdSsid, "maximum length ssid that is 32 c");
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "A");
 
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get and verify the list of available WLAN APs.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
@@ -263,9 +280,9 @@ void TestWlanQtUtils::testAvailableWlanSsids()
     wlanQtUtils_->availableWlans(iaps, aps);
 
     // Empty ssids are removed from results
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_.removeAt(3);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_.removeAt(1);
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.mWlanScanResultList.removeAt(3);
+    testContext.mScan.mWlanScanResultList.removeAt(1);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 }
@@ -275,20 +292,20 @@ void TestWlanQtUtils::testAvailableWlanSsids()
  */
 void TestWlanQtUtils::testAvailableWlanWithIaps()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(7);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[1]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 3");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[1]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);    
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[1]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);    
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 1");
+    testContext.mScan.createDefaultWlanScanResultList(7);
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 3");
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);    
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);    
+    testContext.mScan.mWlanScanResultList[5]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 1");
     // SSID is found in Internet Snap, but security mode does not match:
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 2");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
+    testContext.mScan.mWlanScanResultList[6]->setValue(WlanQtUtilsAp::ConfIdSsid, "WLAN IAP 2");
+    testContext.mScan.mWlanScanResultList[6]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
     
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get and verify the list of available WLAN APs.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
@@ -297,9 +314,9 @@ void TestWlanQtUtils::testAvailableWlanWithIaps()
 
     // Verify WLAN AP list. First, remove scan results that will not appear
     // because they are WLAN IAPs.
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_.removeAt(5);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_.removeAt(1);
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.mWlanScanResultList.removeAt(5);
+    testContext.mScan.mWlanScanResultList.removeAt(1);
+    testContext.mScan.verifyWlanScanResultList(aps);
 
     // Verify WLAN IAP list
     QCOMPARE(iaps.count(), 2);
@@ -328,45 +345,234 @@ void TestWlanQtUtils::testAvailableWlanSequence()
     
     // **************** 1st scan ********************
     // 6 APs are required for this scan
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(6);
+    testContext.mScan.createDefaultWlanScanResultList(6);
 
     wlanQtUtils_->scanWlans();
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get the results for the 1st scan
     wlanQtUtils_->availableWlans(iaps, aps);
     // Verify the results for the scan
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 
     // **************** 2nd scan ********************
     // 2 APs are required for this scan
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(2);
+    testContext.mScan.createDefaultWlanScanResultList(2);
 
     wlanQtUtils_->scanWlans();
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Get the results for the 2nd scan
     wlanQtUtils_->availableWlans(iaps, aps);
     // Verify the results for the scan
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
 
     // **************** 3rd scan ********************
     // 4 APs are required for the 3rd scan
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(4);
+    testContext.mScan.createDefaultWlanScanResultList(4);
 
     wlanQtUtils_->scanWlans();
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
     
     // Get the results for the 3rd scan
     wlanQtUtils_->availableWlans(iaps, aps);
     // Verify the results for the scan
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
     QCOMPARE(iaps.count(), 0);
     aps.clear();
+}
+
+/**
+ * Test availability scan that finds nothing.
+ */
+void TestWlanQtUtils::testAvailableWlanScanEmpty()
+{
+    // Form result list
+    testContext.mScan.createDefaultWlanScanResultList(0);
+
+    // Request a direct scan to get result signal
+    wlanQtUtils_->scanWlans();
+    
+    // Let active object run and verify signal.
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
+
+    // Get and verify the list of available WLAN APs.
+    QList< QSharedPointer<WlanQtUtilsIap> > iaps;
+    QList< QSharedPointer<WlanQtUtilsAp> > aps;
+    wlanQtUtils_->availableWlans(iaps, aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
+    QCOMPARE(iaps.count(), 0);
+}
+
+/**
+ * Test WLAN availability scan failure.
+ */
+void TestWlanQtUtils::testAvailableWlanScanError()
+{
+    // Set the scan to fail
+    testContext.mScan.mScanRetValue = KErrGeneral;
+    
+    // Start the scan
+    wlanQtUtils_->scanWlans();
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusError);
+}
+
+/**
+ * Test available WLAN APs when scan is triggered by client.
+ */
+void TestWlanQtUtils::testAvailableWlanAps()
+{
+    testContext.mScan.createDefaultWlanScanResultList(4);
+    
+    // Request a scan to get result signal
+    wlanQtUtils_->scanWlanAps();
+    
+    // Let active object run and verify signal.
+    subTestScanResultSignal(mSignalScanApReady, WlanQtUtils::ScanStatusOk);
+
+    // Get and verify the list of available WLAN APs.
+    QList< QSharedPointer<WlanQtUtilsAp> > aps;
+    wlanQtUtils_->availableWlanAps(aps);
+
+    testContext.mScan.verifyWlanScanResultList(aps);
+    aps.clear();
+}
+
+/**
+ * Test a direct scan that finds nothing.
+ */
+void TestWlanQtUtils::testAvailableWlanApsScanEmpty()
+{
+    // Form result list
+    testContext.mScan.createDefaultWlanScanResultList(0);
+
+    // Request a direct scan to get result signal
+    wlanQtUtils_->scanWlanAps();
+    
+    // Let active object run and verify signal.
+    subTestScanResultSignal(mSignalScanApReady, WlanQtUtils::ScanStatusOk);
+
+    // Get and verify the list of available WLAN APs.
+    QList< QSharedPointer<WlanQtUtilsAp> > aps;
+    wlanQtUtils_->availableWlanAps(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
+}
+
+/**
+ * Test cancellation of WLAN AP scan.
+ */
+void TestWlanQtUtils::testStopWlanApScan()
+{
+    // Do not complete scan request immediately
+    testContext.mScan.mCompleteWlanScan = false;
+    
+    // Start the scan
+    wlanQtUtils_->scanWlanAps();
+    // Cancel the scan
+    wlanQtUtils_->stopWlanScan();
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanApReady, WlanQtUtils::ScanStatusCancelled);
+}
+
+/**
+ * Test WLAN AP scan failure.
+ */
+void TestWlanQtUtils::testWlanApScanError()
+{
+    // Set the scan to fail
+    testContext.mScan.mScanRetValue = KErrGeneral;
+    
+    // Start the scan
+    wlanQtUtils_->scanWlanAps();
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanApReady, WlanQtUtils::ScanStatusError);
+}
+
+/**
+ * Test a basic direct scan.
+ */
+void TestWlanQtUtils::testDirectScanBasic()
+{
+    // Form result list
+    testContext.mScan.createDefaultWlanScanResultList(2);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSsid, "testssid");
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSsid, "testssid");
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdBssid, "654321");
+    testContext.mScan.mWlanScanResultList[1]->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
+
+    // Request a direct scan to get result signal
+    wlanQtUtils_->scanWlanDirect(QString("testssid"));
+    
+    // Let active object run and verify signal.
+    subTestScanResultSignal(mSignalScanDirectReady, WlanQtUtils::ScanStatusOk);
+
+    // Get and verify the list of available WLAN APs.
+    QList< QSharedPointer<WlanQtUtilsAp> > aps;
+    wlanQtUtils_->availableWlanAps(aps);
+
+    testContext.mScan.verifyWlanScanResultList(aps);
+    aps.clear();
+}
+
+/**
+ * Test a direct scan that finds nothing.
+ */
+void TestWlanQtUtils::testDirectScanEmpty()
+{
+    // Form result list
+    testContext.mScan.createDefaultWlanScanResultList(0);
+
+    // Request a direct scan to get result signal
+    wlanQtUtils_->scanWlanDirect(QString("notavailable"));
+    
+    // Let active object run and verify signal.
+    subTestScanResultSignal(mSignalScanDirectReady, WlanQtUtils::ScanStatusOk);
+
+    // Get and verify the list of available WLAN APs.
+    QList< QSharedPointer<WlanQtUtilsAp> > aps;
+    wlanQtUtils_->availableWlanAps(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
+}
+
+/**
+ * Test cancellation of direct scan.
+ */
+void TestWlanQtUtils::testDirectScanStop()
+{
+    // Do not complete scan request immediately
+    testContext.mScan.mCompleteWlanScan = false;
+    
+    // Start the scan
+    wlanQtUtils_->scanWlanDirect(QString("testssid"));
+    // Cancel the scan
+    wlanQtUtils_->stopWlanScan();
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanDirectReady, WlanQtUtils::ScanStatusCancelled);
+}
+
+/**
+ * Test direct scan failure.
+ */
+void TestWlanQtUtils::testDirectScanError()
+{
+    // Set the scan to fail
+    testContext.mScan.mScanRetValue = KErrGeneral;
+    
+    // Start the scan
+    wlanQtUtils_->scanWlanDirect(QString("boundtofail"));
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanDirectReady, WlanQtUtils::ScanStatusError);
 }
 
 /**
@@ -379,16 +585,16 @@ void TestWlanQtUtils::testAvailableWlanSequence()
  */
 void TestWlanQtUtils::testCreateIapOk()
 {
-    testContext.connMon_.wlanScanResult_.createDefaultWlanScanResultList(1);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapOk");
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
-    testContext.connMon_.wlanScanResult_.wlanScanResultList_[0]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
+    testContext.mScan.createDefaultWlanScanResultList(1);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapOk");
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdSecurityMode,CMManagerShim::WlanSecModeWpa);
+    testContext.mScan.mWlanScanResultList[0]->setValue(WlanQtUtilsAp::ConfIdWpaPskUse,true);
 
     // Request a scan to get result signal
     wlanQtUtils_->scanWlans();
     
     // Let active object run and verify signal.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 
     // Ensure there are no WLAN IAPs but there is one scan result.
     QList< QSharedPointer<WlanQtUtilsIap> > iaps;
@@ -396,17 +602,15 @@ void TestWlanQtUtils::testCreateIapOk()
     wlanQtUtils_->availableWlans(iaps, aps);
 
     QCOMPARE(iaps.count(), 0);
-    testContext.connMon_.wlanScanResult_.verifyWlanScanResultList(aps);
+    testContext.mScan.verifyWlanScanResultList(aps);
 
     // Execute createIap() function
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapOk");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPsk, "100euronlounas");
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapOk");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWpaPsk, "100euronlounas");
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId != WlanQtUtils::IapIdNone);
 
     // Verify that created IAP is in the IAP list and AP list is empty.
@@ -427,16 +631,14 @@ void TestWlanQtUtils::testCreateIapOk()
 void TestWlanQtUtils::testCreateIapErr()
 {
     // Execute createIap() function with invalid parameters
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapErr");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapErr");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
     // Invalid security mode -> exception
-    wlanAp.setValue(
+    wlanAp->setValue(
         WlanQtUtilsAp::ConfIdSecurityMode,
         CMManager::EWlanSecModeWAPI + 1111);
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId == WlanQtUtils::IapIdNone);
 }
 
@@ -446,40 +648,37 @@ void TestWlanQtUtils::testCreateIapErr()
 void TestWlanQtUtils::testCreateIapWepKeys()
 {
     // Create the IAPs with different kind of WEP keys
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapWepKeys");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWep);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, 1);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testCreateIapWepKeys");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWep);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, CMManagerShim::WepKeyIndex2);
     // All keys in HEX format
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey1, "1234567891");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey2, "1234567891");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey3, "1234567891");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey4, "1234567891");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey1, "1234567891");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey2, "1234567891");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey3, "1234567891");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey4, "1234567891");
 
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId != WlanQtUtils::IapIdNone);
     
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, 2);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, CMManagerShim::WepKeyIndex3);
     // All keys in ASCII format
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey1, "12345");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey2, "12345");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey3, "12345");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey4, "12345");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey1, "12345");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey2, "12345");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey3, "12345");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey4, "12345");
 
-    iapId = wlanQtUtils_->createIap(&wlanAp);
+    iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId != WlanQtUtils::IapIdNone);
 
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, 3);
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, CMManagerShim::WepKeyIndex4);
     // Different keys, including a missing one
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey1, "");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey2, "12345678911234567892123456");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey3, "12345");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey4, "1234567891123");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey1, "");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey2, "12345678911234567892123456");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey3, "12345");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdWepKey4, "1234567891123");
 
-    iapId = wlanQtUtils_->createIap(&wlanAp);
+    iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId != WlanQtUtils::IapIdNone);
 }
 
@@ -489,18 +688,14 @@ void TestWlanQtUtils::testCreateIapWepKeys()
 void TestWlanQtUtils::testUpdateIapOk()
 {
     // Create an IAP that can be updated
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testUpdateIapOk");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testUpdateIapOk");
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
 
     // Update the name and verify it changed
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "UPDATED_testUpdateIapOk");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "UPDATED_testUpdateIapOk");
 
-    bool success = wlanQtUtils_->updateIap(iapId, &wlanAp);
+    bool success = wlanQtUtils_->updateIap(iapId, wlanAp.data());
     QVERIFY(success == true);
     QString name = wlanQtUtils_->iapName(iapId);
     QCOMPARE(name, QString("UPDATED_testUpdateIapOk"));
@@ -523,13 +718,9 @@ void TestWlanQtUtils::testUpdateIapErr()
 void TestWlanQtUtils::testDeleteIapOk()
 {
     // Create an IAP that can be deleted
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testDeleteIapOk");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testDeleteIapOk");
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
 
     // Check that IAP now exists
     QString name = wlanQtUtils_->iapName(iapId);
@@ -623,14 +814,11 @@ void TestWlanQtUtils::testConnectIapErr()
 void TestWlanQtUtils::testDisconnectIapOk()
 {
     // Create and connect an IAP we can then disconnect
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testDisconnectIapOk");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testDisconnectIapOk");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
 
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     testContext.esock_.startRetValue_ = KErrNone;
     wlanQtUtils_->connectIap(iapId);
     QList<QVariant> arguments;
@@ -703,14 +891,11 @@ void TestWlanQtUtils::testConnectionStatus()
 void TestWlanQtUtils::testIapNameFound()
 {
     // Create the IAP we want to find with the getter
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testIapFound");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa2);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testIapFound");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa2);
 
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     
     // Execute the function under test and check that we got the correct name
     QString name = wlanQtUtils_->iapName(iapId);
@@ -739,21 +924,18 @@ void TestWlanQtUtils::testIapNameNotFound()
 void TestWlanQtUtils::testActiveIapFound()
 {
     // Create the IAP we want to find with the getter
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectedWlanIdFound");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectedWlanIdFound");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
 
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     
     testContext.connMon_.activeConnections_.createDefaultActiveConnList(1, iapId);
 
     // Send event for connection creation.
     wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonEventBase(
-            EConnMonCreateConnection,
-            testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId()));
+        EConnMonCreateConnection,
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId()));
 
     // Send events for connection status change -> opened.
     wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
@@ -813,23 +995,20 @@ void TestWlanQtUtils::testScanWlans()
 
     // No need to verify scan results here, testAvailableWlan* test cases
     // are for that. Just make sure the result signal is received.
-    subTestSignalWaitAndTake(signalScanReady_, NULL);
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusOk);
 }
 
 /**
- * Test WLAN scan triggering interface with two consecutive requests.
+ * Test WLAN scan result ignoring & deletion during an ongoing request.
  */
 void TestWlanQtUtils::testScanWlansIgnored()
 {
     // Do not complete scan request immediately
-    testContext.connMon_.wlanScanResult_.completeWlanScan_ = false;
+    testContext.mScan.mCompleteWlanScan = false;
     
     // Execute function under test
     wlanQtUtils_->scanWlans();
 
-    // Execute function under test again -> this one is ignored
-    wlanQtUtils_->scanWlans();
-    
     // Ongoing scan is cancelled in destructors
 }
 
@@ -839,13 +1018,14 @@ void TestWlanQtUtils::testScanWlansIgnored()
 void TestWlanQtUtils::testStopWlanScanOk()
 {
     // Do not complete scan request immediately
-    testContext.connMon_.wlanScanResult_.completeWlanScan_ = false;
+    testContext.mScan.mCompleteWlanScan = false;
     // Start a scan
     wlanQtUtils_->scanWlans();
     // Execute function under test
     wlanQtUtils_->stopWlanScan();
-    
-    // No return values or signals to verify
+
+    // Catch & check the scan result signal
+    subTestScanResultSignal(mSignalScanReady, WlanQtUtils::ScanStatusCancelled);
 }
 
 /**
@@ -853,7 +1033,7 @@ void TestWlanQtUtils::testStopWlanScanOk()
  */
 void TestWlanQtUtils::testStopWlanScanIgnored()
 {
-    // Execute function under test
+    // Stop without having an active scan
     wlanQtUtils_->stopWlanScan();
     
     // No return values or signals to verify
@@ -945,7 +1125,7 @@ void TestWlanQtUtils::testApCopyConstructor()
 {
     WlanQtUtilsAp firstAp;
     firstAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testApCopyConstructor");
-    firstAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
+    firstAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90);
     firstAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     firstAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
     firstAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true);    
@@ -967,13 +1147,9 @@ void TestWlanQtUtils::testApCopyConstructor()
 void TestWlanQtUtils::testConnectionTestOk()
 {
     // Create new IAP to test
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestOk");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestOk");
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     QVERIFY(iapId != WlanQtUtils::IapIdNone);
 
     testContext.esock_.startRetValue_ = KErrNone;
@@ -1007,12 +1183,14 @@ void TestWlanQtUtils::testConnectionTestOk()
 
     // Connection test automatically started at this point. Call result function explicitly
     // No interface exists that we could check that the IAP is moved to Internet SNAP correctly
+#if 0       // TODO: Make this work with the new WLAN login interface 
     TBuf<5> string;
     wlanQtUtils_->d_ptr->mConnTestWrapper->d_ptr_->ConnectivityObserver(EConnectionOk, string);
 
     subTestSignalWaitAndTake(signalIctResult_, &arguments); 
     QCOMPARE(arguments.at(0).toInt(), iapId); 
     QCOMPARE(arguments.at(1).toBool(), true);
+#endif    
 }
 
 /**
@@ -1021,14 +1199,11 @@ void TestWlanQtUtils::testConnectionTestOk()
 void TestWlanQtUtils::testConnectionTestErr()
 {
     // Create and connect an IAP and request ICT to be run
-    WlanQtUtilsAp wlanAp;
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestErr");
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90 );
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
-    wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestErr");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
     
-    int iapId = wlanQtUtils_->createIap(&wlanAp);
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
     wlanQtUtils_->connectIap(iapId, true);
 
     testContext.connMon_.activeConnections_.createDefaultActiveConnList(1, iapId);
@@ -1050,12 +1225,14 @@ void TestWlanQtUtils::testConnectionTestErr()
 
     // Connection test automatically started at this point. Call result function explicitly
     // No interface exists that we could check that IAP is not moved to another SNAP
+#if 0       // TODO: Make this work with the new WLAN login interface 
     TBuf<5> string;
     wlanQtUtils_->d_ptr->mConnTestWrapper->d_ptr_->ConnectivityObserver(EHttpAuthenticationNeeded, string);
 
     subTestSignalWaitAndTake(signalIctResult_, &arguments); 
     QCOMPARE(arguments.at(0).toInt(), iapId); 
     QCOMPARE(arguments.at(1).toBool(), false);
+#endif
 }
 
 /**
@@ -1167,6 +1344,19 @@ void TestWlanQtUtils::subTestSignalWaitAndTake(QSignalSpy* spy, QList<QVariant>*
 }
 
 /**
+ * Test case for catching and verifying the scan result signal.
+ * 
+ * @param [in] status Scan result status.
+ */
+void TestWlanQtUtils::subTestScanResultSignal(QSignalSpy* spy, int status)
+{
+    QList<QVariant> arguments;
+    subTestSignalWaitAndTake(spy, &arguments);
+    QCOMPARE(arguments.length(), 1);
+    QCOMPARE(arguments.at(0).toInt(), status);
+}
+
+/**
  * This function loads given CommsDat file, replacing current one.
  * If CommsDat file doesn't exist, it can be re-created by commanding WST script.
  * Using help switch is a quick way:
@@ -1197,32 +1387,54 @@ void TestWlanQtUtils::subTestLoadCommsDatFile(QString newCommsdatFilename)
  */
 void TestWlanQtUtils::subTestNewWlanQtUtils()
 {
-    if (wlanQtUtils_ != NULL) {
-        delete wlanQtUtils_;
-    }
+    delete wlanQtUtils_;
     wlanQtUtils_ = new WlanQtUtils();
 
-    if (signalScanReady_ != NULL) {
-        delete signalScanReady_;
-    }
-    signalScanReady_ = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanScanReady()));
-    QVERIFY(signalScanReady_->isValid() == true);
+    delete mSignalScanReady;
+    mSignalScanReady = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanScanReady(int)));
+    QVERIFY(mSignalScanReady->isValid() == true);
 
-    if (signalWlanNetworkOpened_ != NULL) {
-        delete signalWlanNetworkOpened_;
-    }
+    delete mSignalScanApReady;
+    mSignalScanApReady = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanScanApReady(int)));
+    QVERIFY(mSignalScanApReady->isValid() == true);
+
+    delete mSignalScanDirectReady;
+    mSignalScanDirectReady = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanScanDirectReady(int)));
+    QVERIFY(mSignalScanDirectReady->isValid() == true);
+
+    delete signalWlanNetworkOpened_;
     signalWlanNetworkOpened_ = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanNetworkOpened(int)));
     QVERIFY(signalWlanNetworkOpened_->isValid() == true);
     
-    if (signalWlanNetworkClosed_ != NULL) {
-        delete signalWlanNetworkClosed_;
-    }
+    delete signalWlanNetworkClosed_;
     signalWlanNetworkClosed_ = new QSignalSpy(wlanQtUtils_, SIGNAL(wlanNetworkClosed(int, int)));
     QVERIFY(signalWlanNetworkClosed_->isValid() == true);
     
-    if (signalIctResult_ != NULL) {
-        delete signalIctResult_;
-    }
-    signalIctResult_ = new QSignalSpy(wlanQtUtils_, SIGNAL(ictResult(int, bool)));
+    delete signalIctResult_;
+    signalIctResult_ = new QSignalSpy(wlanQtUtils_, SIGNAL(ictResult(int, int)));
     QVERIFY(signalIctResult_->isValid() == true);
+}
+
+/**
+ * Create a new AP and fill it with default values. 
+ */
+WlanQtUtilsAp *TestWlanQtUtils::subTestNewAp()
+{
+    WlanQtUtilsAp *ap = new WlanQtUtilsAp;
+
+    // Set default values
+    ap->setValue(WlanQtUtilsAp::ConfIdSsid, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 90);
+    ap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
+    ap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
+    ap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    ap->setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdWepKey1, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdWepKey2, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdWepKey3, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdWepKey4, QString());
+    ap->setValue(WlanQtUtilsAp::ConfIdWepDefaultIndex, CMManagerShim::WepKeyIndex1);
+    ap->setValue(WlanQtUtilsAp::ConfIdHidden, false);
+
+    return ap;
 }

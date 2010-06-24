@@ -118,6 +118,8 @@ private:
 private slots:
 
     void updateSetting(const XQSettingsKey &key, const QVariant &value);
+    
+    void handleWlanScanReady(int status);
 
 private: // data
 
@@ -136,6 +138,9 @@ private: // data
 
     //! WLAN scan timer ID
     int mScanTimerId;                           
+    
+    //! TRUE if scanning has been enabled
+    bool mScanEnabled;
     
     //! TRUE if embedded
     bool mEmbedded;                             
