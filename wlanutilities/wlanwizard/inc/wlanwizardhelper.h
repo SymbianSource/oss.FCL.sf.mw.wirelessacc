@@ -84,6 +84,13 @@ public:
         ConfProcessSettings = 14,
         //! QString: Localized error string for WlanWizardPageGenericError
         ConfGenericErrorString = 15,
+        //! WlanWizardScanList: Available network options
+        ConfAvailableNetworkOptions = 16,
+        //! bool: Wps supported
+        ConfWpsSupported = 17,
+        //! int: Identifies how many steps should be gone backwards from 
+        // GenericErrorPage
+        ConfGenericErrorPageStepsBackwards = 18,
     };
     
 public:
@@ -111,18 +118,27 @@ public:
         const QVariant &value) = 0;
     
     /*!
+     * Clears wlan configuration at the given configuration identifier and sets
+     * the configuration value to type Invalid.
+     * 
+     * @param [in] confId Configuration Identifier do to be cleared
+     */
+    virtual void clearConfiguration(ConfigurationId confId) = 0;
+    
+    /*!
+     * Tests whether a configuration has been set.
+     * 
+     * @param [in] confId Configuration Identifier do to be tested
+     * @return true if configuration value != Invalid, else false.
+     */
+    virtual bool configurationExists(ConfigurationId confId) = 0;
+    
+    /*!
        Enables the next button in wizard.
        
        @param [in] enable to enable button set to true.
      */
     virtual void enableNextButton(bool enable) = 0;
-
-    /*!
-       Enables the previous button in wizard.
-       
-       @param [in] enable to enable button set to true.
-     */
-    virtual void enablePrevButton(bool enable) = 0;
 
     /*!
        Adds a new wizard page into the wizard framework.

@@ -13,17 +13,28 @@
 # 	
 # 
 # Description: 
-#	UT for Wlan wizard testing
+#   UT for Wlan wizard testing
 #
 
 HEADERS += \
-	ut/hbautotest.h \ 
-	ut/testwlanwizard.h \
-    ut/testwlanwizardui.h \
-    ut/testwlanwizardui_conf.h
+    ut/hbautotest.h \ 
+    ut/testwlanwizard.h \
+    ut/testwlanwizardeap.h \
+    ut/testwlanwizardeap_conf.h \
+    ut/testwlanwizardcontext.h \
+    ut/testwlanwizardmanual.h \
+    ut/testwlanwizardmanual_conf.h \
+    ut/testwlanwizardconnect.h \
+    ut/testwlanwizardconnect_conf.h \
+    ut/testwlanwizardwps.h \
+    ut/testwlanwizardwps_conf.h
 
 SOURCES += \
-	ut/main.cpp \ 
+    ut/main.cpp \ 
     ut/hbautotest.cpp \
-    ut/testwlanwizardui.cpp \
-    ut/testwlanwizard.cpp
+    ut/testwlanwizardeap.cpp \
+    ut/testwlanwizardcontext.cpp \
+    ut/testwlanwizardconnect.cpp \
+    ut/testwlanwizardmanual.cpp \
+    ut/testwlanwizard.cpp \
+    ut/testwlanwizardwps.cpp

@@ -16,10 +16,6 @@
  *
  */
 
-/*
- * %version: 10 %
- */
-
 #ifndef WLANWIZARDPAGESECURITYMODE_H
 #define WLANWIZARDPAGESECURITYMODE_H
 
@@ -47,77 +43,37 @@ class WlanWizardPageSecurityMode: public WlanWizardPageInternal
 {
     Q_OBJECT
 public:
-    /*!
-     * Constructor method for the Sequrity mode query view object.
-     * @param parent pointer to parent object.
-     */
-    WlanWizardPageSecurityMode(WlanWizardPrivate* parent);
+    explicit WlanWizardPageSecurityMode(WlanWizardPrivate* parent);
+    virtual ~WlanWizardPageSecurityMode();
     
-    /*!
-     * Destructor for the Sequrity mode query view object.
-     */
-    ~WlanWizardPageSecurityMode();
-
-    /*!
-     * Page initialization procedures. Inherited from WlanWizardPage.
-     * @see WlanWizardPage
-     */
+public:
     HbWidget* initializePage();
-
-    /*!
-     * Validates the Sequrity more selection and sets the configuration in
-     * the wlanwizard.
-     * @param removeFromStack output parameter that returns false.
-     * @return depending on the sequrity mode, returns the appropriate view
-     * identifier.
-     */
     int nextId(bool &removeFromStack) const;
-    
-    /*!
-     * This method is overrides the default implementation from WlanWizardPage.
-     * It indicates whether the Next-button should be enabled or not.
-     * @return true, if a mode has been selected.
-     */
     bool showPage();
     
-private slots:
-    /*!
-     * Is invoked when user selects a mode from the radio button list.
-     * (HbRadioButtonList's itemSelected-signal)
-     * @param index of the selected item in the  radio button list. 
-     */
-    void itemSelected(int index);
-    
-    /*!
-     * Loads the document orientation information from occ_add_wlan_02_03.docml
-     * This is called each time phone orientation changes.
-     * @param orientation indicates whether the phone is in portrait or
-     * landscape mode.
-     */
-    void loadDocml(Qt::Orientation orientation);
+signals:
+
+public slots:
+
+protected:
+
+protected slots:
     
 private:
-    
-    /*!
-     * Support function that creates the contents of the security mode list. 
-     */
+    Q_DISABLE_COPY(WlanWizardPageSecurityMode)
     void populateSecModeList();
-    
-    /*!
-     * A support function to map the radio button list to a generic network
-     * mode list. This enables the changing of button order without it
-     * affecting the entire class.
-     * @param list is a reference to a local list that will be placed as an
-     * argument to the radio button list.
-     * @param item is a reference to the text value that is appended to the
-     * list
-     * @param mode is the security mode associated with the item
-     * @param page is the id of the next wizard page when this item is selected.
-     * @param psk indicates whether password needs to be queried. 
-     */
-    void addToList(QStringList &list, const QString &item, int mode, int page,
+    void addToList(
+        QStringList &list,
+        const QString &item,
+        int mode,
+        int page,
         bool psk);
+  
+private slots: 
+    void itemSelected();
+    void loadDocmlSection(Qt::Orientation orientation);
     
+private:
     /*!
      * Pointer to the view.
      */

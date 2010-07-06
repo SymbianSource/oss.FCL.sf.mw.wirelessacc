@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QList>
 #include <QSharedPointer>
+#include <cmmanagerdefines_shim.h>
 
 // User includes
 
@@ -53,7 +54,7 @@ public:
 
     void fetchIaps(QList< QSharedPointer<WlanQtUtilsIap> > &iapList) const;
 
-    QSharedPointer<WlanQtUtilsIap> fetchIap(int iapId) const;
+    QSharedPointer<WlanQtUtilsIap> fetchIap(uint iapId) const;
     
     int createIap(const WlanQtUtilsAp *wlanAp);
     
@@ -62,6 +63,8 @@ public:
     void deleteIap(int iapId);
 
     void moveIapToInternetSnap(int iapId);
+
+    void setAsHotspotIap(int iapId);
     
 signals:
 
@@ -83,6 +86,15 @@ private:
         const QString &key,
         int index,
         CmConnectionMethodShim *iap);
+
+    CMManagerShim::ConnectionMethodAttribute mapWepKeyIndexHex(int index);
+
+    CMManagerShim::ConnectionMethodAttribute mapWepKeyIndexAscii(int index);
+    
+    void traceIap(
+        const WlanQtUtilsAp *ap,
+        int traceType,
+        uint iapId) const;
 
 private slots:
 

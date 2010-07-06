@@ -59,13 +59,34 @@ public:
     /*!
         WLAN connection status.
         Remember to update traces/trace.properties when modifying this enum.
-    */        
+    */
     enum ConnStatus {
         ConnStatusNone = 0,         //!< Reserved.
         ConnStatusConnecting,       //!< Connecting.
         ConnStatusConnected,        //!< Connected.
         ConnStatusDisconnected      //!< Disconnected.
     };
+    
+    /*!
+        WLAN scan status
+        Remember to update traces/trace.properties when modifying this enum.
+    */
+    enum ScanStatus {
+        ScanStatusOk = 0,           //!< Scan succeeded.
+        ScanStatusCancelled,        //!< Scan was cancelled.
+        ScanStatusError             //!< Scan failed.
+    };
+    
+    /*! 
+        Internet Connectivity Test status.
+        Remember to update traces/trace.properties when modifying this enum.
+    */        
+    enum IctStatus {
+        IctPassed = 0,              //!< Normal ICT passed.
+        IctHotspotPassed,           //!< Hotspot ICT passed.
+        IctCancelled,               //!< ICT was cancelled.
+        IctFailed                   //!< ICT failed.
+    };    
     
     WlanQtUtils();
     
@@ -105,21 +126,28 @@ public:
 signals:
 
     /*!
-        Signal indicating that WLAN scan results are available. 
+        Signal indicating that WLAN scan is complete when scanning
+        is requested with scanWlans() method.
+        
+        @param [in] status Scan status code (ScanStatus).
     */
-    void wlanScanReady();
+    void wlanScanReady(int status);
     
     /*!
-        Signal indicating that WLAN scan results are available when scanning
+        Signal indicating that WLAN scan is complete when scanning
         is requested with scanWlanAps() method.
+        
+        @param [in] status Scan status code (ScanStatus).
     */
-    void wlanScanApReady();
+    void wlanScanApReady(int status);
     
     /*!
-        Signal indicating that WLAN scan results are available when scanning
+        Signal indicating that WLAN scan is complete when scanning
         is requested with scanWlanDirect() method.
+        
+        @param [in] status Scan status code (ScanStatus).
     */
-    void wlanScanDirectReady();
+    void wlanScanDirectReady(int status);
     
     /*!
         Signal indicating that new WLAN network has been opened. 
@@ -143,9 +171,12 @@ signals:
         Signal indicating result of finished ICT run.
 
         @param [in] iapId ID of IAP ICT was run for.
-        @param [in] result True: ICT passed, False: ICT failed.
+        @param [in] result IctPassed: Normal ICT passed,
+                           IctHotspotPassed: Hotspot ICT passed,
+                           IctCancelled: ICT was cancelled,
+                           IctFailed: ICT failed
     */
-    void ictResult(int iapId, bool result);
+    void ictResult(int iapId, int result);
     
 public slots:
 

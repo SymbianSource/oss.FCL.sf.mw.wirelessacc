@@ -51,9 +51,6 @@ public:
     bool handleClientRequest (RequestType type, const QVariant &parameter);
     bool handleInteraction (InteractionType type); 
     QVariant indicatorData(int role) const;
-
-private slots:
-    void processError(QProcess::ProcessError err); // handler for error codes
     
 private:
     

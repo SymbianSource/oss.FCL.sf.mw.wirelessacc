@@ -354,6 +354,7 @@ void TestWlanSniffer::testUpdateContentRobustness2()
     iap2->setValue(WlanQtUtilsIap::ConfIdName, "SSID 2");
     iap2->setValue(WlanQtUtilsAp::ConfIdSsid, "SSID 2");
     iap2->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 10);
+    iap2->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     iap2->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
     QSharedPointer<WlanQtUtilsIap> iap4(new WlanQtUtilsIap());
     iap4->setValue(WlanQtUtilsIap::ConfIdIapId, 4);
@@ -361,6 +362,7 @@ void TestWlanSniffer::testUpdateContentRobustness2()
     iap4->setValue(WlanQtUtilsIap::ConfIdName, "SSID 4");
     iap4->setValue(WlanQtUtilsAp::ConfIdSsid, "SSID 4");
     iap4->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 20);
+    iap4->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     iap4->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
     
     appendWlanAp("SSID 1", 20, 0, CMManagerShim::WlanSecModeOpen);
@@ -531,6 +533,7 @@ void TestWlanSniffer::appendWlanAp(
     ap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
     ap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
     ap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    ap->setValue(WlanQtUtilsAp::ConfIdWpsSupported, false);
     mAps.append(ap);
 }
 
@@ -552,6 +555,9 @@ void TestWlanSniffer::appendWlanIap(
     iap->setValue(WlanQtUtilsIap::ConfIdName, name);
     iap->setValue(WlanQtUtilsAp::ConfIdSsid, ssId);
     iap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, signalStrength);
+    iap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     iap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
+    iap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+    iap->setValue(WlanQtUtilsAp::ConfIdWpsSupported, false);
     mIaps.append(QSharedPointer<WlanQtUtilsIap>(iap));
 }

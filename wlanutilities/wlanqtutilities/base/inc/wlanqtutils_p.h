@@ -27,6 +27,7 @@
 // User includes
 
 #include "wlanqtutils.h"
+#include "ictswlanlogininterface.h"
 
 // Forward declarations
 
@@ -37,7 +38,7 @@ class WlanQtUtilsConnection;
 class WlanQtUtilsIapSettings;
 class WlanQtUtilsConMonWrapper;
 class WlanQtUtilsEsockWrapper;
-class ConnTestWrapper;
+class WlanQtUtilsScan;
 
 // External data types
 
@@ -113,9 +114,9 @@ private slots:
     void updateAvailableWlanAps(
         QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
     
-    void updateConnectionStatus(bool isOpened);
+    void reportScanResult(int status);
     
-    void updateConnectivityTestResult(bool result);
+    void updateConnectionStatus(bool isOpened);
     
     void addActiveConnection(uint connectionId);
     
@@ -125,8 +126,20 @@ private slots:
         uint connectionId,
         WlanQtUtils::ConnStatus connectionStatus);
 
+    void updateIctResult(int ictsResult);
+    
+    void updateIctHotspotCase();
+
 private: // data
 
+    //! Current scan mode
+    enum ScanMode {
+        ScanModeNone = 0,               //!< No scan active
+        ScanModeAvailableWlans,         //!< Available AP's & IAPS
+        ScanModeAvailableWlanAps,       //!< Available AP's
+        ScanModeDirect                  //!< Direct SSID scan
+    };
+    
     // Not owned data
 
     //! Pointer to public implementation.
@@ -139,13 +152,19 @@ private: // data
     
     //! Wrapper object for Connection Monitor and other parts of connmon library.
     WlanQtUtilsConMonWrapper *mConMonWrapper;
+
+    //! Wrapper object for WLAN scanning.
+    WlanQtUtilsScan *mScanWrapper;
     
     //! Wrapper object for esock library.
     WlanQtUtilsEsockWrapper *mEsockWrapper;
 
-    //! Wrapper object for Internet Connectivity Test library.
-    ConnTestWrapper *mConnTestWrapper;
+    //! Instance of Icts Wlan Login Interface.
+    QSharedPointer<IctsWlanLoginInterface> mIctService;
 
+    //! Current WLAN scan mode.
+    ScanMode mScanMode;
+    
     //! List of available WLAN APs according to the latest scan.
     QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanList;
 

@@ -317,3 +317,31 @@ void TestWlanWizard::testHexInvalidCharacters_F_Upper()
     WlanWizardUtils::KeyStatus status = WlanWizardUtils::isHex(key);
     QCOMPARE(status, WlanWizardUtils::KeyStatusIllegalCharacters);
 }
+
+void TestWlanWizard::testSsidValidCharacters()
+{
+    QString key("12345678901234567890123456789012");
+    WlanWizardUtils::SsidStatus status = WlanWizardUtils::validateSsid(key);
+    QCOMPARE(status, WlanWizardUtils::SsidStatusOk);
+}
+
+void TestWlanWizard::testSsidValidCharacters2()
+{
+    QString key("1");
+    WlanWizardUtils::SsidStatus status = WlanWizardUtils::validateSsid(key);
+    QCOMPARE(status, WlanWizardUtils::SsidStatusOk);
+}
+
+void TestWlanWizard::testSsidInvalidTooShort()
+{
+    QString key("");
+    WlanWizardUtils::SsidStatus status = WlanWizardUtils::validateSsid(key);
+    QCOMPARE(status, WlanWizardUtils::SsidStatusInvalidLength);
+}
+
+void TestWlanWizard::testSsidInvalidTooLong()
+{
+    QString key("123456789012345678901234567890123");
+    WlanWizardUtils::SsidStatus status = WlanWizardUtils::validateSsid(key);
+    QCOMPARE(status, WlanWizardUtils::SsidStatusInvalidLength);
+}

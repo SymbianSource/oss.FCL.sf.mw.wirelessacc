@@ -84,6 +84,12 @@ private slots:
     void testHexInvalidCharacters_A_Lower();
     void testHexInvalidCharacters_F_Upper();
     
+    // SSID test cases
+    void testSsidValidCharacters();
+    void testSsidValidCharacters2();
+    void testSsidInvalidTooShort();
+    void testSsidInvalidTooLong();
+    
 private:
  
 };

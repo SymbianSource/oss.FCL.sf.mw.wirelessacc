@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/docml" >
+        <file>mainview.docml</file>
+    </qresource>
+</RCC>

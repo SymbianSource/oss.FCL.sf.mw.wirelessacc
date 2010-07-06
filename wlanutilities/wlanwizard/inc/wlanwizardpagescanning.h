@@ -19,16 +19,21 @@
 #define WLANWIZARDPAGESCANNING_H
 
 // System includes
+#include <QSharedPointer>
+#include <QList>
+#include <QHash>
 
 // User includes
 #include "wlanwizardpageinternal.h"
 #include "wlanwizard.h"
+#include "wlanwizardscanlist.h"
 
 // Forward declarations
 class WlanWizardPrivate;
 class HbLabel;
 class HbProgressBar;
 class HbDocumentLoader;
+class WlanQtUtilsAp;
 
 // External data types
 
@@ -44,94 +49,44 @@ class WlanWizardPageScanning: public WlanWizardPageInternal
     Q_OBJECT
     
 public:
-    /*!
-     * Constructor method for the scanning view object.
-     * @param parent pointer to parent object.
-     */
-    WlanWizardPageScanning(WlanWizardPrivate* parent);
+    explicit WlanWizardPageScanning(WlanWizardPrivate* parent);
+    virtual ~WlanWizardPageScanning();
     
-    /*!
-     * Destructor for the scanning view object.
-     */
-    ~WlanWizardPageScanning();
-
-    /*!
-     * Page initialization procedures. Inherited from WlanWizardPage.
-     * @see WlanWizardPage
-     */
+public:
     HbWidget* initializePage();
-    
-    /*!
-     * Validates the scan results and sets the configuration in the wlanwizard.
-     * @param removeFromStack output parameter that returns true.
-     * @return depending on the scan results, returns the appropriate view
-     * identifier.
-     */
     int nextId(bool &removeFromStack) const;
-    
-    /*!
-     * Reimplements the default function in WlanWizardPage.
-     * @return true
-     * @see WlanWizardPage
-     */
-    bool requiresStartOperation();
-    
-    /*!
-     * Reimplements the empty default function in WlanWizardPage. Initiates
-     * AP scan.
-     * @see WlanWizardPage
-     */
-    void startOperation();
-    
-    /*!
-     * This method is overrides the default implementation from WlanWizardPage.
-     * It indicates whether the Next-button should be enabled or not.
-     * @return always false - the scanning proceeds to next window
-     * automatically or not at all.
-     */
+    int previousTriggered();
     bool showPage();
+    bool requiresStartOperation();
+    void startOperation();
 
+signals:
+    
 public slots:
-    /*!
-     * Loads the document orientation information from occ_add_wlan_06.docml
-     * This is called each time phone orientation changes.
-     * @param orientation indicates whether the phone is in portrait or
-     * landscape mode.
-     */
-    void loadDocml(Qt::Orientation orientation);
+    void loadDocmlSection(Qt::Orientation orientation);
+    void wlanScanResultPreCheck(int scanStatus);
+    void wlanScanDirectReady(int scanStatus);
     
-    /*!
-     * Checks whether the view is active. If it is, execute wlanScanApReady. If
-     * not, set mScanResultsAvailable to true.
-     */
-    void wlanScanResultPreCheck();
+protected:
     
-    /*!
-     * Processes the direct scan results. If no results were found, the next
-     * page is network mode query.
-     * If match is found and scan result indicates
-     * a) Open network, the next page is result processing.
-     * b) Network with WEP/WPA/WPA2 protection, the next page is key query.
-     * c) EAP protected network, the next page is EAP type query.
-     * d) WPS support, the next page is WPS configuration page.
-     * All matching results are considered hidden networks.
-     */
-    void wlanScanDirectReady();
+protected slots:
     
 private:
-    /*!
-     * Processes the Access Point scan results in search for an access point
-     * with an SSID that matches the SSID given by the user. If no match is
-     * found, a direct scan is initiated with the SSID given by the user.
-     * If match is found and scan result indicates
-     * a) Open network, the next page is result processing.
-     * b) Network with WEP/WPA/WPA2 protection, the next page is key query.
-     * c) EAP protected network, the next page is EAP type query.
-     * d) WPS support, the next page is WPS configuration page.
-     * All matching results are considered public networks.
-     */
+    Q_DISABLE_COPY(WlanWizardPageScanning)
     void wlanScanApReady();
+    void getSsidMatchList(
+        QString ssid,
+        const QList<QSharedPointer<WlanQtUtilsAp> > &matchList);
+    void getFinalScanResults(
+        const QList<QSharedPointer<WlanQtUtilsAp> > &directScanResults,
+        const QList<QSharedPointer<WlanQtUtilsAp> > &openScanResults,
+        QList<WlanScanResult> &finalResults);
+    int processMultipleScanResults(const QList<WlanScanResult> &finalResults);
+    void selectNextPageActions(const QList<WlanScanResult> &finalResults);
+    
+private slots:
 
+private:
     /*!
      * Pointer to the view.
      */
@@ -141,11 +96,6 @@ private:
      * Pointer to the label widget.
      */
     HbLabel *mLabel;
-
-    /*!
-     * Pointer to the progress bar widget.
-     */
-    HbProgressBar *mBar;
 
     /*!
      * Pointer to document loader object.
@@ -158,9 +108,19 @@ private:
     int mNextPageId;
     
     /*!
-     * Indicator, whether AP scan results are available or not
+     * Indicator, whether AP scan results are available or not.
      */
     bool mScanResultsAvailable;
+    
+    /*!
+     * Indicator of the current scan status.
+     */
+    int mScanStatus;
+    
+    /*!
+     * list containing the results of a normal scan of open networks.
+     */
+    QList<QSharedPointer<WlanQtUtilsAp> > mWlanApList;
 };
 
 /*! @} */

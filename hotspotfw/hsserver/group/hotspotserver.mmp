@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 
 TARGET          HotSpotServer.exe
@@ -36,21 +35,18 @@ SOURCE          hsslogouttimer.cpp
 
 USERINCLUDE		../inc
 USERINCLUDE		../../hsclient/inc
-USERINCLUDE		../../internetconnectivitytestservice/inc
+
 
 MW_LAYER_SYSTEMINCLUDE
 SYSTEMINCLUDE   /epoc32/include/ecom
 
 LIBRARY       euser.lib efsrv.lib esock.lib insock.lib
-LIBRARY       APPARC.lib apgrfx.lib
-LIBRARY       http.lib
 LIBRARY       inetprotutil.lib
 LIBRARY       ecom.lib
 LIBRARY       bafl.lib 
 LIBRARY       commdb.lib
 LIBRARY       commsdat.lib
 LIBRARY       wlandbif.lib
-LIBRARY       ictsclientinterface.lib
 LIBRARY       hal.lib
 LIBRARY       estor.lib 
 LIBRARY       centralrepository.lib

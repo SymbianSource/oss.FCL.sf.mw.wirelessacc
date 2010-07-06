@@ -22,6 +22,7 @@
 
 class QSignalSpy;
 class WlanQtUtils;
+class WlanQtUtilsAp;
 
 class TestWlanQtUtils: public QObject
 {
@@ -36,12 +37,28 @@ private slots:
     void cleanup();
 
     // Test functions for public interface.
+    
+    // scanWlans()
     void testAvailableWlan();
     void testAvailableWlanDuplicates();
     void testAvailableWlanSecModes();
     void testAvailableWlanSsids();
     void testAvailableWlanWithIaps();
     void testAvailableWlanSequence();
+    void testAvailableWlanScanEmpty();
+    void testAvailableWlanScanError();
+    
+    // scanWlanAps()
+    void testAvailableWlanAps();
+    void testAvailableWlanApsScanEmpty();
+    void testStopWlanApScan();
+    void testWlanApScanError();
+    
+    // scanWlanDirect()
+    void testDirectScanBasic();
+    void testDirectScanEmpty();
+    void testDirectScanStop();
+    void testDirectScanError();
 
     void testCreateIapOk();
     void testCreateIapErr();
@@ -90,12 +107,16 @@ private:
     
     // Helper functions, that is, sub test cases.
     void subTestSignalWaitAndTake(QSignalSpy *spy, QList<QVariant> *arguments);
+    void subTestScanResultSignal(QSignalSpy* spy, int status);
     void subTestLoadCommsDatFile(QString newCommsdatFilename);
     void subTestNewWlanQtUtils();
+    WlanQtUtilsAp *subTestNewAp();
 
     // Member variables.
     WlanQtUtils *wlanQtUtils_;
-    QSignalSpy *signalScanReady_;
+    QSignalSpy *mSignalScanReady;
+    QSignalSpy *mSignalScanApReady;
+    QSignalSpy *mSignalScanDirectReady;
     QSignalSpy *signalWlanNetworkOpened_;
     QSignalSpy *signalWlanNetworkClosed_;
     QSignalSpy *signalIctResult_;

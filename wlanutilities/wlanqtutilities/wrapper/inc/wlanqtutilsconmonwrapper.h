@@ -33,7 +33,6 @@
 
 class WlanQtUtilsAp;
 class WlanQtUtilsConnection;
-class WlanQtUtilsConMonWrapperScan;
 class WlanQtUtilsConMonWrapperInfo;
 class WlanQtUtilsConMonWrapperDisconnect;
 
@@ -51,14 +50,10 @@ public:
 
     // Data types
 
-    WlanQtUtilsConMonWrapper(QObject *parent = 0);
+    explicit WlanQtUtilsConMonWrapper(QObject *parent = 0);
     
     ~WlanQtUtilsConMonWrapper();
 
-    void scanAvailableWlanAPs();
-    
-    void stopScan();
-    
     WlanQtUtilsConnection *activeConnection() const;
 
     WlanQtUtilsConnection *connectionInfo(uint connectionId) const;
@@ -67,14 +62,6 @@ public:
         
 signals:
 
-    /*!
-       Signal indicating available WLAN access points.
-
-       @param [in] availableWlans Available WLAN access points found in scan.
-     */
-    void availableWlanApsFromWrapper(
-        QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
-    
     /*!
        Signal indicating that a new connection has been created.
 
@@ -113,9 +100,6 @@ private: // data
     
     // Owned data
     
-    //! Private implementation of scan interface
-    QScopedPointer<WlanQtUtilsConMonWrapperScan> d_ptrScan;
-    
     //! Private implementation of connection info interface
     QScopedPointer<WlanQtUtilsConMonWrapperInfo> d_ptrInfo;
 
@@ -124,9 +108,8 @@ private: // data
 
     // Friend classes
     
-    // These are defined as friend classes in order to be able to emit
-    // public signals directly from private implementation classes.
-    friend class WlanQtUtilsConMonWrapperScan;
+    // Friend classes in order to be able to emit public signals directly
+    // from private implementation classes.
     friend class WlanQtUtilsConMonWrapperInfo;
     
     // This is defined as a friend class in order to be able to call

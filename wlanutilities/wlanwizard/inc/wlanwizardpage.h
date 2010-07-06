@@ -64,6 +64,10 @@ class HbWidget;
 class WlanWizardPage
 {
 public:
+    //! default value for previousTriggered(), step one step.
+    static const int OneStepBackwards = 1;
+    static const int SingleResult = 1;
+    
     /*!
        Defines common page ids for wizard and page id pools for wizard plugins.
        
@@ -153,13 +157,20 @@ public:
        In case the wizard page does not want to make any movement forwards
        WlanWizardPage::PageNone MUST be returned.
        
+       Default implementation: Page ID WlanWizardPage::PageNone is retuned and
+       removeFromStack is false.
+       
        @param [out] removeFromStack return value to the caller, if this page
        needs to be removed from the stack, which means that this page cannot be
        accessible from the next page using "previous" toolbar button. 
        
        @return page identifier of next wizard page
      */
-    virtual int nextId(bool &removeFromStack) const = 0;
+    virtual int nextId(bool &removeFromStack) const
+    {
+        removeFromStack = false;
+        return WlanWizardPage::PageNone;
+    }
 
     /*!
        This method is called when "previous" button has been pressed.
@@ -185,8 +196,6 @@ signals:
 public slots:
     
 protected:
-    //! default value for previousTriggered(), step one step.
-    static const int OneStepBackwards = 1;
     
 protected slots:
 

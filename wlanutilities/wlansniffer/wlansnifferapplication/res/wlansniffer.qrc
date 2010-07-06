@@ -4,7 +4,8 @@
         <file>wlansnifferlistview.docml</file>
     </qresource>
 
-    <qresource prefix="/wlansnifferlistlayout" >
+    <qresource prefix="/wlansnifferlayout" >
+        <file>listview.css</file>
         <file>hblistviewitem.css</file>
         <file>hblistviewitem.widgetml</file>
     </qresource>

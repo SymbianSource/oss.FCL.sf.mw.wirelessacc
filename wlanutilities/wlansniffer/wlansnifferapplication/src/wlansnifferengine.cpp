@@ -83,6 +83,7 @@ WlanSnifferEngine::WlanSnifferEngine(QObject *parent) :
     mService(new WlanSnifferService(this)),
     mSettingsManager(new XQSettingsManager(this)),
     mScanTimerId(0),
+    mScanEnabled(false),
     mEmbedded(false),
     mWlanQtUtils(new WlanQtUtils())
 {
@@ -170,29 +171,24 @@ void WlanSnifferEngine::startWlanScanning()
 {
     OstTraceFunctionEntry0(WLANSNIFFERENGINE_STARTWLANSCANNING_ENTRY);
 
-    // A valid timer ID means scan is ON 
-    if (mScanTimerId == 0) {
+    if (!mScanEnabled) {
         OstTrace0(
             TRACE_NORMAL,
             WLANSNIFFERENGINE_STARTWLANSCANNING,
             "WlanSnifferEngine::startWlanScanning Periodic WLAN scanning starting");
 
-        // Connect signal forwarding
+        mScanEnabled = true;
+        // Connect response signal
         bool connectStatus = connect(
             mWlanQtUtils.data(),
-            SIGNAL(wlanScanReady()),
+            SIGNAL(wlanScanReady(int)),
             this,
-            SIGNAL(wlanScanReady()));
+            SLOT(handleWlanScanReady(int)));
         Q_ASSERT(connectStatus);
 
-        // Start the first scan
+        // Start the first scan. Scan timer is started when scan result
+        // signal is received.
         mWlanQtUtils->scanWlans();
-        
-        // Start timer for the next scan
-        mScanTimerId = startTimer(scanTimerInterval);
-        
-        // The timer start must succeed
-        Q_ASSERT(mScanTimerId != 0);
     }
     
     OstTraceFunctionExit0(WLANSNIFFERENGINE_STARTWLANSCANNING_EXIT);
@@ -207,22 +203,24 @@ void WlanSnifferEngine::stopWlanScanning()
 {
     OstTraceFunctionEntry0(WLANSNIFFERENGINE_STOPWLANSCANNING_ENTRY);
     
-    // A valid timer ID means scan is ON 
-    if (mScanTimerId != 0) {
+    if (mScanEnabled) {
         OstTrace0(
             TRACE_NORMAL,
             WLANSNIFFERENGINE_STOPWLANSCANNING,
             "WlanSnifferEngine::stopWlanScanning Periodic WLAN scanning stopped");
-        
-        // Disconnect signal forwarding
+
+        mScanEnabled = false;
+        // Disconnect response signal
         disconnect(
             mWlanQtUtils.data(),
-            SIGNAL(wlanScanReady()),
+            SIGNAL(wlanScanReady(int)),
             this,
-            SIGNAL(wlanScanReady()));
+            SLOT(handleWlanScanReady(int)));
         
-        killTimer(mScanTimerId);
-        mScanTimerId = 0;
+        if (mScanTimerId != 0) {
+            killTimer(mScanTimerId);
+            mScanTimerId = 0;
+        }
     }
     
     OstTraceFunctionExit0(WLANSNIFFERENGINE_STOPWLANSCANNING_EXIT);
@@ -416,4 +414,35 @@ void WlanSnifferEngine::updateSetting(
     }
     
     OstTraceFunctionExit1(WLANSNIFFERENGINE_UPDATESETTING_EXIT, this);
+}
+
+/*!
+    Slot for handling Wlan scan result.
+
+    @param [in] status Scan status code.
+*/
+
+void WlanSnifferEngine::handleWlanScanReady(int status)
+{   
+    OstTraceFunctionEntry1(WLANSNIFFERENGINE_HANDLEWLANSCANREADY_ENTRY, this);
+
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANSNIFFERENGINE_HANDLEWLANSCANREADY,
+        "WlanSnifferEngine::handleWlanScanReady;status=%d",
+        status);
+    
+    // Forward result signal only, if there was no error
+    if (status == WlanQtUtils::ScanStatusOk) {
+        emit wlanScanReady();
+    }
+    
+    // Start timer for the next scan, if not running already
+    if (mScanTimerId == 0) {
+        mScanTimerId = startTimer(scanTimerInterval);
+        // The timer start must succeed
+        Q_ASSERT(mScanTimerId != 0);
+    }
+    
+    OstTraceFunctionExit1(WLANSNIFFERENGINE_HANDLEWLANSCANREADY_EXIT, this);
 }

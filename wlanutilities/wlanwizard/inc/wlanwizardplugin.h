@@ -86,11 +86,6 @@ public:
     };
     
     /*!
-       Deletes wizard specific settings if any.
-     */
-    virtual void deleteSettings() {};
-    
-    /*!
        Maps plugin specific error codes into a localized string.
        
        @param [in] errorCode Symbian error code.

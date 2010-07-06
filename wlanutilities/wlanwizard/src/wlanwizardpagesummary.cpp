@@ -25,9 +25,7 @@
 #include <HbStyleLoader>
 
 // User includes
-#ifdef ICT_RESULT_ENUM
-#include "wlanqtutilscommon.h"
-#endif
+#include "wlanqtutils.h"
 #include "wlanwizard_p.h"
 #include "wlanwizardplugin.h"
 #include "wlanwizardsummaryviewitem.h"
@@ -99,22 +97,6 @@ HbWidget* WlanWizardPageSummary::initializePage()
 }
 
 /*!
-   See WlanWizardPage::nextId()
-   
-   @note this method is never called, because 'Next' toolbar button is not
-   visible in summary page.
-   
-   @param [out] removeFromStack return value is always false
-   
-   @return WlanWizardPageInternal::PageNone
- */
-int WlanWizardPageSummary::nextId(bool &removeFromStack) const
-{
-    removeFromStack = false;
-    return WlanWizardPage::PageNone;
-}
-
-/*!
    Loads docml.
  */
 void WlanWizardPageSummary::loadDocml()
@@ -157,7 +139,6 @@ QString WlanWizardPageSummary::networkModeText() const
         ret = hbTrId("txt_occ_dblist_network_mode_val_adhoc");
         break;
 
-     case CMManagerShim::Infra:
      default:
          Q_ASSERT(mode == CMManagerShim::Infra); 
          if (mWizard->configuration(WlanWizardPrivate::ConfHiddenWlan).toBool()) {
@@ -205,7 +186,6 @@ QString WlanWizardPageSummary::securityModeText() const
         }
         break;
         
-    case CMManagerShim::WlanSecModeOpen:
     default:
         Q_ASSERT(mode == CMManagerShim::WlanSecModeOpen);
         ret = hbTrId("txt_occ_dblist_security_mode_val_open");
@@ -229,31 +209,23 @@ void WlanWizardPageSummary::addDynamicItems(int &row)
 
     // TODO: Hotspot: no need to show destination..
     QString value;
-#ifdef ICT_RESULT_ENUM
+
     switch (mWizard->configuration(WlanWizardPrivate::ConfIctStatus).toInt()) {
-    case IctsPassed:
+    case WlanQtUtils::IctPassed:
         value = hbTrId("txt_occ_dblist_destination_val_internet");
         appendToList(row, hbTrId("txt_occ_dblist_destination"), value);
         break;
-    case IctsHotspotPassed:
-        // Add nothing to list. 
+        
+    case WlanQtUtils::IctFailed:
+        value = hbTrId("txt_occ_dblist_destination_val_uncategorized");
+        appendToList(row, hbTrId("txt_occ_dblist_destination"), value);
         break;
-    case IctsCanceled:
-        // TODO: Next page: gereric error page. movement should be done from processsettings page not here.
-        break;
-    case IctsFailed:
+        
     default:
-        value = hbTrId("txt_occ_dblist_destination_val_uncategorized");
-        appendToList(row, hbTrId("txt_occ_dblist_destination"), value);
+        Q_ASSERT(WlanQtUtils::IctHotspotPassed == mWizard->configuration(WlanWizardPrivate::ConfIctStatus).toInt());
+        // Add nothing to list.
+        break;
     }
-#else
-    if (mWizard->configuration(WlanWizardPrivate::ConfIctStatus).toBool()) {
-        value = hbTrId("txt_occ_dblist_destination_val_internet");
-    } else {
-        value = hbTrId("txt_occ_dblist_destination_val_uncategorized");
-    }
-	appendToList(row, hbTrId("txt_occ_dblist_destination"), value);
-#endif
 }
 
 /*!

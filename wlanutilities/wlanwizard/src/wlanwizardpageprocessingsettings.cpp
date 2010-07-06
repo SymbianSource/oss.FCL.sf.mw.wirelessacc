@@ -21,6 +21,7 @@
 #include <HbWidget>
 #include <HbLabel>
 #include <HbProgressBar>
+#include <HbParameterLengthLimiter>
 #include <wlanerrorcodes.h>
 
 // User includes
@@ -69,24 +70,26 @@ WlanWizardPageProcessingSettings::WlanWizardPageProcessingSettings(
 
     bool ok;
     ok = connect(
-        utils, SIGNAL(wlanNetworkOpened(int)), 
-        this, SLOT(wlanNetworkOpened(int)));
+        utils,
+        SIGNAL(wlanNetworkOpened(int)), 
+        this,
+        SLOT(wlanNetworkOpened(int)));
     Q_ASSERT(ok);
     
     ok = connect(
-        utils, SIGNAL(wlanNetworkClosed(int,int)), 
-        this, SLOT(wlanNetworkClosed(int,int)));
+        utils,
+        SIGNAL(wlanNetworkClosed(int,int)), 
+        this,
+        SLOT(wlanNetworkClosed(int,int)));
     Q_ASSERT(ok);
     
-#ifdef ICT_RESULT_ENUM
     ok = connect(
-        utils, SIGNAL(ictResult(int,WlanLoginIctsResultType)), 
-        this, SLOT(ictResult(int,WlanLoginIctsResultType)));
-#else
-    ok &= connect(
-        utils, SIGNAL(ictResult(int,bool)), 
-        this, SLOT(ictResult(int,bool)));
-#endif
+        utils,
+        SIGNAL(ictResult(int,int)), 
+        this,
+        SLOT(ictResult(int,int)));
+    Q_ASSERT(ok);
+
     Q_UNUSED(ok);
     Q_ASSERT(ok);
 }
@@ -127,8 +130,10 @@ HbWidget* WlanWizardPageProcessingSettings::initializePage()
         Q_ASSERT(ok);
     }
     
-    mLabel->setPlainText(hbTrId("txt_occ_dialog_checking_connection_to_1").arg(
-        mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
+    mLabel->setPlainText(
+        HbParameterLengthLimiter(
+            hbTrId("txt_occ_dialog_checking_connection_to_1")).arg(
+                mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
 
     return mWidget;
 }
@@ -165,17 +170,12 @@ bool WlanWizardPageProcessingSettings::showPage()
  */
 void WlanWizardPageProcessingSettings::loadDocmlSection(Qt::Orientation orientation)
 {
-    bool ok;
-    // Load the orientation specific section   
-    if (orientation == Qt::Horizontal) {
-        mDocLoader->load(":/docml/occ_add_wlan_06.docml", "landscape_section", &ok);
-        Q_ASSERT(ok);
-    }
-    else {
-        Q_ASSERT(orientation == Qt::Vertical);
-        mDocLoader->load(":/docml/occ_add_wlan_06.docml", "portrait_section", &ok);
-        Q_ASSERT(ok);
-    }
+    WlanWizardPageInternal::loadDocmlSection(
+        mDocLoader,
+        orientation,
+        ":/docml/occ_add_wlan_06.docml", 
+        "portrait_section",
+        "landscape_section");
 }
 
 /*!
@@ -222,10 +222,9 @@ void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
         case KErrWlanSharedKeyAuthFailed:
             errorText = hbTrId("txt_occ_dialog_incorrect_wep_key_please_check_the");
             break;
-        
-        case KErrNone:
-            // Do nothing, when connection is dropped we don't get any error code
+
         default:
+            // Handles also KErrNone
             // Get plugin specific localized error text if any
             WlanWizardPlugin *plugin = mWizard->wlanWizardPlugin();
             
@@ -240,6 +239,11 @@ void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
         mNextPageId = WlanWizardPageInternal::PageGenericError;
         mWizard->setConfiguration(
             WlanWizardHelper::ConfGenericErrorString, errorText);
+        
+        mWizard->setConfiguration(
+            WlanWizardHelper::ConfGenericErrorPageStepsBackwards, 
+            WlanWizardPage::OneStepBackwards);
+        
         mWizard->nextPage();
     }
     
@@ -255,8 +259,7 @@ void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
    @param [in] iapId IAP ID
    @param [in] reason ICT result, Symbian error code
  */
-#ifdef ICT_RESULT_ENUM
-void WlanWizardPageProcessingSettings::ictResult(int iapId, WlanLoginIctsResultType reason)
+void WlanWizardPageProcessingSettings::ictResult(int iapId, int reason)
 {
     OstTraceExt2( 
         TRACE_BORDER, 
@@ -265,44 +268,28 @@ void WlanWizardPageProcessingSettings::ictResult(int iapId, WlanLoginIctsResultT
         iapId, reason );
     
     if (iapId != mWizard->configuration(WlanWizardHelper::ConfIapId).toInt()) {
-        Q_ASSERT(false);
         return;
     }
-    mWizard->setConfiguration(WlanWizardPrivate::ConfConnected, true);
-    mWizard->setConfiguration(WlanWizardPrivate::ConfIctStatus, reason);
-    if(reason == IctsCanceled) {
-        QString errorText;
-        // TODO: What error string should be loaded?
-        mNextPageId = WlanWizardPageInternal::PageGenericError;
-        mWizard->setConfiguration(
-            WlanWizardHelper::ConfGenericErrorString, errorText);
+    
+    // Cast of result .
+    WlanQtUtils::IctStatus status = 
+        static_cast<WlanQtUtils::IctStatus>(reason);
+
+    if(status == WlanQtUtils::IctCancelled) {
+        
+        mNextPageId = WlanWizardPageInternal::PageNone;
+        mWizard->cancelTriggered();
     }
+    else {
+        mWizard->setConfiguration(WlanWizardPrivate::ConfConnected, true);
+    }
+    mWizard->setConfiguration(WlanWizardPrivate::ConfIctStatus, status);
+        
     mWizard->nextPage();
     
     OstTrace0( TRACE_BORDER, WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_DONE, 
         "WlanWizardPageProcessingSettings::ictResult - Done" );
 }
-#else
-void WlanWizardPageProcessingSettings::ictResult(int iapId, bool reason)
-{
-    OstTraceExt2( 
-        TRACE_BORDER, 
-        WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_1, 
-        "WlanWizardPageProcessingSettings::ictResult;iapId=%d;result=%d", 
-        iapId, reason );
-    
-    if (iapId != mWizard->configuration(WlanWizardHelper::ConfIapId).toInt()) {
-        Q_ASSERT(false);
-        return;
-    }
-    mWizard->setConfiguration(WlanWizardPrivate::ConfConnected, true);
-    mWizard->setConfiguration(WlanWizardPrivate::ConfIctStatus, reason);
-    mWizard->nextPage();
-    
-    OstTrace0( TRACE_BORDER, WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_DONE_1, 
-        "WlanWizardPageProcessingSettings::ictResult - Done" );
-}
-#endif
 
 /*!
    Handles wlanNetworkOpened(int) signal from WlanQtUtils.
@@ -354,6 +341,10 @@ void WlanWizardPageProcessingSettings::startOperation()
         mWizard->setConfiguration(
             WlanWizardHelper::ConfGenericErrorString, 
             hbTrId("txt_occ_dialog_unable_to_save_settings_please_ret"));
+        
+        mWizard->setConfiguration(
+            WlanWizardHelper::ConfGenericErrorPageStepsBackwards, 
+            WlanWizardPage::OneStepBackwards);
         mWizard->nextPage();
     }
 }

@@ -16,10 +16,6 @@
  *
  */
 
-/*
- * %version: 8 %
- */
-
 #ifndef WLANWIZARDPAGENETWORKMODE_H
 #define WLANWIZARDPAGENETWORKMODE_H
 
@@ -33,6 +29,7 @@ class HbRadioButtonList;
 class HbLabel;
 class WlanWizardPrivate;
 class HbDocumentLoader;
+class WlanNetworkSetting;
 
 // External data types
 
@@ -48,63 +45,33 @@ class WlanWizardPageNetworkMode : public WlanWizardPageInternal
     Q_OBJECT
 public:
     
-    /*!
-     * Constructor method for the network mode view object
-     * @param parent pointer to parent object.
-     */
-    WlanWizardPageNetworkMode(WlanWizardPrivate* parent);
-    
-    /*!
-     * Destructor for the network mode view object.
-     */
-    ~WlanWizardPageNetworkMode();
-
+    explicit WlanWizardPageNetworkMode(WlanWizardPrivate* parent);
+    virtual ~WlanWizardPageNetworkMode();
     
 public: // From WlanWizardPageInternal
-    /*!
-     * Page initialization procedures. Inherited from WlanWizardPage.
-     */
     HbWidget* initializePage();
-
-    /*!
-     * Evaluates the network mode selection and sets the configuration in
-     * the wlanwizard.
-     * @param removeFromStack output parameter that returns false
-     * @return WlanWizardPageSecurityMode page id.
-     */
-    int nextId(bool &removeFromStack) const;
-    
-    /*!
-     * This method is overrides the default implementation from WlanWizardPage.
-     * It indicates whether the Next-button should be enabled or not.
-     * @return true, if a mode has been selected.
-     */
+    int nextId(bool &removeFromStack) const;   
     bool showPage();
 
+signals:
+    
 public slots:
-    /*!
-     * Is invoked when user selects a mode from the radio button list.
-     * (HbRadioButtonList's itemSelected-signal)
-     */
-    void itemSelected(int index);
-
-    /*!
-     * Loads the document orientation information from occ_add_wlan_02_03.docml.
-     * This is called each time phone orientation changes.
-     * @param orientation indicates whether the phone is in portrait or
-     * landscape mode.
-     */
-    void loadDocml(Qt::Orientation orientation);
+    void itemSelected();
+    void loadDocmlSection(Qt::Orientation orientation);
+    
+protected:
+    
+protected slots:
     
 private:
-    
-    /*!
-     * A support function to map the radio button list to a generic network
-     * mode list. This enables the changing of button order without it
-     * affecting the entire class.
-     */
+    Q_DISABLE_COPY(WlanWizardPageNetworkMode)
     void addToList(QStringList &list, const QString &item, int mode, bool isHidden);
-    
+    void populateRadioButtonList(QStringList &list);
+    int selectNextPage(const WlanNetworkSetting &setting) const;
+
+private slots:
+
+private:
     /*!
      * Pointer to the view.
      */

@@ -24,8 +24,8 @@ TARGET.CAPABILITY = ALL -TCB
 
 DEPENDPATH += .
 
-#Store generated .moc files to their own directory
-MOC_DIR = moc
+#Store generated files to their own directory
+MOC_DIR = build
 
 # Temporary solution to fix tracecompiler
 # When tracecompiler is fixed, this can be removed
@@ -38,6 +38,8 @@ DEFINES += BUILD_WLANQTUTILITIES_DLL
 
 INCLUDEPATH += \
     . \
+    ../../inc \
+    stubs \
     ../base/inc \
     ../wrapper/inc \
     ../traces
@@ -53,8 +55,8 @@ HEADERS += \
     ../base/inc/wlanqtutilsap.h \
     ../base/inc/wlanqtutilsconnection.h \
     ../wrapper/inc/wlanqtutilsconmonwrapper.h \
-    ../wrapper/inc/wlanqtutilsconntestwrapper.h \
     ../wrapper/inc/wlanqtutilsesockwrapper.h \
+    ../wrapper/inc/wlanqtutilsscan.h \
     ../traces/OstTraceDefinitions.h
 
 SOURCES += \
@@ -67,29 +69,27 @@ SOURCES += \
     ../base/src/wlanqtutilsconnection.cpp \
     ../base/src/wlanqtutilsiapsettings.cpp \
     ../wrapper/src/wlanqtutilsconmonwrapper.cpp \
-    ../wrapper/src/wlanqtutilsconntestwrapper.cpp \
-    ../wrapper/src/wlanqtutilsesockwrapper.cpp
+    ../wrapper/src/wlanqtutilsesockwrapper.cpp \
+    ../wrapper/src/wlanqtutilsscan.cpp
     
 symbian: { 
     HEADERS += \
-        ../wrapper/inc/wlanqtutilsconmonwrapperdisconnect_s60_p.h \
-        ../wrapper/inc/wlanqtutilsconmonwrapperinfo_s60_p.h \
-        ../wrapper/inc/wlanqtutilsconmonwrapperscan_s60_p.h \
-        ../wrapper/inc/wlanqtutilsconntestwrapper_s60_p.h \
-        ../wrapper/inc/wlanqtutilsesockwrapper_s60_p.h
+        ../wrapper/inc/wlanqtutilsconmonwrapperdisconnect_symbian.h \
+        ../wrapper/inc/wlanqtutilsconmonwrapperinfo_symbian.h \
+        ../wrapper/inc/wlanqtutilsesockwrapper_symbian.h \
+        ../wrapper/inc/wlanqtutilsscan_symbian.h \
+        stubs/wlanmgmtclient.h \
+        stubs/wlanscaninfo.h
 
     SOURCES += \
-        ../wrapper/src/wlanqtutilsconmonwrapperdisconnect_s60.cpp \
-        ../wrapper/src/wlanqtutilsconmonwrapperinfo_s60.cpp \
-        ../wrapper/src/wlanqtutilsconmonwrapperscan_s60.cpp \
-        ../wrapper/src/wlanqtutilsconntestwrapper_s60.cpp \
-        ../wrapper/src/wlanqtutilsesockwrapper_s60.cpp \
-        stubs/wlanqtutilsconnmonstub.cpp \
-        stubs/wlanqtutilsconnteststub.cpp \
-        stubs/wlanqtutilsesockstub.cpp
+        ../wrapper/src/wlanqtutilsconmonwrapperdisconnect_symbian.cpp \
+        ../wrapper/src/wlanqtutilsconmonwrapperinfo_symbian.cpp \
+        ../wrapper/src/wlanqtutilsesockwrapper_symbian.cpp \
+        ../wrapper/src/wlanqtutilsscan_symbian.cpp \
+        stubs/stub_connmon.cpp \
+        stubs/stub_esock.cpp \
+        stubs/stub_wlanmgmtclient.cpp \
+        stubs/stub_wlanscaninfo.cpp
 }
 
-LIBS += -lconnmon -lconnection_settings_shim -lextendedconnpref -lnetmeta -lesock -lictsclientinterface
-
-#UT flag is set, used in stub codes
-DEFINES += WLANQTUTILS_T_WLANQTUTILS_UT_FLAG
+LIBS += -lconnmon -lconnection_settings_shim -lextendedconnpref -lnetmeta -lesock -lictswlanlogininterface

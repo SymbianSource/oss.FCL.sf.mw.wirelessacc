@@ -19,6 +19,7 @@
 
 #include <QProcess>
 #include <QLocale>
+#include <HbStyleLoader>
 #include <HbTranslator>
 
 // User includes
@@ -41,6 +42,9 @@
 
 // Local constants
 
+//! Location of WLAN Sniffer custom layout definitions
+static const QString WlanSnifferLayoutPath(":/wlansnifferlayout/");
+
 // ======== LOCAL FUNCTIONS ========
 
 // ======== MEMBER FUNCTIONS ========
@@ -55,12 +59,22 @@
 WlanSniffer::WlanSniffer(int argc, char* argv[]) :
     HbApplication(argc, argv),
     mEngine(new WlanSnifferEngine(this)),
-    mTranslator(new HbTranslator()),
+    mTranslator(),
     mMainWindow(0)
 {
     OstTraceFunctionEntry0(WLANSNIFFER_WLANSNIFFER_ENTRY);
+
+    // Start scanning immediately to get the first scan results as soon as
+    // possible, since the scanning takes time.
+    if (mEngine->masterWlan() && !mEngine->forceDisableWlan()) {
+        mEngine->startWlanScanning();
+    }
     
-    // Install also common localization
+    // Register custom layout location
+    HbStyleLoader::registerFilePath(WlanSnifferLayoutPath);
+
+    // Install localization
+    mTranslator = QSharedPointer<HbTranslator>(new HbTranslator());
     mTranslator->loadCommon();
     
     mMainWindow = QSharedPointer<WlanSnifferMainWindow>(
@@ -92,6 +106,9 @@ WlanSniffer::WlanSniffer(int argc, char* argv[]) :
 WlanSniffer::~WlanSniffer()
 {
     OstTraceFunctionEntry0(WLANSNIFFER_WLANSNIFFERDESTR_ENTRY);
+
+    HbStyleLoader::unregisterFilePath(WlanSnifferLayoutPath);
+    
     OstTraceFunctionExit0(WLANSNIFFER_WLANSNIFFERDESTR_EXIT);
 }
 

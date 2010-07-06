@@ -97,20 +97,6 @@ HbWidget* WlanWizardPageGenericError::initializePage()
 }
 
 /*!
-   See WlanWizardPage::nextId()
-   
-   @param [out] removeFromStack return value is always false
-   
-   @return WlanWizardPageInternal::PageNone
- */
-int WlanWizardPageGenericError::nextId(bool &removeFromStack) const
-{
-    removeFromStack = false;
-    return WlanWizardPageInternal::PageNone;
-}
-
-
-/*!
    See WlanWizardPage::showPage()
    
    @return false. Next button is dimmed when the page is displayed.
@@ -120,4 +106,13 @@ bool WlanWizardPageGenericError::showPage()
     return false;
 }
 
-
+/*!
+    See WlanWizardPage::previousTriggered()
+   
+   @return steps backwards
+ */
+int WlanWizardPageGenericError::previousTriggered()
+{
+    return mWizard->configuration(
+        WlanWizardHelper::ConfGenericErrorPageStepsBackwards).toInt();
+}

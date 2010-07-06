@@ -28,13 +28,17 @@
 #include "wlanwizard_p.h"
 #include "wlanwizard.h"
 #include "wlanwizardpagenetworkmode.h"
+#include "wlanwizardscanlist.h"
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpagenetworkmodeTraces.h"
 #endif
 
+// Local constants
+
 /*!
- * Contructor. Member initialization.
+ * Constructor method for the network mode view object
+ * @param parent [in] pointer to parent object.
  */
 WlanWizardPageNetworkMode::WlanWizardPageNetworkMode(
     WlanWizardPrivate* parent) :
@@ -58,6 +62,7 @@ WlanWizardPageNetworkMode::~WlanWizardPageNetworkMode()
 
 /*!
  * Page initialization. If view is already loaded, does nothing.
+ * Inherited from WlanWizardPage.
  */
 HbWidget* WlanWizardPageNetworkMode::initializePage()
 {
@@ -70,71 +75,77 @@ HbWidget* WlanWizardPageNetworkMode::initializePage()
         bool ok;
 
         mLoader->load(":/docml/occ_add_wlan_02_03.docml", &ok);
-        Q_ASSERT_X(ok, "WLAN Wizard", "Invalid docml file");
+        Q_ASSERT(ok);
 
-        loadDocml(mWizard->mainWindow()->orientation());
+        loadDocmlSection(mWizard->mainWindow()->orientation());
 
         mWidget = qobject_cast<HbWidget*> (mLoader->findWidget(
             "occ_add_wlan_02"));
-        Q_ASSERT_X(mWidget != NULL, "WlanWizardPageNetworkMode", "View not found");
+        Q_ASSERT(mWidget != NULL);
 
         mList = qobject_cast<HbRadioButtonList*> (mLoader->findWidget("list"));
-        Q_ASSERT_X(mList != NULL, "WlanWizardPageNetworkMode", "List not found");
+        Q_ASSERT(mList != NULL);
 
         mLabel = qobject_cast<HbLabel*> (mLoader->findWidget("dialog_6"));
-        Q_ASSERT_X(mLabel != NULL, "WlanWizardPageNetworkMode", "Label not found");
+        Q_ASSERT(mLabel != NULL);
 
         // Connect document loading to main window orientation changes.
-        ok &= connect(mWizard->mainWindow(),
+        ok = connect(mWizard->mainWindow(),
             SIGNAL(orientationChanged(Qt::Orientation)), this,
-            SLOT(loadDocml(Qt::Orientation)));
-
+            SLOT(loadDocmlSection(Qt::Orientation)));
+        Q_ASSERT(ok);
+        
         // Connect a function to a radio button selection.
-        ok &= connect(mList, SIGNAL(itemSelected(int)), this,
-            SLOT(itemSelected(int)));
-
-        Q_ASSERT_X(ok, "WLAN Wizard", "orientationChanged slot connection failed");
+        ok = connect(mList, SIGNAL(itemSelected(int)), this,
+            SLOT(itemSelected()));
+        Q_ASSERT(ok);
 
         mLabel->setPlainText(hbTrId(
             "txt_occ_dialog_select_network_mode_and_status"));
-
-        QStringList items;
-
-        addToList(items, hbTrId("txt_occ_dblist_val_infrastructure_public"),
-            CMManagerShim::Infra, false);
-
-        addToList(items, hbTrId("txt_occ_list_infrastructure_hidden"),
-            CMManagerShim::Infra, true);
-
-        addToList(items, hbTrId("txt_occ_list_adhoc_1"), CMManagerShim::Adhoc,
-            false);
-
-        mList->setItems(items);
-
     }
+    
+    QStringList items;
+    
+    populateRadioButtonList(items);
+    
+    mList->setItems(items);
+    
     return mWidget;
 }
 
 /*!
- * When moving to next page, write user selections to the wizard and return
- * Security mode query page id.
+ * Evaluates the network mode selection and sets the configuration in
+ * the wlanwizard.
+ * @param [out] removeFromStack always returns false.
+ * @return WlanWizardPageSecurityMode page id.
  */
 int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
 {
     removeFromStack = false;
-    // TODO: wk18: proper code
+    WlanNetworkSetting setting;
+    setting.mode = mNetworkModes.at(mList->selected());
+    setting.hidden = mIsHidden.at(mList->selected());
+    
+    // TODO: Still no wps handling.
+    setting.wpsSupported = false;
+    
     mWizard->setConfiguration(WlanWizardPrivate::ConfNetworkMode,
-        mNetworkModes.at(mList->selected()));
+        setting.mode);
     
     mWizard->setConfiguration(WlanWizardPrivate::ConfHiddenWlan,
-        mIsHidden.at(mList->selected()));
+        setting.hidden);
 
+    if (mWizard->configurationExists(WlanWizardPrivate::ConfAvailableNetworkOptions)) {
+        return selectNextPage(setting);
+    }
+    
     return WlanWizardPageInternal::PageNetworkSecurity;
 }
 
 /*!
- * Indicates the validity of the network mode page.
- * @see WlanWizardPage
+ * This method is overrides the default implementation from WlanWizardPage.
+ * It indicates whether the Next-button should be enabled or not.
+ * @return mValid, which is true if a radio button has been selected.
  */
 bool WlanWizardPageNetworkMode::showPage()
 {
@@ -142,10 +153,10 @@ bool WlanWizardPageNetworkMode::showPage()
 }
 
 /*!
- * Sets the page as valid, if any mode is selected.
- * (Initially none is selected.) 
+ * This function is invoked when user selects a mode from the radio button list.
+ * (HbRadioButtonList's itemSelected-signal)
  */
-void WlanWizardPageNetworkMode::itemSelected(int /* index */)
+void WlanWizardPageNetworkMode::itemSelected()
 {
     OstTrace0( TRACE_BORDER, WLANWIZARDPAGENETWORKMODE_ITEMSELECTED,
         "WlanWizardPageNetworkMode::itemSelected" );
@@ -155,36 +166,105 @@ void WlanWizardPageNetworkMode::itemSelected(int /* index */)
 }
 
 /*!
- * Loads the ui layout file with current orientation.
+ * Loads the document orientation information from occ_add_wlan_02_03.docml.
+ * This is called each time phone orientation changes.
+ * @param [in] orientation indicates whether the phone is in portrait or
+ * landscape mode.
  */
-void WlanWizardPageNetworkMode::loadDocml(Qt::Orientation orientation)
+void WlanWizardPageNetworkMode::loadDocmlSection(Qt::Orientation orientation)
 {
     OstTrace1( TRACE_NORMAL, WLANWIZARDPAGENETWORKMODE_LOADDOCML,
         "WlanWizardPageNetworkMode::loadDocml - Orientation;orientation=%x",
         ( TUint )( orientation ) );
 
-    bool ok;
-    if (orientation == Qt::Horizontal) {
-        mLoader->load(":/docml/occ_add_wlan_02_03.docml", "landscape_section",
-            &ok);
-        Q_ASSERT_X(ok, "WLAN Wizard", "Landscape section not found");
-    }
-    else {
-        mLoader->load(":/docml/occ_add_wlan_02_03.docml", "portrait_section",
-            &ok);
-        Q_ASSERT_X(ok, "WLAN Wizard", "Portrait section not found");
-    }
+    WlanWizardPageInternal::loadDocmlSection(
+        mLoader,
+        orientation,
+        ":/docml/occ_add_wlan_02_03.docml", 
+        "portrait_section",
+        "landscape_section");
 }
 
 /*!
- * Mode and visibility lists are populated to the same order as the radio
- * button list.
+ * A support function to map the radio button list to a generic network
+ * mode list. This enables the changing of button order without it
+ * affecting the entire class.
+ * In case previous scan has revealed multiple results with the same ssid, only
+ * available network mode options are shown in the radio button list.
+ * @param [out] list is the list of captions used for the radio buttons.
+ * @param [in] item is the caption to be added.
+ * @param [in] mode is the network mode to be added.
+ * @param [in] isHidden is the visibility status of the network.
  */
 void WlanWizardPageNetworkMode::addToList(QStringList &list,
     const QString &item, int mode, bool isHidden)
 {
-    list << item;
-    mNetworkModes.append(mode);
-    mIsHidden.append(isHidden);
+        
+    if (mWizard->configurationExists(WlanWizardHelper::ConfAvailableNetworkOptions)) {
+        WlanWizardScanList networkOptions = mWizard->configuration(
+            WlanWizardHelper::ConfAvailableNetworkOptions).value<WlanWizardScanList> ();
+
+        QList<WlanNetworkSetting> modes = networkOptions.getNetModes();
+
+        for (int i = 0; i < modes.size(); i++) {
+            if (modes[i].mode == mode && modes[i].hidden == isHidden) {
+                list << item;
+                mNetworkModes.append(mode);
+                mIsHidden.append(isHidden);
+            }
+        }
+    }
+    else {  
+        list << item;
+        mNetworkModes.append(mode);
+        mIsHidden.append(isHidden);
+    }
+}
+
+/*!
+ * This function checks the sets up the radio button list for user input.
+ * @param [out] list is the list of captions used for the radio buttons.
+ */
+void WlanWizardPageNetworkMode::populateRadioButtonList(QStringList &list)
+{
+    list.clear();
+    mNetworkModes.clear();
+    mIsHidden.clear();
+
+    // A list is created. Since there is no practical way of knowing whether
+    // the new contents are different from the previous contents (if there
+    // even were any in the first place) the validity is always reset.
+    mValid = false;
+        
+    addToList(list, hbTrId("txt_occ_dblist_val_infrastructure_public"),
+        CMManagerShim::Infra, false);
+
+    addToList(list, hbTrId("txt_occ_list_infrastructure_hidden"),
+        CMManagerShim::Infra, true);
+
+    addToList(list, hbTrId("txt_occ_list_adhoc_1"), CMManagerShim::Adhoc,
+        false);
+}
+
+/*!
+ * This function selects the next page. Security mode may be skipped in case
+ * scan results exist and only single option remains.
+ * @param [in] setting indicates the selected network mode.
+ * @return Security mode query page identifier unless it can be skipped.
+ */
+int WlanWizardPageNetworkMode::selectNextPage(const WlanNetworkSetting &setting) const
+{
+    WlanWizardScanList networkOptions = mWizard->configuration(
+        WlanWizardHelper::ConfAvailableNetworkOptions).value<WlanWizardScanList>();
+    
+    if (networkOptions.secModes(setting) == SingleResult) {
+        WlanSecuritySetting secMode = networkOptions.getSecMode(setting);
+        
+        mWizard->setConfiguration(WlanWizardHelper::ConfSecurityMode, secMode.mode);
+        mWizard->setConfiguration(WlanWizardHelper::ConfUsePsk, secMode.usePsk);
+        return secMode.nextPageId;
+    }
+    
+    return WlanWizardPageInternal::PageNetworkSecurity;
 }
 

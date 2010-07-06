@@ -91,12 +91,6 @@ WlanSnifferListView::WlanSnifferListView(
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTVIEW_WLANSNIFFERLISTVIEW_ENTRY);
 
-    // Start scanning immediately to get the first scan results as soon as
-    // possible, since the scanning takes time.
-    if (mEngine->masterWlan() && !mEngine->forceDisableWlan()) {
-        mEngine->startWlanScanning();
-    }
-    
     // Initialize UI from the docml based on standalone/embedded status
     loadDocml(mEngine->isEmbedded());
 
@@ -172,6 +166,14 @@ WlanSnifferListView::WlanSnifferListView(
         SLOT(handleWlanToggled()));
     Q_ASSERT(connectStatus);
 
+    // Connect adding WLAN manually
+    connectStatus = connect(
+        mAddWlanAction,
+        SIGNAL(triggered(bool)),
+        this,
+        SLOT(startWlanWizard()));
+    Q_ASSERT(connectStatus);
+    
     // Connect WLAN scan results signal
     connectStatus = connect(
         mEngine,
@@ -628,6 +630,21 @@ void WlanSnifferListView::handleWlanToggled()
     }
 
     OstTraceFunctionExit0(WLANSNIFFERLISTVIEW_HANDLEWLANTOGGLED_EXIT);
+}
+
+/*!
+    Function for handling WLAN Wizard starting when adding WLAN manually.
+*/
+
+void WlanSnifferListView::startWlanWizard()
+{
+    OstTraceFunctionEntry0(WLANSNIFFERLISTVIEW_STARTWLANWIZARD_ENTRY);
+
+    // TODO: Stop connections & do other cleanup before wizard can start? 
+
+    emit wizardTriggered(NULL);
+
+    OstTraceFunctionExit0(WLANSNIFFERLISTVIEW_STARTWLANWIZARD_EXIT);
 }
 
 /*!

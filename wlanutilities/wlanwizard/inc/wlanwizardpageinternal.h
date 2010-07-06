@@ -28,6 +28,7 @@
 // Forward declarations
 class HbWidget;
 class WlanWizardPrivate;
+class HbDocumentLoader;
 
 // External data types
 
@@ -74,8 +75,12 @@ signals:
 public slots:
     
 protected:
-    //! default value for previousTriggered(), step one step.
-    static const int OneStepBackwards = 1;
+    void loadDocmlSection(
+        HbDocumentLoader *loader,
+        Qt::Orientation orientation,
+        const QString &filename,
+        const QString &portraitSection,
+        const QString &landscapeSection) const;
     
 protected slots:
 

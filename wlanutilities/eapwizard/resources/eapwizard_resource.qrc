@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/docml" >
+        <file>occ_eap_wizard_01_02_04.docml</file>
+        <file>occ_eap_wizard_03.docml</file>
+        <file>occ_eap_wizard_05_07.docml</file>
+        <file>occ_eap_wizard_06.docml</file>
+        <file>occ_eap_wizard_08.docml</file>
+    </qresource>
+</RCC>

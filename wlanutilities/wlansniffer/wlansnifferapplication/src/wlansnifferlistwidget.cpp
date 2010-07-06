@@ -21,7 +21,6 @@
 #include <HbListWidget>
 #include <HbListWidgetItem>
 #include <HbAbstractViewItem>
-#include <HbStyleLoader>
 #include <HbStringUtil>
 #include <cmmanagerdefines_shim.h>
 
@@ -49,10 +48,26 @@
 
 // Local constants
 
-//! Location of WLAN Sniffer List Layout definitions
-static const QString WlanSnifferLayoutPath(":/wlansnifferlistlayout/");
-
 // ======== LOCAL FUNCTIONS ========
+
+/*!
+    String comparator for list view. Used for locale-aware SSID comparison
+    in list view.
+    
+    @param [in] string1 String #1 to compare.
+    @param [in] string2 String #2 to compare.
+
+    @return Zero (0), if strings are considered to be same,
+            Positive (>0) if string1 is considered to be "greater than" string2. 
+            Negative (<0) if string1 is considered to be "less than" string2. 
+*/
+
+static int WlanSsidStringComparator(
+    const QString &string1,
+    const QString &string2)
+{
+    return HbStringUtil::compareC(string1, string2);    
+}
 
 // ======== MEMBER FUNCTIONS ========
 
@@ -67,12 +82,9 @@ WlanSnifferListWidget::WlanSnifferListWidget(HbListWidget *listWidget) :
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_WLANSNIFFERLISTWIDGET_ENTRY);
     
-    // Register custom layout location
-    HbStyleLoader::registerFilePath(WlanSnifferLayoutPath);
-    
     // Set custom WLAN list item layout
     mListWidget->setLayoutName("wlanlistitem");
-    
+
     OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_WLANSNIFFERLISTWIDGET_EXIT);
 }
 
@@ -83,9 +95,6 @@ WlanSnifferListWidget::WlanSnifferListWidget(HbListWidget *listWidget) :
 WlanSnifferListWidget::~WlanSnifferListWidget()
 {
     OstTraceFunctionEntry0(DUP1_WLANSNIFFERLISTWIDGET_WLANSNIFFERLISTWIDGET_ENTRY);
-    
-    HbStyleLoader::unregisterFilePath(WlanSnifferLayoutPath);
-    
     OstTraceFunctionExit0(DUP1_WLANSNIFFERLISTWIDGET_WLANSNIFFERLISTWIDGET_EXIT);
 }
 
@@ -233,14 +242,7 @@ bool WlanSnifferListWidget::iapLessThan(
     int result = HbStringUtil::compareC(
         iap1->value(WlanQtUtilsIap::ConfIdName).toString(),
         iap2->value(WlanQtUtilsIap::ConfIdName).toString());
-    
-    // If name is equal, compare based on security mode
-    if (result == 0) {
-        result =
-            iap1->value(WlanQtUtilsIap::ConfIdSecurityMode).toInt() -
-            iap2->value(WlanQtUtilsIap::ConfIdSecurityMode).toInt();
-    }
-    
+
     return (result < 0) ? true : false;
 }
 
@@ -257,18 +259,12 @@ bool WlanSnifferListWidget::apLessThan(
     const QSharedPointer<WlanQtUtilsAp> ap1,
     const QSharedPointer<WlanQtUtilsAp> ap2)
 {
-    // Primary comparison is based on the SSID
-    int result = HbStringUtil::compareC(
-        ap1->value(WlanQtUtilsAp::ConfIdSsid).toString(),
-        ap2->value(WlanQtUtilsAp::ConfIdSsid).toString());
-
-    // If SSID is equal, compare based on security mode
-    if (result == 0) {
-        result =
-            ap1->value(WlanQtUtilsIap::ConfIdSecurityMode).toInt() -
-            ap2->value(WlanQtUtilsIap::ConfIdSecurityMode).toInt();
-    }
-
+    // Use AP comparison function with localized SSID comparison
+    int result = WlanQtUtilsAp::compare(
+        ap1.data(),
+        ap2.data(),
+        WlanSsidStringComparator);
+        
     return (result < 0) ? true : false;
 }
 
@@ -324,7 +320,7 @@ WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
         HbListWidgetItem *item = mListWidget->item(row);
         if (item->data().canConvert<WlanQtUtilsAp>()) {
             WlanQtUtilsAp oldAp = item->data().value<WlanQtUtilsAp>();
-            if (WlanQtUtilsAp::compare(ap.data(), &oldAp) == true) {
+            if (WlanQtUtilsAp::compare(ap.data(), &oldAp) == 0) {
                 result = static_cast<WlanSnifferListItem *>(item);
                 break;
             }
@@ -364,11 +360,10 @@ HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
     
     WlanSnifferListItem *item = new WlanSnifferListItem();
     item->setNetworkName(iap->value(WlanQtUtilsIap::ConfIdName).toString());
+    // Note: WPS icon is needed only in IAP setup, no longer here
     if (iap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt() !=
         CMManagerShim::WlanSecModeOpen) {
-        item->setSecureIcon("qtg_small_secure");
-        // TODO: Handle WPS case - it uses a different icon!
-        // Will be implemented with "Adding WLAN IAP manually" subfeature.
+        item->setSecureIcon("qtg_small_lock");
     }
 
     item->setLeftIcon(
@@ -400,11 +395,13 @@ HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
     
     WlanSnifferListItem *item = new WlanSnifferListItem();
     item->setNetworkName(ap->value(WlanQtUtilsAp::ConfIdSsid).toString());
-    if (ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt() 
+    if (ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool()) {
+        // WPS is supported, use a dedicated security icon
+        item->setSecureIcon("qtg_small_wifi");
+    } else if (ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt() 
         != CMManagerShim::WlanSecModeOpen) {
-        item->setSecureIcon("qtg_small_secure");
-        // TODO: Handle WPS case - it uses a different icon!
-        // Will be implemented with "Adding WLAN IAP manually" subfeature.
+        // Other secure networks
+        item->setSecureIcon("qtg_small_lock");
     }
     item->setSignalIcon(
         signalStrengthIconChoose(
@@ -505,7 +502,7 @@ void WlanSnifferListWidget::removeLostItems(
             Q_ASSERT(item->data().canConvert<WlanQtUtilsAp>());
             WlanQtUtilsAp oldAp = item->data().value<WlanQtUtilsAp>();
             foreach (QSharedPointer<WlanQtUtilsAp> newAp, aps) {
-                if (WlanQtUtilsAp::compare(newAp.data(), &oldAp) == true) {
+                if (WlanQtUtilsAp::compare(newAp.data(), &oldAp) == 0) {
                     found = true;
                     break;
                 }
@@ -527,7 +524,7 @@ void WlanSnifferListWidget::removeLostItems(
             row++;
         }
     }
-    
+
     OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_REMOVELOSTITEMS_EXIT);
 }
 

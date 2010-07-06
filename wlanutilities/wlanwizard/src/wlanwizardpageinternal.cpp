@@ -18,6 +18,8 @@
 
 // System includes
 #include <HbWidget>
+#include <HbDocumentLoader>
+#include <HbMainWindow>
 
 // User includes
 #include "wlanwizard_p.h"
@@ -53,4 +55,34 @@ WlanWizardPageInternal::WlanWizardPageInternal(WlanWizardPrivate *wizard) :
  */
 WlanWizardPageInternal::~WlanWizardPageInternal()
 {
+}
+
+
+/*!
+   Loads requested section from given docml file.
+   
+   @param [in] loader Document loader for docml
+   @param [in] orientation Orientation to be loaded
+   @param [in] filename the name of docml filename
+   @param [in] portraitSection the name of section to be loaded in portrait mode
+   @param [in] landscapeSection the name of section to be loaded in landscape mode
+ */
+void WlanWizardPageInternal::loadDocmlSection(
+    HbDocumentLoader *loader,
+    Qt::Orientation orientation,
+    const QString &filename,
+    const QString &portraitSection,
+    const QString &landscapeSection) const
+{
+    bool ok;
+    
+    // Then load the orientation specific section
+    if (orientation == Qt::Horizontal) {
+        loader->load(filename, landscapeSection, &ok);
+        Q_ASSERT(ok);
+    } else {
+        Q_ASSERT(orientation == Qt::Vertical);
+        loader->load(filename, portraitSection, &ok);
+        Q_ASSERT(ok);
+    }
 }

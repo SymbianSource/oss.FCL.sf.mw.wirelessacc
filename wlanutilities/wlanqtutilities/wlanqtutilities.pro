@@ -17,14 +17,13 @@
 
 TEMPLATE = lib
 TARGET = wlanqtutilities
-TARGET.CAPABILITY = CAP_GENERAL_DLL
 
 #BUILD_DLL macro is used to define export macro
 DEFINES += BUILD_WLANQTUTILITIES_DLL
 DEPENDPATH += .
 
-#Store generated .moc files to their own directory
-MOC_DIR = moc
+# Store generated files to their own directory
+MOC_DIR = build
 
 # Temporary solution to fix tracecompiler
 # When tracecompiler is fixed, this can be removed
@@ -33,6 +32,7 @@ symbian: {
 }
 
 INCLUDEPATH += \
+    ../inc \
     base/inc \
     wrapper/inc \
     traces
@@ -45,8 +45,8 @@ HEADERS += \
     base/inc/wlanqtutilsiap.h \
     base/inc/wlanqtutilsiapsettings.h \
     wrapper/inc/wlanqtutilsconmonwrapper.h \
-    wrapper/inc/wlanqtutilsconntestwrapper.h \
     wrapper/inc/wlanqtutilsesockwrapper.h \
+    wrapper/inc/wlanqtutilsscan.h \
     traces/OstTraceDefinitions.h
 
 SOURCES += \
@@ -57,32 +57,29 @@ SOURCES += \
     base/src/wlanqtutilsiap.cpp \
     base/src/wlanqtutilsiapsettings.cpp \
     wrapper/src/wlanqtutilsconmonwrapper.cpp \
-    wrapper/src/wlanqtutilsconntestwrapper.cpp \
-    wrapper/src/wlanqtutilsesockwrapper.cpp
+    wrapper/src/wlanqtutilsesockwrapper.cpp \
+    wrapper/src/wlanqtutilsscan.cpp
 
 # Common libraries
 LIBS += -lconnection_settings_shim
 
 symbian: { 
     HEADERS += \
-        wrapper/inc/wlanqtutilsconmonwrapperdisconnect_s60_p.h \
-        wrapper/inc/wlanqtutilsconmonwrapperinfo_s60_p.h \
-        wrapper/inc/wlanqtutilsconmonwrapperscan_s60_p.h \
-        wrapper/inc/wlanqtutilsconntestwrapper_s60_p.h \
-        wrapper/inc/wlanqtutilsesockwrapper_s60_p.h
+        wrapper/inc/wlanqtutilsconmonwrapperdisconnect_symbian.h \
+        wrapper/inc/wlanqtutilsconmonwrapperinfo_symbian.h \
+        wrapper/inc/wlanqtutilsesockwrapper_symbian.h \
+        wrapper/inc/wlanqtutilsscan_symbian.h
     SOURCES += \
-        wrapper/src/wlanqtutilsconmonwrapperdisconnect_s60.cpp \
-        wrapper/src/wlanqtutilsconmonwrapperinfo_s60.cpp \
-        wrapper/src/wlanqtutilsconmonwrapperscan_s60.cpp \
-        wrapper/src/wlanqtutilsconntestwrapper_s60.cpp \
-        wrapper/src/wlanqtutilsesockwrapper_s60.cpp \
-        tsrc/stubs/wlanqtutilsconnmonstub.cpp \
-        tsrc/stubs/wlanqtutilsesockstub.cpp
-               
+        wrapper/src/wlanqtutilsconmonwrapperdisconnect_symbian.cpp \
+        wrapper/src/wlanqtutilsconmonwrapperinfo_symbian.cpp \
+        wrapper/src/wlanqtutilsesockwrapper_symbian.cpp \
+        wrapper/src/wlanqtutilsscan_symbian.cpp
+
+    TARGET.CAPABILITY = CAP_GENERAL_DLL
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.UID3 = 0x20029F52
     defFilePath = .
-    
+
     BLD_INF_RULES.prj_exports += "rom/wlanqtutilities.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlanqtutilities.iby)"
     BLD_INF_RULES.prj_exports += \
         "base/inc/wlanqtutils.h |../inc/wlanqtutils.h" \
@@ -90,5 +87,8 @@ symbian: {
         "base/inc/wlanqtutilsiap.h |../inc/wlanqtutilsiap.h"
 
     # S60 libraries                                 
-    LIBS += -lconnmon -lesock -lextendedconnpref -lnetmeta -lictsclientinterface
+    LIBS += -lconnmon -lecom -lesock -lextendedconnpref -lnetmeta -lictswlanlogininterface -lcharconv
 }
+
+# Stubs for emulator
+include(stubs/stubs.pri)

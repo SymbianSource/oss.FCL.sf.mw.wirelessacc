@@ -26,6 +26,7 @@
  
 // Forward declarations
 
+class CWsfKeepaliveCmm;
 class CWsfKeepaliveConnMon;
 class CWsfKeepaliveConnMonDisc;
 class CWsfKeepaliveEsock;
@@ -131,6 +132,11 @@ private: // Data
     CWsfKeepaliveTimer* iTimer;
 
     /**
+     * Connection Method Manager class reference
+     */
+    CWsfKeepaliveCmm* iCmMgr;
+    
+    /**
      * Connection Monitor class reference
      */
     CWsfKeepaliveConnMon* iConnMon;
@@ -159,6 +165,11 @@ private: // Data
      * State of the keepalive implementation
      */
     TUint iState;
+    
+    /**
+     * IapId of the connection
+     */
+    TUint iIapId;
     };
 
 #endif // WSFKEEPALIVE_H

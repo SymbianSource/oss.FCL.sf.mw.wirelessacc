@@ -24,11 +24,11 @@
 #include "am_debug.h"
 #include <es_enum.h>
 
-#include <cmconnectionmethodext.h>
+#include <cmconnectionmethod.h>
 #include <cmconnectionmethoddef.h>
-#include <cmmanagerext.h>
+#include <cmmanager.h>
 #include <cmmanagerdef.h>
-#include <cmdestinationext.h>
+#include <cmdestination.h>
 
 // CONSTANTS
 const TInt  KRetryCount   = 20;
@@ -96,22 +96,13 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
     DEBUG("CHssIapHandler::ChangeSettingsL");
     TInt ret( KErrNone );
     
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL( cmManager );
     
-    TUint easyWlanId = cmManager.EasyWlanIdL();
-    
-    // Easy WLAN can't be modified
-    if ( easyWlanId == aIapID )
-    	{
-        CleanupStack::PopAndDestroy( &cmManager ); 
-    	return KErrPermissionDenied;
-    	}
-    
     // Read WLAN table service id
     TUint32 serviceId(0);
-    RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapID );
+    RCmConnectionMethod plugin = cmManager.ConnectionMethodL( aIapID );
     CleanupClosePushL( plugin );
     serviceId = plugin.GetIntAttributeL( EWlanServiceId );
     DEBUG1("CHssIapHandler::ChangeSettingsL WLAN serviceId: %d", serviceId);
@@ -348,11 +339,11 @@ void CHssIapHandler::GetNetworkIdL( const TUint aIapId, TUint32& aNetId )
     {
     DEBUG( "CHssIapHandler::GetNetworkIdL()" );
     
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL( cmManager );
 
-    RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapId );
+    RCmConnectionMethod plugin = cmManager.ConnectionMethodL( aIapId );
     CleanupClosePushL( plugin );
     
     aNetId = plugin.GetIntAttributeL( ECmNetworkId );
@@ -380,7 +371,7 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
     RArray<TUint32> destArray = RArray<TUint32>( 10 );  // KCmArrayGranularity instead of 10
     CleanupClosePushL( destArray );
 
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL( cmManager );    
 
@@ -388,7 +379,7 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
 
     for (TInt i = 0; i < destArray.Count(); i++)
         {
-        RCmDestinationExt dest = cmManager.DestinationL( destArray[i] );
+        RCmDestination dest = cmManager.DestinationL( destArray[i] );
         CleanupClosePushL( dest );
 
         for (TInt j = 0; j < dest.ConnectionMethodCount(); j++)

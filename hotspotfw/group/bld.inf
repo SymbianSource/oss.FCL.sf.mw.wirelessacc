@@ -23,12 +23,8 @@ DEFAULT
 
 PRJ_EXPORTS
 ../rom/hotspot.iby                      CORE_MW_LAYER_IBY_EXPORT_PATH(hotspot.iby)
-../rom/hotspotResources.iby             LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(hotspotResources.iby)
 ../rom/hotspotfwstub.sis               /epoc32/data/z/system/install/hotspotfwstub.sis
 ../rom/ictsstub.sis                    /epoc32/data/z/system/install/ictsstub.sis
-
-// Localisation files of whole Hotspot localised here
-../hsbrowser/loc/hsbrowser.loc          MW_LAYER_LOC_EXPORT_PATH(hsbrowser.loc)
 
 ../internetconnectivitytestservice/conf/icts.confml		MW_LAYER_CONFML(icts.confml)
 ../internetconnectivitytestservice/conf/icts_10282EC7.crml	MW_LAYER_CRML(icts_10282ec7.crml)
@@ -56,11 +52,5 @@ PRJ_MMPFILES
 ../hsclient/group/NetCfgExtnHotSpot.mmp
 ../hsclient/group/hssmgmtimpl.mmp
 ../hspluginforagent/group/wlanagthotspotimpl.mmp
-../hsbrowser/group/hsbrowser.mmp
 ../hsserver/group/hssscanlist.mmp
 PRJ_EXTENSIONS
-
-START EXTENSION s60/mifconv
-OPTION TARGETFILE hsbrowsericon_aif.mif
-OPTION SOURCES -c8,1 qgn_menu_wlan_logon
-END

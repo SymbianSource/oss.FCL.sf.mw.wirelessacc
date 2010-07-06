@@ -22,7 +22,7 @@
 // User includes
 
 #include "wlanqtutilsesockwrapper.h"
-#include "wlanqtutilsesockwrapper_s60_p.h"
+#include "wlanqtutilsesockwrapper_symbian.h"
 
 /*!
     \class WlanQtUtilsEsockWrapper

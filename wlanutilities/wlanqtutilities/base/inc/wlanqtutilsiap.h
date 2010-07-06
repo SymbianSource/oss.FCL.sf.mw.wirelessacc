@@ -64,6 +64,7 @@ public:
         - ConfIdNetworkId
         - WlanQtUtilsAp::ConfIdSsid
         - WlanQtUtilsAp::ConfIdSignalStrength
+        - WlanQtUtilsAp::ConfIdConnectionMode
         - WlanQtUtilsAp::ConfIdSecurityMode
         - WlanQtUtilsAp::ConfIdWpaPskUse
      */

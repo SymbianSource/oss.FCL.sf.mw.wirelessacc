@@ -36,16 +36,6 @@ static const int KMaxWEPKeyLen = 64;
 // Maximum length of WPA key
 static const int KMaxWPAKeyLen = 256;
 
-#ifdef ICT_RESULT_ENUM
-enum WlanLoginIctsResultType {
-   IctsPassed,      // Icts is passed
-   IctsHotspotPassed,                  // Icts and Hotspot authentication are passed
-   IctsCanceled,          // User has canceled operation
-   IctsFailed
-};                   // Icts or/and Hotspot authentication are failed
-#endif
-
-
 /**
  * Bearer type.
  */

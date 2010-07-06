@@ -130,16 +130,16 @@ private:
 };
 
 /**
- * This class represents WLAN APs that represent the results of WLAN scanning triggered by
- * RConnectionMonitor::GetPckgAttribute()
+ * This class represents WLAN functionality test context. E.g. APs that
+ * represent the results of WLAN scanning are stored here.
  */
-class WlanQtUtilsWlanScanResult : public QObject
+class WlanQtUtilsWlanScan : public QObject
 {
     Q_OBJECT
 
 public:
-    WlanQtUtilsWlanScanResult();
-    ~WlanQtUtilsWlanScanResult();
+    WlanQtUtilsWlanScan();
+    ~WlanQtUtilsWlanScan();
 
     /**
      * Initializes context.
@@ -162,19 +162,20 @@ public:
     void verifyWlanScanResultList(
         QList< QSharedPointer<WlanQtUtilsAp> > wlanApList); // TODO: Maybe boolean return value
 
-    /**
-     * List of WLAN access points that RConnectionMonitor stub will return in response to
-     * RConnectionMonitor::GetPckgAttribute().
-     */
-    QList<WlanQtUtilsAp *> wlanScanResultList_;
+    // Scan result list iterator. Holds the current index, starting from zero (0).
+    int mScanResultIterator;
+    
+    // List of WLAN access points that WLAN Management API stub will return when
+    // requesting for wlan scan results.
+    QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanResultList;
     
     /**
      * Should scan be completed immediately or not?
      */
-    bool completeWlanScan_;
+    bool mCompleteWlanScan;
     
-    /** Return value of RConnectionMonitor::GetPckgAttribute(). */
-    int scanRetValue_;
+    /** Return value of scan request. */
+    int mScanRetValue;
     
 private:
     
@@ -199,9 +200,6 @@ public:
      * Initializes context.
      */
     void initialize();
-
-    /** Results of WLAN scanning. */
-    WlanQtUtilsWlanScanResult wlanScanResult_;
 
     /** List of active connections. */
     WlanQtUtilsCtxActiveConnections activeConnections_;
@@ -253,6 +251,8 @@ public:
     WlanQtUtilsCtxConnMon connMon_;
     /** Context for ICTS library. */
     WlanQtUtilsCtxIct ict_;
+    /** Context for scan results. */
+    WlanQtUtilsWlanScan mScan;
 };
 
 #endif // WLANQTUTILSTESTCONTEXT_H
