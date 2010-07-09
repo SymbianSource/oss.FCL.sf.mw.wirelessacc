@@ -100,6 +100,7 @@ WlanWizardPrivate::WlanWizardPrivate(
     mPageFinished(false),
     mClosed(false)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_WLANWIZARDPRIVATE_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_WLANWIZARDPRIVATE,
         "WlanWizardPrivate::WlanWizardPrivate;this=%x", 
         this );
@@ -136,6 +137,7 @@ WlanWizardPrivate::WlanWizardPrivate(
         "WlanWizardPrivate::WlanWizardPrivate - done;"
         "this=%x;mFirstPageId=%{PageIds}",
         ( unsigned )this, mFirstPageId );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_WLANWIZARDPRIVATE_EXIT );
 }
 
 /*!
@@ -143,6 +145,7 @@ WlanWizardPrivate::WlanWizardPrivate(
  */
 WlanWizardPrivate::~WlanWizardPrivate()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPRIVATE_WLANWIZARDPRIVATE_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_DWLANWIZARDPRIVATE,
         "WlanWizardPrivate::~WlanWizardPrivate;this=%x",
         this );
@@ -178,6 +181,7 @@ WlanWizardPrivate::~WlanWizardPrivate()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_DWLANWIZARDPRIVATE_DONE,
         "WlanWizardPrivate::~WlanWizardPrivate-Done;this=%x",
         this );
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPRIVATE_WLANWIZARDPRIVATE_EXIT );
 }
 
 /*!
@@ -191,6 +195,7 @@ void WlanWizardPrivate::setParameters(
     bool hidden, 
     bool wps)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_SETPARAMETERS_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_SETPARAMETERS, 
         "WlanWizardPrivate::setParameters;this=%x", 
         this );
@@ -201,6 +206,7 @@ void WlanWizardPrivate::setParameters(
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_SETPARAMETERS_DONE, 
         "WlanWizardPrivate::setParameters - Done;this=%x", 
         this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_SETPARAMETERS_EXIT );
 }
 
 /*!
@@ -208,6 +214,7 @@ void WlanWizardPrivate::setParameters(
  */
 void WlanWizardPrivate::show()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_SHOW_ENTRY );
     OstTraceExt2( TRACE_BORDER, WLANWIZARDPRIVATE_SHOW,
         "WlanWizardPrivate::show;this=%x;mFirstPageId=%{PageIds}", 
         ( unsigned )this, mFirstPageId );
@@ -219,6 +226,7 @@ void WlanWizardPrivate::show()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_SHOW_DONE,
         "WlanWizardPrivate::show - Done;this=%x;",
         (unsigned)this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_SHOW_EXIT );
 }
 
 /*!
@@ -236,6 +244,7 @@ int WlanWizardPrivate::getNextPageId(
     bool hidden, 
     bool wps)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_GETNEXTPAGEID_ENTRY );
     setConfiguration(ConfProcessSettings, true);
     setConfiguration(ConfSsid, ssid);
     setConfiguration(ConfNetworkMode, networkMode);
@@ -246,7 +255,7 @@ int WlanWizardPrivate::getNextPageId(
     OstTrace1( TRACE_NORMAL, WLANWIZARDPRIVATE_GETNEXTPAGEID, 
         "WlanWizardPrivate::getNextPageId;wps=%u", 
         wps );
-
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_GETNEXTPAGEID_EXIT );
     return nextPageId(wps);
 }
 
@@ -257,7 +266,9 @@ int WlanWizardPrivate::getNextPageId(
  */
 WlanQtUtils* WlanWizardPrivate::wlanQtUtils() const
 {
-    Q_ASSERT(mWlanQtUtils);
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_WLANQTUTILS_ENTRY );
+    Q_ASSERT(mWlanQtUtils.data());
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_WLANQTUTILS_EXIT );
     return mWlanQtUtils.data();
 }
 
@@ -268,6 +279,7 @@ WlanQtUtils* WlanWizardPrivate::wlanQtUtils() const
  */ 
 WlanWizardPlugin* WlanWizardPrivate::wlanWizardPlugin() const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_WLANWIZARDPLUGIN_ENTRY );
     WlanWizardPlugin* plugin = NULL;
 
     if (isEapEnabled()) {
@@ -279,6 +291,7 @@ WlanWizardPlugin* WlanWizardPrivate::wlanWizardPlugin() const
         "WlanWizardPrivate::wlanWizardPlugin;plugin=%x", 
         plugin );
     
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_WLANWIZARDPLUGIN_EXIT );
     return plugin;
 }
 
@@ -290,6 +303,7 @@ WlanWizardPlugin* WlanWizardPrivate::wlanWizardPlugin() const
  */
 bool WlanWizardPrivate::isEapEnabled() const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_ISEAPENABLED_ENTRY );
     bool ret = false;
     int secMode = configuration(ConfSecurityMode).toInt();
 
@@ -304,6 +318,7 @@ bool WlanWizardPrivate::isEapEnabled() const
         "WlanWizardPrivate::isEapEnabled;ret=%u", 
         ret );
     
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_ISEAPENABLED_EXIT );
     return ret;
 }
 
@@ -314,6 +329,7 @@ bool WlanWizardPrivate::isEapEnabled() const
  */
 bool WlanWizardPrivate::handleIap()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_HANDLEIAP_ENTRY );
     OstTrace0( TRACE_FLOW, WLANWIZARDPRIVATE_HANDLEIAP,
         "WlanWizardPrivate::handleIap" );
     
@@ -399,6 +415,7 @@ bool WlanWizardPrivate::handleIap()
         "WlanWizardPrivate::handleIap: Done;ret=%d",
         ret );
     
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_HANDLEIAP_EXIT );
     return ret;
 }
 
@@ -407,6 +424,7 @@ bool WlanWizardPrivate::handleIap()
  */
 QVariant WlanWizardPrivate::configuration(ConfigurationId confId) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CONFIGURATION_ENTRY );
     Q_ASSERT(mConfigurations.contains(confId));
 
 #ifdef OST_TRACE_COMPILER_IN_USE
@@ -420,6 +438,7 @@ QVariant WlanWizardPrivate::configuration(ConfigurationId confId) const
         (uint)confId, string );
 #endif
     
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CONFIGURATION_EXIT );
     return mConfigurations[confId];
 }
 
@@ -430,6 +449,7 @@ void WlanWizardPrivate::setConfiguration(
     ConfigurationId confId, 
     const QVariant &value)
 {
+OstTraceFunctionEntry0( WLANWIZARDPRIVATE_SETCONFIGURATION_ENTRY );
 #ifdef OST_TRACE_COMPILER_IN_USE
     QString tmp;
     QDebug tmpStream(&tmp);
@@ -443,6 +463,7 @@ void WlanWizardPrivate::setConfiguration(
 #endif
 
     mConfigurations[confId] = value;
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_SETCONFIGURATION_EXIT );
 }
 
 /*!
@@ -450,11 +471,13 @@ void WlanWizardPrivate::setConfiguration(
  */
 void WlanWizardPrivate::clearConfiguration(ConfigurationId confId)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CLEARCONFIGURATION_ENTRY );
     OstTrace1( TRACE_FLOW, WLANWIZARDPRIVATE_CLEARCONFIGURATION,
         "WlanWizardPrivate::clearConfiguration;confId=%{ConfigurationId}",
         (uint)confId );
     
     mConfigurations.remove(confId);
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CLEARCONFIGURATION_EXIT );
 }
 
 /*!
@@ -462,10 +485,11 @@ void WlanWizardPrivate::clearConfiguration(ConfigurationId confId)
  */
 bool WlanWizardPrivate::configurationExists(ConfigurationId confId)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CONFIGURATIONEXISTS_ENTRY );
     OstTrace1( TRACE_DUMP, WLANWIZARDPRIVATE_CONFIGURATIONEXISTS,
         "WlanWizardPrivate::configurationExists;confId=%{ConfigurationId}",
         (uint)confId );
-    
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CONFIGURATIONEXISTS_EXIT );
     return mConfigurations[confId].isValid();
 }
     
@@ -474,10 +498,12 @@ bool WlanWizardPrivate::configurationExists(ConfigurationId confId)
  */
 void WlanWizardPrivate::enableNextButton(bool enable)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_ENABLENEXTBUTTON_ENTRY );
     OstTraceExt2( TRACE_FLOW, WLANWIZARDPRIVATE_ENABLENEXTBUTTON,
         "WlanWizardPrivate::enableNextButton;this=%x;enable=%x",
         (unsigned)this, (uint)enable );
     mActionNext->setEnabled(enable);
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_ENABLENEXTBUTTON_EXIT );
 }
 
 /*!
@@ -485,12 +511,14 @@ void WlanWizardPrivate::enableNextButton(bool enable)
  */
 void WlanWizardPrivate::addPage(int pageId, WlanWizardPage *page)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_ADDPAGE_ENTRY );
     OstTraceExt3( TRACE_FLOW, WLANWIZARDPRIVATE_ADDPAGE, 
         "WlanWizardPrivate::addPage;this=%x;pageId=%{PageIds};page=%x",
         (unsigned)this, pageId, (uint)(page) );
 
     Q_ASSERT(!mPages.contains(pageId));
     mPages[pageId] = page;
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_ADDPAGE_EXIT );
 }
 
 /*!
@@ -498,12 +526,14 @@ void WlanWizardPrivate::addPage(int pageId, WlanWizardPage *page)
  */
 void WlanWizardPrivate::nextPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_NEXTPAGE_ENTRY );
     OstTrace1( TRACE_FLOW, WLANWIZARDPRIVATE_NEXTPAGE,
         "WlanWizardPrivate::nextPage;this=%x",
         this );
     
     mPageFinished = true;
     toNextPage();
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_NEXTPAGE_EXIT );
 }
 
 /*!
@@ -511,6 +541,8 @@ void WlanWizardPrivate::nextPage()
  */
 HbMainWindow* WlanWizardPrivate::mainWindow() const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_MAINWINDOW_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_MAINWINDOW_EXIT );
     return mMainWindow;
 }
 
@@ -519,6 +551,7 @@ HbMainWindow* WlanWizardPrivate::mainWindow() const
  */
 bool WlanWizardPrivate::isCurrentPage(const HbWidget *page) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_ISCURRENTPAGE_ENTRY );
     bool ret = false;
     if (mStackedWidget->currentWidget() == page) {
         ret = true;
@@ -528,6 +561,7 @@ bool WlanWizardPrivate::isCurrentPage(const HbWidget *page) const
         "WlanWizardPrivate::isCurrentPage;page=%x;ret=%d", 
         (uint)page, ret);
     
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_ISCURRENTPAGE_EXIT );
     return ret;
 }
 
@@ -536,6 +570,7 @@ bool WlanWizardPrivate::isCurrentPage(const HbWidget *page) const
  */
 int WlanWizardPrivate::nextPageId(bool useWps)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_NEXTPAGEID_ENTRY );
     int ret;
     if (useWps) {
         ret = WlanWizardPage::PageWpsStart;
@@ -574,6 +609,7 @@ int WlanWizardPrivate::nextPageId(bool useWps)
         "WlanWizardPrivate::nextPageId;this=%x;useWps=%x;ret=%{PageIds}",
         ( unsigned )this, ( TUint )( useWps ), ret );
 
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_NEXTPAGEID_EXIT );
     return ret;
 }
 
@@ -586,6 +622,7 @@ int WlanWizardPrivate::nextPageId(bool useWps)
  */
 void WlanWizardPrivate::cancelTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CANCELTRIGGERED_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_CANCELTRIGGERED,
         "WlanWizardPrivate::cancelTriggered;this=%x",
         this );
@@ -620,6 +657,7 @@ void WlanWizardPrivate::cancelTriggered()
     
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_CANCELTRIGGERED_DONE,
         "WlanWizardPrivate::cancelTriggered - Done;this=%x", this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CANCELTRIGGERED_EXIT );
 }
 
 /*!
@@ -629,6 +667,7 @@ void WlanWizardPrivate::cancelTriggered()
  */
 void WlanWizardPrivate::previousTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_PREVIOUSTRIGGERED_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_PREVIOUSTRIGGERED,
         "WlanWizardPrivate::previousTriggered;this=%x",
         this );
@@ -661,6 +700,7 @@ void WlanWizardPrivate::previousTriggered()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_PREVIOUSTRIGGERED_DONE,
         "WlanWizardPrivate::previousTriggered - Done;this=%x",
         this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_PREVIOUSTRIGGERED_EXIT );
 }
 
 /*!
@@ -669,6 +709,7 @@ void WlanWizardPrivate::previousTriggered()
  */
 void WlanWizardPrivate::nextTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_NEXTTRIGGERED_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_NEXTTRIGGERED,
         "WlanWizardPrivate::nextTriggered;this=%x",
         this );
@@ -685,6 +726,7 @@ void WlanWizardPrivate::nextTriggered()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_NEXTTRIGGERED_DONE,
         "WlanWizardPrivate::nextTriggered - Done;this=%x",
         this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_NEXTTRIGGERED_EXIT );
 }
 
 /*!
@@ -693,6 +735,7 @@ void WlanWizardPrivate::nextTriggered()
  */
 void WlanWizardPrivate::finishTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_FINISHTRIGGERED_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_FINISHTRIGGERED,
         "WlanWizardPrivate::finishTriggered;this=%x",
         this );
@@ -711,6 +754,7 @@ void WlanWizardPrivate::finishTriggered()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_FINISHTRIGGERED_DONE,
         "WlanWizardPrivate::finishTriggered - Done;this=%x",
         this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_FINISHTRIGGERED_EXIT );
 }
 
 /*!
@@ -719,6 +763,7 @@ void WlanWizardPrivate::finishTriggered()
  */
 void WlanWizardPrivate::onTimeOut()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_ONTIMEOUT_ENTRY );
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_ONTIMEOUT,
         "WlanWizardPrivate::onTimeOut;this=%x",
         this );
@@ -728,6 +773,7 @@ void WlanWizardPrivate::onTimeOut()
     OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_ONTIMEOUT_DONE,
         "WlanWizardPrivate::onTimeOut - Done;this=%x",
         this );
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_ONTIMEOUT_EXIT );
 }
 
 /*!
@@ -736,6 +782,7 @@ void WlanWizardPrivate::onTimeOut()
  */
 void WlanWizardPrivate::startPageOperation()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_STARTPAGEOPERATION_ENTRY );
     // Process this if wizard has not been closed
     if (mClosed == false) {
         OstTrace1( TRACE_BORDER, WLANWIZARDPRIVATE_STARTPAGEOPERATION,
@@ -753,6 +800,7 @@ void WlanWizardPrivate::startPageOperation()
             "WlanWizardPrivate::startPageOperation - DONE;this=%x",
             this );
     }
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_STARTPAGEOPERATION_EXIT );
 }
 
 /*!
@@ -761,6 +809,7 @@ void WlanWizardPrivate::startPageOperation()
  */
 void WlanWizardPrivate::toNextPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_TONEXTPAGE_ENTRY );
     if (mPageFinished && !(mPageTimer->isActive())) {
         OstTrace1( TRACE_FLOW, WLANWIZARDPRIVATE_TONEXTPAGE,
             "WlanWizardPrivate::toNextPage;this=%x",
@@ -770,6 +819,7 @@ void WlanWizardPrivate::toNextPage()
         // call stack and process the page change using new call stack
         QMetaObject::invokeMethod(this, "nextTriggered", Qt::QueuedConnection);
     }
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_TONEXTPAGE_EXIT );
 }
 
 /*!
@@ -784,6 +834,7 @@ void WlanWizardPrivate::toNextPage()
  */
 void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_SHOWPAGE_ENTRY );
     OstTraceExt3( TRACE_FLOW, WLANWIZARDPRIVATE_SHOWPAGE,
         "WlanWizardPrivate::showPage;this=%x;"
         "pageId=%{PageIds};removeFromStack=%x",
@@ -792,6 +843,7 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
     // PageNone is returned by wizard pages when some validation of page content
     // has not passed and the page does not want to process wizard to next page
     if (pageId == WlanWizardPage::PageNone) {
+        OstTraceFunctionExit0( WLANWIZARDPRIVATE_SHOWPAGE_EXIT );
         return;
     }
     
@@ -854,6 +906,7 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
         
         QMetaObject::invokeMethod(this, "startPageOperation", Qt::QueuedConnection);
     }
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPRIVATE_SHOWPAGE_EXIT );
 }
 
 /*!
@@ -862,6 +915,7 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
  */
 void WlanWizardPrivate::createPages()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CREATEPAGES_ENTRY );
     OstTrace0(
         TRACE_NORMAL,
         WLANWIZARDPRIVATE_CREATEPAGES,
@@ -898,6 +952,7 @@ void WlanWizardPrivate::createPages()
     addPage(
         WlanWizardPageInternal::PageNetworkSecurity, 
         new WlanWizardPageSecurityMode(this));
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CREATEPAGES_EXIT );
 }
 
 /*!
@@ -907,8 +962,10 @@ void WlanWizardPrivate::createPages()
  */
 void WlanWizardPrivate::closeViews()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_CLOSEVIEWS_ENTRY );
     mDialog->hide();
     mClosed = true;
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_CLOSEVIEWS_EXIT );
 }
 
 /*!
@@ -920,6 +977,7 @@ void WlanWizardPrivate::closeViews()
  */
 void WlanWizardPrivate::updateFrame(int pageId)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_UPDATEFRAME_ENTRY );
     int currentIndex = mStackedWidget->currentIndex();
 
     OstTraceExt3( TRACE_FLOW, WLANWIZARDPRIVATE_UPDATEFRAME, 
@@ -952,6 +1010,7 @@ void WlanWizardPrivate::updateFrame(int pageId)
             }
         }
     }
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_UPDATEFRAME_EXIT );
 }
 
 /*!
@@ -959,6 +1018,7 @@ void WlanWizardPrivate::updateFrame(int pageId)
  */
 void WlanWizardPrivate::loadDocml()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_LOADDOCML_ENTRY );
     bool ok = true;
     
     mDocLoader->load(":/docml/occ_wlan_wizard_main.docml", &ok);
@@ -1030,6 +1090,7 @@ void WlanWizardPrivate::loadDocml()
     // is changed. See TSW Error: MTAA-854DK8
     ok = HbStyleLoader::registerFilePath(":/css/custom.css");
     Q_ASSERT(ok);
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_LOADDOCML_EXIT );
 }
 
 /*!
@@ -1037,6 +1098,7 @@ void WlanWizardPrivate::loadDocml()
  */
 void WlanWizardPrivate::disconnectActions()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPRIVATE_DISCONNECTACTIONS_ENTRY );
     disconnect(
         mActionNext, SIGNAL(triggered()), 
         this, SLOT(nextTriggered()));
@@ -1052,4 +1114,5 @@ void WlanWizardPrivate::disconnectActions()
     disconnect(
         mActionCancel, SIGNAL(triggered()), 
         this, SLOT(cancelTriggered()));
+    OstTraceFunctionExit0( WLANWIZARDPRIVATE_DISCONNECTACTIONS_EXIT );
 }

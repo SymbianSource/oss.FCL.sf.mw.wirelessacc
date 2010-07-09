@@ -1183,14 +1183,11 @@ void TestWlanQtUtils::testConnectionTestOk()
 
     // Connection test automatically started at this point. Call result function explicitly
     // No interface exists that we could check that the IAP is moved to Internet SNAP correctly
-#if 0       // TODO: Make this work with the new WLAN login interface 
-    TBuf<5> string;
-    wlanQtUtils_->d_ptr->mConnTestWrapper->d_ptr_->ConnectivityObserver(EConnectionOk, string);
+    wlanQtUtils_->d_ptr->updateIctResult(IctsWlanLoginInterface::IctsPassed);
 
-    subTestSignalWaitAndTake(signalIctResult_, &arguments); 
+    subTestSignalWaitAndTake(signalIctResult_, &arguments);
     QCOMPARE(arguments.at(0).toInt(), iapId); 
-    QCOMPARE(arguments.at(1).toBool(), true);
-#endif    
+    QCOMPARE(arguments.at(1).toInt(), (int)WlanQtUtils::IctPassed);
 }
 
 /**
@@ -1200,7 +1197,7 @@ void TestWlanQtUtils::testConnectionTestErr()
 {
     // Create and connect an IAP and request ICT to be run
     QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
-    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestErr");
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestErr1");
     wlanAp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
     
     int iapId = wlanQtUtils_->createIap(wlanAp.data());
@@ -1225,14 +1222,109 @@ void TestWlanQtUtils::testConnectionTestErr()
 
     // Connection test automatically started at this point. Call result function explicitly
     // No interface exists that we could check that IAP is not moved to another SNAP
-#if 0       // TODO: Make this work with the new WLAN login interface 
-    TBuf<5> string;
-    wlanQtUtils_->d_ptr->mConnTestWrapper->d_ptr_->ConnectivityObserver(EHttpAuthenticationNeeded, string);
+    wlanQtUtils_->d_ptr->updateIctResult(IctsWlanLoginInterface::IctsFailed);
 
-    subTestSignalWaitAndTake(signalIctResult_, &arguments); 
+    subTestSignalWaitAndTake(signalIctResult_, &arguments);
     QCOMPARE(arguments.at(0).toInt(), iapId); 
-    QCOMPARE(arguments.at(1).toBool(), false);
-#endif
+    QCOMPARE(arguments.at(1).toInt(), (int)WlanQtUtils::IctFailed);
+
+    // Repeat with cancel status
+    // Send event for connection status change -> closed.
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId(),
+        0,
+        KLinkLayerClosed));
+
+    // Send event for connection deletion.
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonEventBase(
+            EConnMonDeleteConnection,
+            testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId()));
+
+    subTestSignalWaitAndTake(signalWlanNetworkClosed_, &arguments);
+    QCOMPARE(arguments.at(0).toInt(), iapId);
+    QCOMPARE(arguments.at(1).toInt(), KErrNone);
+
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestErr2");
+    
+    iapId = wlanQtUtils_->createIap(wlanAp.data());
+    wlanQtUtils_->connectIap(iapId, true);
+
+    testContext.connMon_.activeConnections_.createDefaultActiveConnList(1, iapId);
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonEventBase(
+            EConnMonCreateConnection,
+            testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId()));
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId(),
+        0,
+        KConnectionOpen));
+    subTestSignalWaitAndTake(signalWlanNetworkOpened_, &arguments); 
+    QCOMPARE(arguments.at(0).toInt(), iapId); 
+
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId(),
+        0,
+        KLinkLayerOpen));
+
+    // Connection test automatically started at this point. Call result function explicitly
+    // No interface exists that we could check that IAP is not moved to another SNAP
+    wlanQtUtils_->d_ptr->updateIctResult(IctsWlanLoginInterface::IctsCanceled);
+
+    subTestSignalWaitAndTake(signalIctResult_, &arguments);
+    QCOMPARE(arguments.at(0).toInt(), iapId); 
+    QCOMPARE(arguments.at(1).toInt(), (int)WlanQtUtils::IctCancelled);
+}
+
+/**
+ * This function tests ICT when connection test passes in hotspot case.
+ */
+void TestWlanQtUtils::testConnectionTestHotspot()
+{
+    // Create new IAP to test
+    QScopedPointer<WlanQtUtilsAp> wlanAp(subTestNewAp());
+    wlanAp->setValue(WlanQtUtilsAp::ConfIdSsid, "testConnectionTestHotspot");
+    int iapId = wlanQtUtils_->createIap(wlanAp.data());
+    QVERIFY(iapId != WlanQtUtils::IapIdNone);
+
+    testContext.esock_.startRetValue_ = KErrNone;
+
+    // Esock stub completes connection creation immediately
+    wlanQtUtils_->connectIap(iapId, true);
+
+    // Connection creation in ConnMon interface
+    testContext.connMon_.activeConnections_.createDefaultActiveConnList(1, iapId);
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonEventBase(
+            EConnMonCreateConnection,
+            testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId()));
+
+    // Connection status change in ConnMon interface
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId(),
+        0,
+        KConnectionOpen));
+    
+    // Receive signal for connection opening (caused by connectIap, which completed immediately)
+    QList<QVariant> arguments;
+    subTestSignalWaitAndTake(signalWlanNetworkOpened_, &arguments); 
+    QCOMPARE(arguments.at(0).toInt(), iapId); 
+
+    // Connection status change to opened in ConnMon interface. Sub test cases between test
+    // cases check that no extra signals are sent
+    wlanQtUtils_->d_ptr->mConMonWrapper->d_ptrInfo->EventL(CConnMonConnectionStatusChange(
+        testContext.connMon_.activeConnections_.activeConnList_[0]->connectionId(),
+        0,
+        KLinkLayerOpen));
+
+    // Connection test automatically started at this point.
+    // Call hotspot case slot explicitly
+    wlanQtUtils_->d_ptr->updateIctHotspotCase();
+    
+    // Call result function explicitly
+    // No interface exists that we could check that the IAP is not moved to another SNAP
+    wlanQtUtils_->d_ptr->updateIctResult(IctsWlanLoginInterface::IctsHotspotPassed);
+
+    subTestSignalWaitAndTake(signalIctResult_, &arguments);
+    QCOMPARE(arguments.at(0).toInt(), iapId); 
+    QCOMPARE(arguments.at(1).toInt(), (int)WlanQtUtils::IctHotspotPassed);
 }
 
 /**

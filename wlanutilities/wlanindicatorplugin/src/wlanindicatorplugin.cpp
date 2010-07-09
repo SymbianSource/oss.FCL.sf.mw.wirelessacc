@@ -96,8 +96,8 @@ HbIndicatorInterface* WlanIndicatorPlugin::createIndicator(
     Q_UNUSED(indicatorType)
     
     // Install localization
-    HbTranslator *translator(new HbTranslator("wlanindicatorplugin"));
-    
+    mTranslator = QSharedPointer<HbTranslator>(new HbTranslator("wlanindicatorplugin"));
+
     OstTraceFunctionExit1(WLANINDICATORPLUGIN_CREATEINDICATOR_EXIT, this);
     return this;
 }

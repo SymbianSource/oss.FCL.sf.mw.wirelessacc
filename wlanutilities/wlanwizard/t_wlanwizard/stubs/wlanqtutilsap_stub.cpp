@@ -91,14 +91,14 @@ bool WlanQtUtilsAp::operator==(const WlanQtUtilsAp & rhs ) const
     @param [in] ap1 First AP to compare.
     @param [in] ap2 Second AP to compare.
 
-    @return TRUE, if APs are considered to be same.
+    @return Zero(0), if APs are considered to be same.
 */
 
-bool WlanQtUtilsAp::compare(
+int WlanQtUtilsAp::compare(
     const WlanQtUtilsAp *ap1,
     const WlanQtUtilsAp *ap2)
 {
-    bool equal = false;
+    int equal = 1; // Not equal
     
     // SSID (case sensitive) and security mode (with or without PSK)
     // are the values, which identify a unique access point.
@@ -108,7 +108,7 @@ bool WlanQtUtilsAp::compare(
            ap2->value(WlanQtUtilsAp::ConfIdSecurityMode)
            && ap1->value(WlanQtUtilsAp::ConfIdWpaPskUse) ==
               ap2->value(WlanQtUtilsAp::ConfIdWpaPskUse)) {
-        equal = true;
+        equal = 0; // Equal
     }
     
     return equal;

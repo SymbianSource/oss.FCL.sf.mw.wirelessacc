@@ -38,8 +38,8 @@ DEFINES += BUILD_WLANQTUTILITIES_DLL
 
 INCLUDEPATH += \
     . \
-    ../../inc \
     stubs \
+    ../../inc \
     ../base/inc \
     ../wrapper/inc \
     ../traces
@@ -78,6 +78,7 @@ symbian: {
         ../wrapper/inc/wlanqtutilsconmonwrapperinfo_symbian.h \
         ../wrapper/inc/wlanqtutilsesockwrapper_symbian.h \
         ../wrapper/inc/wlanqtutilsscan_symbian.h \
+        stubs/ictswlanlogininterface.h \
         stubs/wlanmgmtclient.h \
         stubs/wlanscaninfo.h
 
@@ -88,8 +89,9 @@ symbian: {
         ../wrapper/src/wlanqtutilsscan_symbian.cpp \
         stubs/stub_connmon.cpp \
         stubs/stub_esock.cpp \
+        stubs/stub_ictswlanlogininterface.cpp \
         stubs/stub_wlanmgmtclient.cpp \
         stubs/stub_wlanscaninfo.cpp
 }
 
-LIBS += -lconnmon -lconnection_settings_shim -lextendedconnpref -lnetmeta -lesock -lictswlanlogininterface
+LIBS += -lconnmon -lconnection_settings_shim -lextendedconnpref -lnetmeta -lesock -lcharconv

@@ -24,6 +24,11 @@
 // User includes
 #include "wlanwizard_p.h"
 #include "wlanwizardpageinternal.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "wlanwizardpageinternalTraces.h"
+#endif
+
 
 /*!
    \class WlanWizardPageInternal
@@ -48,6 +53,8 @@ WlanWizardPageInternal::WlanWizardPageInternal(WlanWizardPrivate *wizard) :
     QObject(wizard), 
     mWizard(wizard)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEINTERNAL_WLANWIZARDPAGEINTERNAL_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGEINTERNAL_WLANWIZARDPAGEINTERNAL_EXIT );
 }
 
 /*!
@@ -55,6 +62,8 @@ WlanWizardPageInternal::WlanWizardPageInternal(WlanWizardPrivate *wizard) :
  */
 WlanWizardPageInternal::~WlanWizardPageInternal()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGEINTERNAL_WLANWIZARDPAGEINTERNAL_ENTRY );
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEINTERNAL_WLANWIZARDPAGEINTERNAL_EXIT );
 }
 
 
@@ -74,6 +83,7 @@ void WlanWizardPageInternal::loadDocmlSection(
     const QString &portraitSection,
     const QString &landscapeSection) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEINTERNAL_LOADDOCMLSECTION_ENTRY );
     bool ok;
     
     // Then load the orientation specific section
@@ -85,4 +95,5 @@ void WlanWizardPageInternal::loadDocmlSection(
         loader->load(filename, portraitSection, &ok);
         Q_ASSERT(ok);
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGEINTERNAL_LOADDOCMLSECTION_EXIT );
 }

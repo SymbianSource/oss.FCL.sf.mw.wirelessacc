@@ -54,6 +54,8 @@ private slots:
     void tc_multiple_ssids_with_same_name_press_previous();
     void tc_multiple_ssids_with_same_name_all_sec_modes();
     void tc_multiple_ssids_with_same_name_orientation_switch();
+    void tc_multiple_ssids_with_same_name_wps_and_nonwps();
+    void tc_multiple_ssids_with_same_name_two_wps_aps();
     
 };
 

@@ -49,6 +49,8 @@ WlanWizardPageNetworkMode::WlanWizardPageNetworkMode(
     mLoader(NULL),
     mValid(false)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_EXIT );
 }
 
 /*!
@@ -57,7 +59,9 @@ WlanWizardPageNetworkMode::WlanWizardPageNetworkMode(
  */
 WlanWizardPageNetworkMode::~WlanWizardPageNetworkMode()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_ENTRY );
     delete mLoader;
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_EXIT );
 }
 
 /*!
@@ -66,6 +70,7 @@ WlanWizardPageNetworkMode::~WlanWizardPageNetworkMode()
  */
 HbWidget* WlanWizardPageNetworkMode::initializePage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_INITIALIZEPAGE_ENTRY );
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGENETWORKMODE_INITIALIZEPAGE,
         "WlanWizardPageNetworkMode::initializePage" );
 
@@ -110,6 +115,7 @@ HbWidget* WlanWizardPageNetworkMode::initializePage()
     
     mList->setItems(items);
     
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -121,25 +127,35 @@ HbWidget* WlanWizardPageNetworkMode::initializePage()
  */
 int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_NEXTID_ENTRY );
     removeFromStack = false;
     WlanNetworkSetting setting;
-    setting.mode = mNetworkModes.at(mList->selected());
-    setting.hidden = mIsHidden.at(mList->selected());
+    int index = mList->selected();
+    int nextPage = WlanWizardPageInternal::PageNetworkSecurity;
     
-    // TODO: Still no wps handling.
-    setting.wpsSupported = false;
-    
-    mWizard->setConfiguration(WlanWizardPrivate::ConfNetworkMode,
-        setting.mode);
-    
-    mWizard->setConfiguration(WlanWizardPrivate::ConfHiddenWlan,
-        setting.hidden);
-
-    if (mWizard->configurationExists(WlanWizardPrivate::ConfAvailableNetworkOptions)) {
-        return selectNextPage(setting);
+    if (mWpsSupported.at(index)) {
+        nextPage = WlanWizardPageInternal::PageWpsStart;
     }
-    
-    return WlanWizardPageInternal::PageNetworkSecurity;
+    else {
+        setting.mode = mNetworkModes.at(index);
+        setting.hidden = mIsHidden.at(index);
+        setting.wpsSupported = mWpsSupported.at(index);
+
+        mWizard->setConfiguration(WlanWizardPrivate::ConfNetworkMode,
+            setting.mode);
+
+        mWizard->setConfiguration(WlanWizardPrivate::ConfHiddenWlan,
+            setting.hidden);
+        
+        mWizard->setConfiguration(WlanWizardPrivate::ConfWpsSupported,
+            setting.wpsSupported);
+
+        if (mWizard->configurationExists(WlanWizardPrivate::ConfAvailableNetworkOptions)) {
+            nextPage = selectNextPage(setting);
+        }
+    }
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_NEXTID_EXIT );
+    return nextPage;
 }
 
 /*!
@@ -149,6 +165,8 @@ int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
  */
 bool WlanWizardPageNetworkMode::showPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_SHOWPAGE_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_SHOWPAGE_EXIT );
     return mValid;
 }
 
@@ -158,11 +176,13 @@ bool WlanWizardPageNetworkMode::showPage()
  */
 void WlanWizardPageNetworkMode::itemSelected()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_ITEMSELECTED_ENTRY );
     OstTrace0( TRACE_BORDER, WLANWIZARDPAGENETWORKMODE_ITEMSELECTED,
         "WlanWizardPageNetworkMode::itemSelected" );
 
     mValid = true;
     mWizard->enableNextButton(mValid);
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_ITEMSELECTED_EXIT );
 }
 
 /*!
@@ -173,6 +193,7 @@ void WlanWizardPageNetworkMode::itemSelected()
  */
 void WlanWizardPageNetworkMode::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_LOADDOCMLSECTION_ENTRY );
     OstTrace1( TRACE_NORMAL, WLANWIZARDPAGENETWORKMODE_LOADDOCML,
         "WlanWizardPageNetworkMode::loadDocml - Orientation;orientation=%x",
         ( TUint )( orientation ) );
@@ -183,6 +204,7 @@ void WlanWizardPageNetworkMode::loadDocmlSection(Qt::Orientation orientation)
         ":/docml/occ_add_wlan_02_03.docml", 
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -195,10 +217,16 @@ void WlanWizardPageNetworkMode::loadDocmlSection(Qt::Orientation orientation)
  * @param [in] item is the caption to be added.
  * @param [in] mode is the network mode to be added.
  * @param [in] isHidden is the visibility status of the network.
+ * @param [in] wpsSupported is the possibility for wps support.
  */
-void WlanWizardPageNetworkMode::addToList(QStringList &list,
-    const QString &item, int mode, bool isHidden)
+void WlanWizardPageNetworkMode::addToList(
+    QStringList &list,
+    const QString &item,
+    int mode,
+    bool isHidden,
+    bool wpsSupported)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_ADDTOLIST_ENTRY );
         
     if (mWizard->configurationExists(WlanWizardHelper::ConfAvailableNetworkOptions)) {
         WlanWizardScanList networkOptions = mWizard->configuration(
@@ -207,18 +235,26 @@ void WlanWizardPageNetworkMode::addToList(QStringList &list,
         QList<WlanNetworkSetting> modes = networkOptions.getNetModes();
 
         for (int i = 0; i < modes.size(); i++) {
-            if (modes[i].mode == mode && modes[i].hidden == isHidden) {
+            if ( (modes[i].mode == mode 
+                && modes[i].hidden == isHidden
+                && modes[i].wpsSupported == wpsSupported)
+                || (modes[i].wpsSupported && wpsSupported) ) {
                 list << item;
                 mNetworkModes.append(mode);
                 mIsHidden.append(isHidden);
+                mWpsSupported.append(wpsSupported);
             }
         }
     }
-    else {  
+    else { 
         list << item;
         mNetworkModes.append(mode);
         mIsHidden.append(isHidden);
+        // If there are no known network options, WPS is not allowed to be
+        // selected.
+        mWpsSupported.append(false);
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_ADDTOLIST_EXIT );
 }
 
 /*!
@@ -227,9 +263,11 @@ void WlanWizardPageNetworkMode::addToList(QStringList &list,
  */
 void WlanWizardPageNetworkMode::populateRadioButtonList(QStringList &list)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_POPULATERADIOBUTTONLIST_ENTRY );
     list.clear();
     mNetworkModes.clear();
     mIsHidden.clear();
+    mWpsSupported.clear();
 
     // A list is created. Since there is no practical way of knowing whether
     // the new contents are different from the previous contents (if there
@@ -237,13 +275,21 @@ void WlanWizardPageNetworkMode::populateRadioButtonList(QStringList &list)
     mValid = false;
         
     addToList(list, hbTrId("txt_occ_dblist_val_infrastructure_public"),
-        CMManagerShim::Infra, false);
+        CMManagerShim::Infra, false, false);
 
     addToList(list, hbTrId("txt_occ_list_infrastructure_hidden"),
-        CMManagerShim::Infra, true);
+        CMManagerShim::Infra, true, false);
 
     addToList(list, hbTrId("txt_occ_list_adhoc_1"), CMManagerShim::Adhoc,
-        false);
+        false, false);
+    
+    if (mWizard->configurationExists(WlanWizardHelper::ConfAvailableNetworkOptions)) {
+        // addToList with wpsSupported=true is only called, when there are available
+        // scan result options. If no network options exist, the user can not get to
+        // wps wizard from this view. Also, mode and isHidden are "don't care".
+        addToList(list, hbTrId("txt_occ_list_wifi_protected_setup"), NetworkModeNone, false, true);
+    }
+    OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_POPULATERADIOBUTTONLIST_EXIT );
 }
 
 /*!
@@ -254,17 +300,21 @@ void WlanWizardPageNetworkMode::populateRadioButtonList(QStringList &list)
  */
 int WlanWizardPageNetworkMode::selectNextPage(const WlanNetworkSetting &setting) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_SELECTNEXTPAGE_ENTRY );
+    
+    int nextPage = WlanWizardPageInternal::PageNetworkSecurity;
+    
     WlanWizardScanList networkOptions = mWizard->configuration(
         WlanWizardHelper::ConfAvailableNetworkOptions).value<WlanWizardScanList>();
-    
+
     if (networkOptions.secModes(setting) == SingleResult) {
         WlanSecuritySetting secMode = networkOptions.getSecMode(setting);
-        
         mWizard->setConfiguration(WlanWizardHelper::ConfSecurityMode, secMode.mode);
         mWizard->setConfiguration(WlanWizardHelper::ConfUsePsk, secMode.usePsk);
-        return secMode.nextPageId;
+        nextPage = secMode.nextPageId;
     }
     
-    return WlanWizardPageInternal::PageNetworkSecurity;
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGENETWORKMODE_SELECTNEXTPAGE_EXIT );
+    return nextPage;
 }
 

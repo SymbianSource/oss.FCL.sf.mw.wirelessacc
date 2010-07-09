@@ -31,6 +31,11 @@
 #include "wlanwizardhelper.h"
 #include "eapwizardpagenewpacstore.h"
 #include "eapwizard_p.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpagenewpacstoreTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPageNewPacStore
@@ -62,6 +67,8 @@ EapWizardPageNewPacStore::EapWizardPageNewPacStore(
     mTitlePasswordNew(NULL), 
     mTitlePasswordConfirm(NULL)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_EAPWIZARDPAGENEWPACSTORE_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_EAPWIZARDPAGENEWPACSTORE_EXIT );
 }
 
 /*!
@@ -69,6 +76,8 @@ EapWizardPageNewPacStore::EapWizardPageNewPacStore(
  */
 EapWizardPageNewPacStore::~EapWizardPageNewPacStore()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGENEWPACSTORE_EAPWIZARDPAGENEWPACSTORE_ENTRY );
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGENEWPACSTORE_EAPWIZARDPAGENEWPACSTORE_EXIT );
 }
 
 /*!
@@ -76,6 +85,7 @@ EapWizardPageNewPacStore::~EapWizardPageNewPacStore()
  */
 HbWidget* EapWizardPageNewPacStore::initializePage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_INITIALIZEPAGE_ENTRY );
     if (!mWidget) {
         bool ok;
         mDocumentLoader.reset( 
@@ -129,6 +139,7 @@ HbWidget* EapWizardPageNewPacStore::initializePage()
             this, SLOT(textChanged(const QString &)));
         Q_ASSERT(ok);
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -139,12 +150,14 @@ HbWidget* EapWizardPageNewPacStore::initializePage()
  */
 void EapWizardPageNewPacStore::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_LOADDOCMLSECTION_ENTRY );
     EapWizardPage::loadDocmlSection(
         mDocumentLoader.data(),
         orientation,
         ":/docml/occ_eap_wizard_05_07.docml",
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -156,11 +169,13 @@ void EapWizardPageNewPacStore::loadDocmlSection(Qt::Orientation orientation)
  */
 bool EapWizardPageNewPacStore::showPage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_SHOWPAGE_ENTRY );
     bool valid = false;
     if (mValidator->validate(mEditPasswordNew->text()) == EapQtValidator::StatusOk &&
         mEditPasswordNew->text() == mEditPasswordConfirm->text()) {
         valid = true;
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_SHOWPAGE_EXIT );
     return valid;
 }
 
@@ -171,7 +186,9 @@ bool EapWizardPageNewPacStore::showPage()
  */
 int EapWizardPageNewPacStore::nextId() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_NEXTID_ENTRY );
     mWizard->setConfigurations(EapWizardPrivate::PacStorePassword, mEditPasswordNew->text());
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_NEXTID_EXIT );
     return EapWizardPage::PageUsernamePassword;
 }
 
@@ -182,6 +199,8 @@ int EapWizardPageNewPacStore::nextId() const
  */
 void EapWizardPageNewPacStore::textChanged(const QString &text)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGENEWPACSTORE_TEXTCHANGED_ENTRY );
     Q_UNUSED(text);
     mWizard->wizardHelper()->enableNextButton(showPage());
+    OstTraceFunctionExit0( EAPWIZARDPAGENEWPACSTORE_TEXTCHANGED_EXIT );
 }

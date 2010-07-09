@@ -99,6 +99,7 @@ private slots:
     // Test functions for private implementation (tested via public interface)
     void testConnectionTestOk();
     void testConnectionTestErr();
+    void testConnectionTestHotspot();
 
     void testConnMonEventGprs();
     void testConnMonEventCreatedBeforeConstructor();

@@ -108,6 +108,7 @@
  */
 WlanWizardUtils::KeyStatus WlanWizardUtils::validateWpaKey(const QString &key)
 {
+    OstTraceFunctionEntry0( WLANWIZARDUTILS_VALIDATEWPAKEY_ENTRY );
 #ifdef OST_TRACE_COMPILER_IN_USE
     TPtrC tmp(key.utf16(),key.length() );
     OstTraceExt1( TRACE_NORMAL, WLANWIZARDUTILS_VALIDATEWPAKEY, 
@@ -131,6 +132,7 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::validateWpaKey(const QString &key)
         TRACE_NORMAL, WLANWIZARDUTILS_VALIDATEWPAKEY_RETURN, 
         "WlanWizardUtils::validateWpaKey - Return;ret=%{KeyStatus}", ret );
     
+    OstTraceFunctionExit0( WLANWIZARDUTILS_VALIDATEWPAKEY_EXIT );
     return ret;
 }
 
@@ -154,6 +156,7 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::validateWpaKey(const QString &key)
  */
 WlanWizardUtils::KeyStatus WlanWizardUtils::validateWepKey(const QString &key)
 {
+    OstTraceFunctionEntry0( WLANWIZARDUTILS_VALIDATEWEPKEY_ENTRY );
 #ifdef OST_TRACE_COMPILER_IN_USE
     TPtrC tmp(key.utf16(),key.length() );
     OstTraceExt1( TRACE_NORMAL, WLANWIZARDUTILS_VALIDATEWEPKEY, 
@@ -175,6 +178,7 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::validateWepKey(const QString &key)
         TRACE_NORMAL, WLANWIZARDUTILS_VALIDATEWEPKEY_RETURN, 
         "WlanWizardUtils::validateWepKey - Return;ret=%{KeyStatus}", ret );
     
+    OstTraceFunctionExit0( WLANWIZARDUTILS_VALIDATEWEPKEY_EXIT );
     return ret;
 }
 
@@ -189,16 +193,19 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::validateWepKey(const QString &key)
  */
 WlanWizardUtils::KeyStatus WlanWizardUtils::isAscii(const QString &key)
 {
+    OstTraceFunctionEntry0( WLANWIZARDUTILS_ISASCII_ENTRY );
     static const QChar ch32(32);   // First visible ascii character
     static const QChar ch126(126); // Last visible ascii character
   
     const QChar *data = key.data();
     while (!data->isNull()) {
         if ((*data) < ch32 || (*data) > ch126) {
+            OstTraceFunctionExit0( WLANWIZARDUTILS_ISASCII_EXIT );
             return KeyStatusIllegalCharacters;
         }
         ++data;
     }
+    OstTraceFunctionExit0( DUP1_WLANWIZARDUTILS_ISASCII_EXIT );
     return KeyStatusOk;
 }
 
@@ -216,6 +223,7 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::isAscii(const QString &key)
  */
 WlanWizardUtils::KeyStatus WlanWizardUtils::isHex(const QString &key)
 {
+    OstTraceFunctionEntry0( WLANWIZARDUTILS_ISHEX_ENTRY );
     static const QChar ch_A(65); // Character: A
     static const QChar ch_F(70); // Character: F
     static const QChar ch_a(97); // Character: a
@@ -228,9 +236,11 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::isHex(const QString &key)
             (*data) >= ch_A && (*data) <= ch_F) {
             ++data;
         } else {
+            OstTraceFunctionExit0( WLANWIZARDUTILS_ISHEX_EXIT );
             return KeyStatusIllegalCharacters;
         }
     }
+    OstTraceFunctionExit0( DUP1_WLANWIZARDUTILS_ISHEX_EXIT );
     return KeyStatusOk;
 }
 
@@ -245,6 +255,7 @@ WlanWizardUtils::KeyStatus WlanWizardUtils::isHex(const QString &key)
  */
 WlanWizardUtils::SsidStatus WlanWizardUtils::validateSsid(const QString &ssid)
 {
+    OstTraceFunctionEntry0( WLANWIZARDUTILS_VALIDATESSID_ENTRY );
     TPtrC tmp(ssid.utf16(), ssid.length() );
     OstTraceExt1( TRACE_NORMAL, WLANWIZARDUTILS_VALIDATESSID, 
         "WlanWizardUtils::validateSsid;ssid=%S", tmp );
@@ -258,5 +269,6 @@ WlanWizardUtils::SsidStatus WlanWizardUtils::validateSsid(const QString &ssid)
     OstTrace1( 
         TRACE_NORMAL, WLANWIZARDUTILS_VALIDATESSID_RETURN, 
         "WlanWizardUtils::validateSsid - Return;ret=%{SsidStatus}", ret );
+    OstTraceFunctionExit0( WLANWIZARDUTILS_VALIDATESSID_EXIT );
     return ret;
 }

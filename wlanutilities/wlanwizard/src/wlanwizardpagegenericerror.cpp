@@ -28,6 +28,11 @@
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpageprocessingsettingsTraces.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "wlanwizardpagegenericerrorTraces.h"
+#endif
+
 #endif
 
 /*!
@@ -58,6 +63,8 @@ WlanWizardPageGenericError::WlanWizardPageGenericError(
     mWidget(NULL), 
     mLabel(NULL)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEGENERICERROR_WLANWIZARDPAGEGENERICERROR_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGEGENERICERROR_WLANWIZARDPAGEGENERICERROR_EXIT );
 }
 
 /*!
@@ -65,7 +72,9 @@ WlanWizardPageGenericError::WlanWizardPageGenericError(
  */
 WlanWizardPageGenericError::~WlanWizardPageGenericError()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGEGENERICERROR_WLANWIZARDPAGEGENERICERROR_ENTRY );
     // signals are automatically disconnected
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEGENERICERROR_WLANWIZARDPAGEGENERICERROR_EXIT );
 }
 
 /*!
@@ -73,6 +82,7 @@ WlanWizardPageGenericError::~WlanWizardPageGenericError()
  */
 HbWidget* WlanWizardPageGenericError::initializePage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEGENERICERROR_INITIALIZEPAGE_ENTRY );
     // Create the visualization at the first time
     if (!mWidget) {
         HbDocumentLoader docLoader(mWizard->mainWindow());
@@ -93,6 +103,7 @@ HbWidget* WlanWizardPageGenericError::initializePage()
         mWizard->configuration(
             WlanWizardHelper::ConfGenericErrorString).toString());
 
+    OstTraceFunctionExit0( WLANWIZARDPAGEGENERICERROR_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -103,6 +114,8 @@ HbWidget* WlanWizardPageGenericError::initializePage()
  */
 bool WlanWizardPageGenericError::showPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEGENERICERROR_SHOWPAGE_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGEGENERICERROR_SHOWPAGE_EXIT );
     return false;
 }
 
@@ -113,6 +126,8 @@ bool WlanWizardPageGenericError::showPage()
  */
 int WlanWizardPageGenericError::previousTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGEGENERICERROR_PREVIOUSTRIGGERED_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGEGENERICERROR_PREVIOUSTRIGGERED_EXIT );
     return mWizard->configuration(
         WlanWizardHelper::ConfGenericErrorPageStepsBackwards).toInt();
 }

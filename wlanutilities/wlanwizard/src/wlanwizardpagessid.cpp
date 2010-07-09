@@ -44,7 +44,9 @@ WlanWizardPageSsid::WlanWizardPageSsid(WlanWizardPrivate* parent) :
     mSsid(NULL),
     mLoader(NULL)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY );
 
+    OstTraceFunctionExit0( WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT );
 }
 
 /*!
@@ -53,7 +55,9 @@ WlanWizardPageSsid::WlanWizardPageSsid(WlanWizardPrivate* parent) :
  */
 WlanWizardPageSsid::~WlanWizardPageSsid()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY );
     delete mLoader;
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT );
 }
 
 /*!
@@ -62,6 +66,7 @@ WlanWizardPageSsid::~WlanWizardPageSsid()
  */
 HbWidget* WlanWizardPageSsid::initializePage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_INITIALIZEPAGE_ENTRY );
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESSID_INITIALIZEPAGE,
         "WlanWizardPageSsid::initializePage" );
 
@@ -119,6 +124,7 @@ HbWidget* WlanWizardPageSsid::initializePage()
         Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase);
     mSsid->setMaxLength(WlanWizardUtils::SsidMaxLength);
 
+	OstTraceFunctionExit0( WLANWIZARDPAGESSID_INITIALIZEPAGE_EXIT );
 	return mWidget;
 }
 
@@ -129,12 +135,13 @@ HbWidget* WlanWizardPageSsid::initializePage()
  */
 bool WlanWizardPageSsid::showPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_SHOWPAGE_ENTRY );
     // Initiate the scanning of public APs here.
     mWizard->wlanQtUtils()->scanWlanAps();
     
     // Open virtual keyboard by setting focus to line edit
     mSsid->setFocus();
-
+    OstTraceFunctionExit0( WLANWIZARDPAGESSID_SHOWPAGE_EXIT );
     return !(mSsid->text().isEmpty());
 }
 
@@ -145,11 +152,13 @@ bool WlanWizardPageSsid::showPage()
  */
 int WlanWizardPageSsid::nextId(bool &removeFromStack) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_NEXTID_ENTRY );
     removeFromStack = false;
 
     // SSID is stored into configuration
     mWizard->setConfiguration(WlanWizardPrivate::ConfSsid, mSsid->text());
     
+    OstTraceFunctionExit0( WLANWIZARDPAGESSID_NEXTID_EXIT );
     return WlanWizardPageInternal::PageScanning;
 }
 
@@ -161,6 +170,7 @@ int WlanWizardPageSsid::nextId(bool &removeFromStack) const
  */
 void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_LOADDOCMLSECTION_ENTRY );
     OstTrace1( TRACE_FLOW, WLANWIZARDPAGESSID_LOADDOCML,
         "WlanWizardPageSsid::loadDocml - orientation ;orientation=%x",
         ( TUint )( orientation ) );
@@ -171,6 +181,7 @@ void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
         ":/docml/occ_add_wlan_01_04.docml", 
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( WLANWIZARDPAGESSID_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -180,9 +191,11 @@ void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
  */
 void WlanWizardPageSsid::textChanged(const QString &text)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_TEXTCHANGED_ENTRY );
     Q_UNUSED(text);
     OstTrace0( TRACE_FLOW, WLANWIZARDPAGESSID_TEXTCHANGED,
         "WlanWizardPageSsid::textChanged in text edit widget" );
 
     mWizard->enableNextButton(!(mSsid->text().isEmpty()));
+    OstTraceFunctionExit0( WLANWIZARDPAGESSID_TEXTCHANGED_EXIT );
 }

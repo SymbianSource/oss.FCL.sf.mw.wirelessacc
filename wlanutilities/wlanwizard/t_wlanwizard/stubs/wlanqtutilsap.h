@@ -114,7 +114,7 @@ public:
     void setValue(int identifier, QVariant value );
     bool operator==(const WlanQtUtilsAp & rhs ) const;
     
-    static bool compare(
+    static int compare(
         const WlanQtUtilsAp *ap1,
         const WlanQtUtilsAp *ap2);
 

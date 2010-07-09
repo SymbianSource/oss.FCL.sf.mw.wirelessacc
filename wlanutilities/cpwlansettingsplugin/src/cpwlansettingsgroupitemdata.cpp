@@ -117,49 +117,54 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
     OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_CREATEWLANSETTINITEMS_ENTRY, this);
     
     mJoinWlanItem = new CpSettingFormItemData(
-            HbDataFormModelItem::ComboBoxItem, hbTrId(
-                    "txt_occ_setlabel_join_wlan_networks"), this);
+        HbDataFormModelItem::ComboBoxItem,
+        hbTrId("txt_occ_setlabel_join_wlan_networks"));
     // name the object for test automation purposes
     mJoinWlanItem->setObjectName("switchToWlan");
     
     QStringList joinWlanItems;
     
-    joinWlanItems.append(hbTrId(
-            "txt_occ_setlabel_join_wlan_networks_val_known"));
+    joinWlanItems.append(
+        hbTrId("txt_occ_setlabel_join_wlan_networks_val_known"));
     
-    joinWlanItems.append(hbTrId(
-            "txt_occ_setlabel_join_wlan_networks_val_manual"));
+    joinWlanItems.append(
+        hbTrId("txt_occ_setlabel_join_wlan_networks_val_manual"));
 
     mJoinWlanItem->setContentWidgetData("items", joinWlanItems);
 
-    mItemDataHelper.addConnection(mJoinWlanItem,
-            SIGNAL(currentIndexChanged (int)), this,
-            SLOT(joinWlanItemChanged (int)));
+    mItemDataHelper.addConnection(
+        mJoinWlanItem,
+        SIGNAL(currentIndexChanged (int)),
+        this,
+        SLOT(joinWlanItemChanged (int)));
 
-    mJoinWlanItem->setContentWidgetData("currentIndex",
-            mWlanSettings->joinWlanMode());
+    mJoinWlanItem->setContentWidgetData(
+        "currentIndex",
+        mWlanSettings->joinWlanMode());
 
     this->appendChild(mJoinWlanItem);
 
     mScanNetworkItem = new CpSettingFormItemData(
-            HbDataFormModelItem::ComboBoxItem, hbTrId(
-                    "txt_occ_setlabel_scan_for_networks"), this);
+        HbDataFormModelItem::ComboBoxItem,
+        hbTrId("txt_occ_setlabel_scan_for_networks"));
     // name the object for test automation purposes
     mScanNetworkItem->setObjectName("scanNetworkItem");
     
     QStringList scanNetworkItems;
     
-    scanNetworkItems.append(hbTrId(
-            "txt_occ_setlabel_scan_for_networks_val_automatic"));
+    scanNetworkItems.append(
+        hbTrId("txt_occ_setlabel_scan_for_networks_val_automatic"));
     
-    scanNetworkItems.append(hbTrId(
-            "txt_occ_setlabel_scan_for_networks_val_userdefine"));
+    scanNetworkItems.append(
+        hbTrId("txt_occ_setlabel_scan_for_networks_val_userdefine"));
 
     mScanNetworkItem->setContentWidgetData("items", scanNetworkItems);
 
-    mItemDataHelper.addConnection(mScanNetworkItem,
-            SIGNAL(currentIndexChanged (const QString &)), this,
-            SLOT(scanItemChanged (const QString &)));
+    mItemDataHelper.addConnection(
+        mScanNetworkItem,
+        SIGNAL(currentIndexChanged (const QString &)),
+        this,
+        SLOT(scanItemChanged (const QString &)));
 
     this->appendChild(mScanNetworkItem);
 
@@ -173,27 +178,30 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
     }
 
     mPowerSavingItem = new CpSettingFormItemData(
-            HbDataFormModelItem::ComboBoxItem, hbTrId(
-                    "txt_occ_setlabel_power_saving"), this);
+        HbDataFormModelItem::ComboBoxItem,
+        hbTrId("txt_occ_setlabel_power_saving"));
     // name the object for test automation purposes
     mPowerSavingItem->setObjectName("powerSaving");
     
     QStringList powerSavingItems;
     
-    powerSavingItems.append(hbTrId(
-            "txt_occ_setlabel_power_saving_val_disabled"));
+    powerSavingItems.append(
+        hbTrId("txt_occ_setlabel_power_saving_val_disabled"));
     
-    powerSavingItems.append(hbTrId(
-            "txt_occ_setlabel_power_saving_val_enabled"));
+    powerSavingItems.append(
+        hbTrId("txt_occ_setlabel_power_saving_val_enabled"));
 
     mPowerSavingItem->setContentWidgetData("items", powerSavingItems);
 
-    mPowerSavingItem->setContentWidgetData("currentIndex",
-            mWlanSettings->isPowerSavingEnabled());
+    mPowerSavingItem->setContentWidgetData(
+        "currentIndex",
+        mWlanSettings->isPowerSavingEnabled());
 
-    mItemDataHelper.addConnection(mPowerSavingItem,
-            SIGNAL(currentIndexChanged (int)), this,
-            SLOT(powerSavingItemChanged (int)));
+    mItemDataHelper.addConnection(
+        mPowerSavingItem,
+        SIGNAL(currentIndexChanged (int)),
+        this,
+        SLOT(powerSavingItemChanged (int)));
 
     this->appendChild(mPowerSavingItem);
 
@@ -209,22 +217,31 @@ void CpWlanSettingsGroupItemData::createScanIntervalItem()
     OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_CREATESCANINTERVALITEM_ENTRY, this);
     
     mUserDefinedItem = new CpSettingFormItemData(
-            HbDataFormModelItem::SliderItem, hbTrId(
-                    "txt_occ_setlabel_scan_interval_minutes"), this);
+        HbDataFormModelItem::SliderItem,
+        hbTrId("txt_occ_setlabel_scan_interval_minutes"));
 
     mUserDefinedItem->setContentWidgetData("maximum", KMaximumScanInterval);
     mUserDefinedItem->setContentWidgetData("minimum", KMinimumScanInterval);
     mUserDefinedItem->setContentWidgetData("toolTipVisible", KEnableOption);
     mUserDefinedItem->setContentWidgetData("tracking", KEnableOption);
 
-    mItemDataHelper.addConnection(mUserDefinedItem,
-            SIGNAL(valueChanged (int)), this, SLOT(scanValueChanged (int)));
+    mItemDataHelper.addConnection(
+        mUserDefinedItem,
+        SIGNAL(valueChanged (int)),
+        this,
+        SLOT(scanValueChanged (int)));
     
-    mItemDataHelper.addConnection(mUserDefinedItem,
-            SIGNAL(sliderReleased ()), this, SLOT(scanSliderReleased ()));
+    mItemDataHelper.addConnection(
+        mUserDefinedItem,
+        SIGNAL(sliderReleased ()),
+        this,
+        SLOT(scanSliderReleased ()));
     
-    mItemDataHelper.addConnection(mUserDefinedItem, SIGNAL(sliderPressed ()),
-            this, SLOT(scanSliderPressed ()));
+    mItemDataHelper.addConnection(
+        mUserDefinedItem,
+        SIGNAL(sliderPressed ()),
+        this,
+        SLOT(scanSliderPressed ()));
 
     mScanInterval = mWlanSettings->scanInterval();
 
