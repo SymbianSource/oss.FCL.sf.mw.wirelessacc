@@ -310,16 +310,12 @@ void CHssIapSettingsHandler::SaveWEPKeyL( const TUint32 aFrom,
     wlanRecordNew->ModifyL( *dbSession );        
     CleanupStack::PopAndDestroy( wlanRecordNew );
     
-    dbSession->CommitTransactionL();
-    
-    dbSession->Close();
-    CleanupStack::PopAndDestroy( dbSession );
-    
     CleanupStack::Pop( 1 ); // transaction rollback popped
         
     dbSession->CommitTransactionL();
-   
-    
+
+    dbSession->Close();
+    CleanupStack::PopAndDestroy( dbSession );
     DEBUG("CHssIapSettingsHandler::SaveWEPKey Done");
     }
 
