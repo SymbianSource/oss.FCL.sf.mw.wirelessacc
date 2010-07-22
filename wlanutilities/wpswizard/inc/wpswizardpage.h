@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description: API for wizard pages
+* Description: API for wps wizard pages
 *
 */
 
@@ -20,6 +20,7 @@
 
 
 // System includes
+#include <QObject>
 
 // User includes
 #include "wlanwizardpage.h"
@@ -32,21 +33,34 @@ class HbWidget;
 // External data types
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
+
 // Class declaration
 class WpsWizardPage : public QObject, public WlanWizardPage
-    {
+{
+    Q_OBJECT
+    
 public:
-    enum WpsPageIds
-        {
+    enum WpsPageIds {
         PageWpsWizardStep2 = WlanWizardPage::PageWpsStart,
         PageWpsWizardStep3_Button,
         PageWpsWizardStep3_Number,
         PageWpsWizardStep4,
         PageWpsWizardStep5,
         PageWpsWizardStep6
-        };
+    };
+    
+    enum WpsMode {
+        WpsPushButtonMode = 0,
+        WpsPinCodeMode,
+        WpsManualMode
+    };  
+    
 public:
-    WpsWizardPage(WpsWizardPrivate* parent);
+    explicit WpsWizardPage(WpsWizardPrivate* parent);
     virtual ~WpsWizardPage();
 
     /*!
@@ -58,27 +72,33 @@ public:
      */
     virtual int nextId(bool &removeFromStack) const = 0;
     /*!
-     * Returns how many steps should be gone backwars. 
+     * This method is called when "previous" button has been pressed.
      */
-    virtual int stepsBackwards();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    virtual bool validate() const;
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    virtual void previousTriggered() = 0;
+    virtual int previousTriggered() { return OneStepBackwards;};
     /*!
      * This method is called when Cancel button has been pressed.
      */
-    virtual void cancelTriggered() = 0;
+    virtual void cancelTriggered() {};
+    
+signals:
+
+public slots:
+
+protected:
+
+    //data
+    //! Pointer to private implementation
     WpsWizardPrivate* mWizard;
+
+protected slots:
+
 private:
     Q_DISABLE_COPY(WpsWizardPage)
-    };
-
-/*! @} */
+    
+private slots:
+    
+private:
+	
+};
 
 #endif /* WPSWIZARDPAGE_H_ */

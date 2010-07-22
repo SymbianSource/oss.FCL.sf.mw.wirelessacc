@@ -18,6 +18,7 @@
 
 // INCLUDE FILES
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <es_sock_partner.h>
 #include <nifman_internal.h>
 #endif
 #include "NetCfgExtnHotSpot.h"

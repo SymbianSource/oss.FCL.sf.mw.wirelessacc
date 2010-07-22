@@ -1,0 +1,6 @@
+/* WLAN status label in list view. */
+HbLabel#statusLabel::text {
+    /* Status label should take no more than two rows. */
+    text-line-count-min: 1;
+    text-line-count-max: 2;
+}

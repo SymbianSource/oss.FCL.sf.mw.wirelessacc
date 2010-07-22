@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,228 +12,176 @@
 * Contributors:
 *
 * Description:
+* WLAN Qt Utilities private implementation interface.
 */
 
 #ifndef WLANQTUTILS_P_H
 #define WLANQTUTILS_P_H
 
-#include <QObject>
-#include <QMap>
+// System includes
 
-#include "wlanqtutilscommon.h"
+#include <QObject>
+#include <QSharedPointer>
+#include <QList>
+
+// User includes
+
+#include "wlanqtutils.h"
+#include "ictswlanlogininterface.h"
+
+// Forward declarations
 
 class WlanQtUtils;
 class WlanQtUtilsIap;
-class WlanQtUtilsWlanIap;
-class WlanQtUtilsWlanAp;
-class WlanQtUtilsActiveConn;
-class ConMonWrapper;
-class CmmWrapper;
-class EsockWrapper;
-class ConnTestWrapper;
+class WlanQtUtilsAp;
+class WlanQtUtilsConnection;
+class WlanQtUtilsIapSettings;
+class WlanQtUtilsConMonWrapper;
+class WlanQtUtilsEsockWrapper;
+class WlanQtUtilsScan;
 
-/**
- * Private implementation of Wlan Qt Utilities.
- */
+// External data types
+
+// Constants
+
+// Class declaration
+
 class WlanQtUtilsPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    
-    /**
-     * Constructor.
-     */
-    WlanQtUtilsPrivate(WlanQtUtils *publicPtr);
-    
-    /**
-     * Destructor.
-     */
-    ~WlanQtUtilsPrivate();
 
-    // Functions duplicating WlanQtUtils public interface
-    
-    /**
-     * Function to request details of available WLAN networks. Can be called at any time, calling right
-     * after wlanScanReady() signal ensures you get the most recent results.
-     *
-     * @param[out] wlanIapList List of available WLAN IAPs.
-     * @param[out] wlanApList List of unknown WLAN APs.
-     */
-    void availableWlanAps(
-        QList<WlanQtUtilsWlanIap *> &wlanIapList,
-        QList<WlanQtUtilsWlanAp *> &wlanApList);
+    // Data types
 
-    /**
-     * Function to create an IAP from the given WLAN access point.
-     *
-     * @param[in] wlanAp Access point containing parameters to include in the new IAP.
-     * @return ID of the newly created IAP.
-     */
-    int createWlanIap(const WlanQtUtilsWlanAp *wlanAp);
+    explicit WlanQtUtilsPrivate(WlanQtUtils *q_ptr);
 
-    /**
-     * Function to start connection creation for the given IAP. connectionStatus() signal will be emitted
-     * when connection creation succeeds or fails.
-     *
-     * @param[in] iapId ID of the IAP to be connected.
-     */
-    void connectIap(int iapId);
+    virtual ~WlanQtUtilsPrivate();
     
-    /**
-     * Function to disconnect the given IAP.
-     * 
-     * @param[in] iapId ID of the IAP to be disconnected.
-     */
-    void disconnectIap(int iapId);
-    
-    /**
-     * Function to retrieve a pointer to the IAP with the given ID.
-     * 
-     * @param[in] iapId ID of the requested IAP.
-     * @return Pointer to the found IAP, NULL if not found.
-     */
-    WlanQtUtilsIap *iap(int iapId) const;
-
-    /**
-     * Function for getting the master WLAN status.
-     * 
-     * @return Master WLAN status: true if enabled, otherwise false.
-     */
-    bool masterWlan() const;
-    
-    /**
-     * Function for switching the master WLAN status ON or OFF.
-     * 
-     * @param[in] enabled If set to true, WLAN is switched ON, and vice versa.
-     */
-    void setMasterWlan(bool enabled);
-
-    /**
-     * Function for getting the ID of the (possibly) connected WLAN IAP.
-     * 
-     * @return ID of the connected IAP, WlanQtUtilsInvalidIapId if not valid.
-     */
-    int connectedWlanId() const;
-    
-    /**
-     * Function for requesting a WLAN scan to be triggered. Currently triggers
-     * only a single scan, but can be extended to perform also periodic scans,
-     * if needed in the future.
-     * 
-     * Signal wlanScanReady() is emitted when new scan results are available.
-     */
     void scanWlans();
     
+    void scanWlanAps();
+    
+    void scanWlanDirect(const QString &ssid);
+
+    void stopWlanScan();
+
+    void availableWlans(
+        QList< QSharedPointer<WlanQtUtilsIap> > &wlanIapList,
+        QList< QSharedPointer<WlanQtUtilsAp> > &wlanApList) const;
+
+    void availableWlanAps(
+        QList< QSharedPointer<WlanQtUtilsAp> > &wlanApList) const;  
+
+    int createIap(const WlanQtUtilsAp *wlanAp);
+
+    bool updateIap(int iapId, const WlanQtUtilsAp *wlanAp);
+
+    void deleteIap(int iapId);
+
+    void connectIap(int iapId, bool runIct);
+
+    void disconnectIap(int iapId);
+
+    WlanQtUtils::ConnStatus connectionStatus() const;
+
+    int activeIap() const;
+
+    QString iapName(int iapId) const;
+
+signals:
+
+public slots:
+
+protected:
+
+protected slots:
+
+private:
+
+    Q_DISABLE_COPY(WlanQtUtilsPrivate)
+
+    bool wlanIapExists(
+        const QList< QSharedPointer<WlanQtUtilsIap> > list,
+        const WlanQtUtilsAp *ap) const;
+    
+    void traceIapsAndAps(
+        const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        const QList< QSharedPointer<WlanQtUtilsAp> > &aps) const;
+
 private slots:
 
-    /**
-     * Slot for handling WLAN scan result event from wrapper. Results are stored in member variable
-     * (possible duplicates are removed).
-     * 
-     * @param[in] availableWlans WLAN networks found in scan.
-     */
-    void updateAvailableWlanAps(QList<WlanQtUtilsWlanAp *> &availableWlans);
-
-    /**
-     * Slot for handling connection setup status event from wrapper.
-     * 
-     * @param[in] isOpened Was connection setup successful?
-     */
-    void updateConnectionStatus(bool isOpened);
-
-    /**
-     * Slot for handling connectivity test result event from wrapper. Tested IAP is stored to
-     * Internet SNAP, if test was successful.
-     * 
-     * @param[in] result Was the test successful?
-     */
-    void updateConnectivityTestResult(bool result);
+    void updateAvailableWlanAps(
+        QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
     
-    /**
-     * Slot for updating active connection status from wrapper.
-     * 
-     * @param[in] connectionId ID of the new connection.
-     */
+    void reportScanResult(int status);
+    
+    void updateConnectionStatus(bool isOpened);
+    
     void addActiveConnection(uint connectionId);
     
-    /**
-     * Slot for updating active connection status from wrapper.
-     * 
-     * @param[in] connectionId ID of the deleted connection.
-     */
     void removeActiveConnection(uint connectionId);
     
-    /**
-     * Slot for updating active connection status from wrapper.
-     * 
-     * @param[in] connectionId ID of the updated connection.
-     * @param[in] connectionStatus New status of the connection.
-     */
-    void updateActiveConnection(uint connectionId, WlanQtUtilsConnectionStatus connectionStatus);
-    
-private: 
+    void updateActiveConnection(
+        uint connectionId,
+        WlanQtUtils::ConnStatus connectionStatus);
 
-    int fetchIaps();
+    void updateIctResult(int ictsResult);
     
-    /**
-     * This function searches for a WLAN IAP with the given WLAN parameters.
-     *  
-     * @param[in] ssid SSID to search for.
-     * @param[in] secMode Security mode to search for.
-     * @return True, if suitable WLAN IAP found, false otherwise.
-     */
-    bool wlanIapExists(QString ssid, WlanQtUtilsWlanSecMode secMode);
+    void updateIctHotspotCase();
 
-    /**
-     * This function updates the connection status of:
-     * - IAP with the given ID
-     * - all other IAPs, which represent the same network (SSID & security mode match)
-     *  
-     * @param[in] iapId ID of the IAP whose status is to be updated.
-     * @param[in] status Updated connection status.
-     */
-    void updateIapConnectionStatuses(int iapId, WlanQtUtilsConnectionStatus status);
+private: // data
 
-private: // Data
+    //! Current scan mode
+    enum ScanMode {
+        ScanModeNone = 0,               //!< No scan active
+        ScanModeAvailableWlans,         //!< Available AP's & IAPS
+        ScanModeAvailableWlanAps,       //!< Available AP's
+        ScanModeDirect                  //!< Direct SSID scan
+    };
     
-    /** Pointer to public implementation */
+    // Not owned data
+
+    //! Pointer to public implementation.
     WlanQtUtils *q_ptr;
-    
-    /** Wrapper object for Connection Method Manager. */
-    CmmWrapper *cmmWrapper_;
-    
-    /** Wrapper object for Connection Monitor and other parts of connmon library. */
-    ConMonWrapper *conMonWrapper_;
-    
-    /** Wrapper object for esock library. */
-    EsockWrapper *esockWrapper_;
 
-    /** Wrapper object for Internet Connectivity Test library. */
-    ConnTestWrapper *connTestWrapper_;
+    // Owned data
 
-    /** List of available WLAN APs according to the latest scan. */
-    QList<WlanQtUtilsWlanAp *> wlanScanList_;
+    //! Iap settings handler.
+    WlanQtUtilsIapSettings *mSettings;
     
-    /** List of WLAN IAPs configured to the device. */
-    QMap<int, WlanQtUtilsWlanIap *> wlanIapList_;
-    
-    /** ID of IAP requiring ICT running, -1 if not valid. */
-    int toBeTestedIapId_;
-    
-    /** ID of IAP being connected by us (requested by UI), -1 if not valid. */
-    int connectingIapId_;
-    
-    /** Information of possible active connection. */
-    WlanQtUtilsActiveConn *activeConnection_;
-    
-private: // Friend classes
+    //! Wrapper object for Connection Monitor and other parts of connmon library.
+    WlanQtUtilsConMonWrapper *mConMonWrapper;
 
+    //! Wrapper object for WLAN scanning.
+    WlanQtUtilsScan *mScanWrapper;
+    
+    //! Wrapper object for esock library.
+    WlanQtUtilsEsockWrapper *mEsockWrapper;
+
+    //! Instance of Icts Wlan Login Interface.
+    QSharedPointer<IctsWlanLoginInterface> mIctService;
+
+    //! Current WLAN scan mode.
+    ScanMode mScanMode;
+    
+    //! List of available WLAN APs according to the latest scan.
+    QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanList;
+
+    //! ID of IAP requiring ICT running, IapIdNone if not valid.
+    int mToBeTestedIapId;
+    
+    //! ID of IAP being connected by us (requested by UI), IapIdNone if not valid.
+    int mConnectingIapId;
+    
+    //! Information of possible active connection.
+    QSharedPointer<WlanQtUtilsConnection> mConnection;
+
+    // Friend classes
+    
     // This is defined as a friend class in order to be able to
     // call event handlers of wrappers from test code.
     friend class TestWlanQtUtils;
 };
 
-#endif /* WLANQTUTILS_P_H */
-
-// End of File
+#endif // WLANQTUTILS_P_H

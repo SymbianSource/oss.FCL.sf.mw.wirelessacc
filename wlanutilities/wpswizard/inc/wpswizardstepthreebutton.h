@@ -20,6 +20,7 @@
 
 // System includes
 #include <QObject>
+#include <HbDocumentLoader>
 
 // User includes
 #include "wpswizardpage.h"
@@ -34,52 +35,50 @@ class WpsWizardPrivate;
 
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
+
 // Class declaration
 class WpsPageStepThreeButton : public WpsWizardPage
     {
 Q_OBJECT
+
 public:
-    WpsPageStepThreeButton(WpsWizardPrivate* parent);
+    explicit WpsPageStepThreeButton(WpsWizardPrivate* parent);
     ~WpsPageStepThreeButton();
 
 public:
-    /*!
-     * Creates a visualization of the page.
-     */
+
     HbWidget* initializePage();
-    /*!
-     * Returns id of next page. updates settings EapWizard.
-     */
+
     int nextId(bool &removeFromStack) const;
-    /*!
-     * Returns how many steps should be gone backwards. 
-     */
-    int stepsBackwards();
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    void previousTriggered();
-    /*!
-     * This method is called when Cancel button has been pressed.
-     */
-    void cancelTriggered();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    bool validate() const;
+
+    int previousTriggered();
     
+signals:
+
 public slots:
+
+    void loadDocmlSection(Qt::Orientation orientation);
+
+protected:
+
+protected slots:
 
 private:
     Q_DISABLE_COPY(WpsPageStepThreeButton)
-    HbWidget *mWidget;
-    HbRadioButtonList *mRadio;
-    HbLabel *mTitle;
-    HbLabel *mHeading;
-    bool mValid;
-    };
 
-/*! @} */
+private slots:
+
+private: //data    
+    //! Pointer to the widget object
+    HbWidget *mWidget;
+    //! Pointer to the label displaying the heading
+    HbLabel *mHeading;
+    //! Document loader object.
+    HbDocumentLoader *mLoader;
+    };
 
 #endif /* WPSWIZARDSTEPTHREEBUTTON_H_ */

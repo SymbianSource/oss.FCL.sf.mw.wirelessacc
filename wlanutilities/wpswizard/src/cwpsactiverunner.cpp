@@ -2,7 +2,7 @@
  * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * This component and the accompanying materials are made available
- * under the terms of the License "Eclipse Public License v1.0"
+ * under the terms of "Eclipse Public License v1.0"
  * which accompanies this distribution, and is available
  * at the URL "http://www.eclipse.org/legal/epl-v10.html".
  *
@@ -12,129 +12,147 @@
  * Contributors:
  *
  * Description: Implementation of middleware wrapper class
- *   
+ *
  *
  */
-
+// System includes
+#include <wlanmgmtcommon.h>
+#include <e32math.h>
 
 // User includes
 #include "cwpsactiverunner.h"
-#include "wlanmgmtcommon.h"
 
-//Need to check this.
-const TInt KArrayGranularity = 4;
+// External function prototypes
+
+//Constants
+static const TInt KArrayGranularity = 4;
+static const TInt KDefaultPinLength = 10;
+
+// Trace includes
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "cwpsactiverunnerTraces.h"
+#endif
 
 /*!
  \class CWpsActiveRunner
- \brief CWpsActiveRunner is a wrapper class wlan Mgmt engine interface
+ \brief CWpsActiveRunner is a wrapper class wlan Mgmt engine interface.
+ The wrapper class for wlan management engine calls
  */
 
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
 
 /*!
  * Creates the instance of active runner which encapsulates the wlan mgmt
  * interface middleware calls
- * 
- * 
- * \param MWpsActiveRunnerCallback call back interface to notify the completion of the middleware calls
+ *
+ *
+ * \param MWpsActiveRunnerCallback[in] call back interface to notify the
+ *      completion of the middleware calls
  */
 CWpsActiveRunner* CWpsActiveRunner::NewL(MWpsActiveRunnerCallback& aObserver)
 {
-    CWpsActiveRunner* self = new (ELeave) CWpsActiveRunner( aObserver );
+    OstTraceFunctionEntry0( CWPSACTIVERUNNER_NEWL_ENTRY );
+    CWpsActiveRunner* self = new (ELeave) CWpsActiveRunner(aObserver);
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop(self);
+    OstTraceFunctionExit0( CWPSACTIVERUNNER_NEWL_EXIT );
     return self;
 }
+
 /*!
  * Creates the instance of active runner which encapsulates the wlan mgmt
  * interface middleware calls
- * 
- * 
- * \param MWpsActiveRunnerCallback call back interface to notify the completion of the middleware calls
+ *
+ *
+ * \param MWpsActiveRunnerCallback[in] call back interface to notify the
+ *      completion of the middleware calls
  */
 CWpsActiveRunner::CWpsActiveRunner(MWpsActiveRunnerCallback& aObserver) :
-    CActive(EPriorityStandard), iObserver(aObserver)
+    CActive(EPriorityStandard),
+    iObserver(aObserver),
+    isCancelTriggered(false),
+    iWLANMgmtClient(NULL),
+    iIapParametersArray(NULL)
 {
-#ifdef __arm
-    iIapParametersArray = NULL;
-    iWLANMgmtClient = NULL;
-#endif
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_CWPSACTIVERUNNER_ENTRY, this );
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_CWPSACTIVERUNNER_EXIT, this );
 }
 
 /*!
- * Initializes the member variables
- * 
- * 
- * \return integer error code indicating the result of the operation
+ * ConstructL, Two phased constructor.
+ *
  */
-void CWpsActiveRunner::InitL()
-{
-    CActiveScheduler::Add(this);
-#ifdef __arm
-    InitializeL();
-#else
-    iTimer.CreateLocal();
-#endif
-
-}
-
 void CWpsActiveRunner::ConstructL()
 {
-    InitL();
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_CONSTRUCTL_ENTRY, this );
+
+    CActiveScheduler::Add(this);
+    InitializeL();
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_CONSTRUCTL_EXIT, this );
 }
 
 /*!
  * Initializes the member variables for making the middleware calls
- * 
+ *
  */
 
 void CWpsActiveRunner::InitializeL()
 {
-#ifdef __arm    
-    if (!iWLANMgmtClient)
-        iWLANMgmtClient = CWlanMgmtClient::NewL();
-    if (!iIapParametersArray)
-        iIapParametersArray = new (ELeave) CArrayFixSeg<
-    TWlanProtectedSetupCredentialAttribute> (KArrayGranularity);
-#endif    
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_INITIALIZEL_ENTRY, this );
+    iWLANMgmtClient = CWlanMgmtClient::NewL();
+    iIapParametersArray = new (ELeave) CArrayFixSeg<
+        TWlanProtectedSetupCredentialAttribute> (KArrayGranularity);
+    
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_INITIALIZEL_EXIT, this );
 }
 
 /*!
  * Destructor
- * 
+ *
  */
-
 CWpsActiveRunner::~CWpsActiveRunner()
 {
+    OstTraceFunctionEntry0( DUP1_CWPSACTIVERUNNER_CWPSACTIVERUNNER_ENTRY );
     Cancel();
-#ifdef __arm
     delete iWLANMgmtClient;
     delete iIapParametersArray;
-#else
-    iTimer.Cancel();
-    iTimer.Close();
-#endif
+    OstTraceFunctionExit0( DUP1_CWPSACTIVERUNNER_CWPSACTIVERUNNER_EXIT );
 }
 
 /*!
  * Initiates the call to the middleware
+ *
+ * \param aSsid[in] The network ssid to which we have to connect
+ * \param aPin[in] The pin to be used for WPS negotiating
  */
 void CWpsActiveRunner::StartSetup(RBuf8& aSsid, int aPin)
 {
-#ifdef __arm
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_STARTSETUP_ENTRY, this );
     TWlanSsid ssid;
     TWlanWpsPin pin;
 
+    isCancelTriggered = false;
     ssid.Copy(aSsid);
-    TBuf8<32> pinCode;
-    pinCode.AppendNum(aPin);
+    TBuf8<KDefaultPinLength> pinCode;
+
+    if (aPin == 0) {
+        pinCode.AppendFill('0', 8);
+    }
+    else {
+        pinCode.AppendNum(aPin);
+    }
+
     pin.Copy(pinCode);
-    iWLANMgmtClient->RunProtectedSetup(iStatus,ssid,pin,*iIapParametersArray);
-#else
-    iTimer.After(iStatus, 4 * 1000000);
-#endif
+
+    iWLANMgmtClient->RunProtectedSetup(iStatus, ssid, pin, *iIapParametersArray);
+
     SetActive();
 
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_STARTSETUP_EXIT, this );
 }
 
 /*!
@@ -142,29 +160,31 @@ void CWpsActiveRunner::StartSetup(RBuf8& aSsid, int aPin)
  */
 void CWpsActiveRunner::RunL()
 {
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_RUNL_ENTRY, this );
+
     TInt completionCode = iStatus.Int();
     QList<TWlanProtectedSetupCredentialAttribute> credentials;
 
-    if (completionCode < KErrNone) {
-        //Raise Error
-        iObserver.WpsActiveRunnerStopped(credentials, completionCode);
-    }
-    else {
-#ifdef __arm
-        TInt len = iIapParametersArray->Length();
-        TInt count;
-        for(count=0;count<iIapParametersArray->Count();count++)
-        {
-            TWlanProtectedSetupCredentialAttribute attr =(*iIapParametersArray)[count];
-            credentials.append(attr);
+    if(!isCancelTriggered) {
+
+        if (completionCode < KErrNone) {
+            //Raise Error
+        QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials, completionCode));
         }
-        iObserver.WpsActiveRunnerStopped(credentials,completionCode);
-#else
+        else {
+            TInt len = iIapParametersArray->Length();
+            TInt count;
+            for(count=0;count<iIapParametersArray->Count();count++)
+                {
+                TWlanProtectedSetupCredentialAttribute attr =(*iIapParametersArray)[count];
+                credentials.append(attr);
+                }
+            QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials,completionCode));
 
-        RunProtectedSetup_Stub();
-#endif
+        }
     }
 
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_RUNL_EXIT, this );
 }
 
 /*!
@@ -172,12 +192,13 @@ void CWpsActiveRunner::RunL()
  */
 void CWpsActiveRunner::DoCancel()
 {
-#ifdef __arm    
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_DOCANCEL_ENTRY, this );
+    isCancelTriggered = true;
     if(iWLANMgmtClient)
-    iWLANMgmtClient->CancelProtectedSetup();
-#else
-    iTimer.Cancel();
-#endif
+        {
+        iWLANMgmtClient->CancelProtectedSetup();
+        }
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_DOCANCEL_EXIT, this );
 }
 
 /*!
@@ -185,41 +206,18 @@ void CWpsActiveRunner::DoCancel()
  */
 TInt CWpsActiveRunner::RunError(TInt aError)
 {
+    OstTraceFunctionEntry1( CWPSACTIVERUNNER_RUNERROR_ENTRY, this );
+
+    OstTrace1( TRACE_ERROR, CWPSACTIVERUNNER_RUNERROR, "CWpsActiveRunner::RunError;aError=%d", aError );
+
     QList<TWlanProtectedSetupCredentialAttribute> credentials;
-#ifdef __arm    
     if(iWLANMgmtClient)
-    iWLANMgmtClient->CancelProtectedSetup();
-#else
-    iTimer.Cancel();
-#endif
+        {
+        iWLANMgmtClient->CancelProtectedSetup();
+        }
 
-    iObserver.WpsActiveRunnerStopped(credentials, aError);
+    QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials, aError));
+
+    return 0;
 }
 
-#ifndef __arm
-void CWpsActiveRunner::RunProtectedSetup_Stub()
-{
-    QList<TWlanProtectedSetupCredentialAttribute> credentials;
-    TWlanProtectedSetupCredentialAttribute attr1 = { EWlanOperatingModeInfrastructure, // iOperatingMode
-        EWlanAuthenticationModeOpen, // iAuthenticationMode
-        EWlanIapSecurityModeWpa, // iSecurityMode,
-        _L8( "STUB01" ), // iSsid
-        _L8( "" ), // iWepKey1
-        _L8( "" ), // iWepKey2
-        _L8( "" ), // iWepKey3
-        _L8( "" ), // iWepKey4
-        EWlanDefaultWepKey1, // iWepDefaultKey
-        _L8( "testtest" )
-    // iWpaPreSharedKey
-        };
-
-    TWlanProtectedSetupCredentialAttribute attr2 = { EWlanOperatingModeAdhoc,
-        EWlanAuthenticationModeOpen, EWlanIapSecurityModeWep, _L8( "STUB02" ), _L8( "12345" ),
-        _L8( "" ), _L8( "" ), _L8( "" ), EWlanDefaultWepKey1, _L8( "" ) };
-
-    credentials.append(attr1);
-    credentials.append(attr2);
-
-    iObserver.WpsActiveRunnerStopped(credentials, KErrNone);
-}
-#endif

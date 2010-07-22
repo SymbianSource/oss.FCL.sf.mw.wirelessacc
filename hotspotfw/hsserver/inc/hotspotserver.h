@@ -288,13 +288,6 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aIapId, IAP id
         */        
         void RemoveClientIap( TUint aIapId );
-
-        /**
-        * Returns Easy WLAN IAP id.
-        * @since Series 60 5.2
-        * @return Easy WLAN id
-        */        
-        TInt GetEasyWlanId();
         
     private:
         
@@ -393,11 +386,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * Array for storing client IAPs and their UIDs.
         */
         RArray<SClientIaps> iClientIaps;
-        
-        /**
-        * Easy WLAN IAP Id
-        */
-        TInt iEasyWlanId;
+
 	};
 
 #endif

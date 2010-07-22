@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+# Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 # All rights reserved.
 # This component and the accompanying materials are made available
 # under the terms of "Eclipse Public License v1.0"
@@ -12,52 +12,16 @@
 # Contributors:
 #
 # Description:
+# WLAN Sniffer project file.
 #
 
-TEMPLATE = app
-TARGET = wlansniffer
-TARGET.CAPABILITY = ALL -TCB
-DEPENDPATH += .
-# Own headers
-INCLUDEPATH += inc \
-               traces
-# wlanutilities Private API
-INCLUDEPATH += ../inc
-CONFIG += hb no_icon service
+TEMPLATE = subdirs
 
-#Store generated .moc files to their own directory
-MOC_DIR = moc
+SUBDIRS  += \
+    wlansnifferapplication
+            
+CONFIG += ordered
 
-TRANSLATIONS = wlansniffer.ts
-
-# Input
-SOURCES += src/main.cpp \
-    src/wlansniffer.cpp \
-    src/wlansnifferlistview.cpp \
-    src/wlansniffermainwindow.cpp \
-    src/wlansnifferservice.cpp
-
-HEADERS += inc/wlansniffer.h \
-    inc/wlansnifferlistview.h \
-    inc/wlansniffermainwindow.h \
-    inc/wlansnifferservice.h \
-    traces/OstTraceDefinitions.h
-
-RESOURCES = res/wlansniffer.qrc
-
-SERVICE.FILE = res/service_conf.xml
-SERVICE.OPTIONS = embeddable
-
-symbian*::LIBS += -lwlanqtutilities -lxqservice -lxqserviceutil -lqtsysteminfo
-
-symbian*: {
-    TARGET.UID3 = 0x10281CAA
-    SYMBIAN_PLATFORMS = WINSCW ARMV5
-    BLD_INF_RULES.prj_exports += "rom/wlansniffer.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlansniffer.iby)"
-    BLD_INF_RULES.prj_exports += "rom/wlansniffer_resources.iby LANGUAGE_APP_LAYER_IBY_EXPORT_PATH(wlansniffer_resources.iby)"
-    addFiles.sources = /epoc32/release/$(PLATFORM)/$(CFG)/wlanqtutilities.dll xqservice.dll xqserviceutil.dll
-    addFiles.path = /sys/bin
-    DEPLOYMENT += addFiles
-    # Enable for QtHighway tracing
-    # DEFINES += WLANSNIFFER_SERVICETRACES
-} 
+# This enables compiling also the Symbian component from this level
+BLD_INF_RULES.prj_exports += \
+    "$${LITERAL_HASH}include \"./wlansnifferkeepalive/group/bld.inf\""

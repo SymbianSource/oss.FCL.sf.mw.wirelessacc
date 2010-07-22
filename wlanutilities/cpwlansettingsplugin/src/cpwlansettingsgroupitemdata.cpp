@@ -119,6 +119,8 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
     mJoinWlanItem = new CpSettingFormItemData(
             HbDataFormModelItem::ComboBoxItem, hbTrId(
                     "txt_occ_setlabel_join_wlan_networks"), this);
+    // name the object for test automation purposes
+    mJoinWlanItem->setObjectName("switchToWlan");
     
     QStringList joinWlanItems;
     
@@ -142,6 +144,8 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
     mScanNetworkItem = new CpSettingFormItemData(
             HbDataFormModelItem::ComboBoxItem, hbTrId(
                     "txt_occ_setlabel_scan_for_networks"), this);
+    // name the object for test automation purposes
+    mScanNetworkItem->setObjectName("scanNetworkItem");
     
     QStringList scanNetworkItems;
     
@@ -171,6 +175,8 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
     mPowerSavingItem = new CpSettingFormItemData(
             HbDataFormModelItem::ComboBoxItem, hbTrId(
                     "txt_occ_setlabel_power_saving"), this);
+    // name the object for test automation purposes
+    mPowerSavingItem->setObjectName("powerSaving");
     
     QStringList powerSavingItems;
     

@@ -14,12 +14,14 @@
 * Description: WPS wizard page step 5
 *
 */
+
 #ifndef WPSWIZARDSTEPFIVE_H_
 #define WPSWIZARDSTEPFIVE_H_
 
 
 // System includes
 #include <QObject>
+#include <HbDocumentLoader>
 
 // User includes
 #include "wpswizardpage.h"
@@ -35,53 +37,65 @@ class WpsWizardPrivate;
 // External data types
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
+
 // Class declaration
 class WpsPageStepFive : public WpsWizardPage
     {
 Q_OBJECT
+
 public:
-    WpsPageStepFive(WpsWizardPrivate* parent);
+    
+    explicit WpsPageStepFive(WpsWizardPrivate* parent);
     ~WpsPageStepFive();
 
 public:
-    /*!
-     * Creates a visualization of the page.
-     */
+
     HbWidget* initializePage();
-    /*!
-     * Returns id of next page. updates settings EapWizard.
-     */
+
     int nextId(bool &removeFromStack) const;
-    /*!
-     * Returns how many steps should be gone backwards. 
-     */
-    int stepsBackwards();
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    void previousTriggered();
-    /*!
-     * This method is called when Cancel button has been pressed.
-     */
+
+    int previousTriggered();
+
     void cancelTriggered();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    bool validate() const;
+
+    bool showPage();
+	
+signals:
 
 public slots:
+
     void itemSelected(int index);
+    
+    void loadDocmlSection(Qt::Orientation orientation);
+
+protected:
+
+protected slots:
 
 private:
-    Q_DISABLE_COPY(WpsPageStepFive)
-    HbWidget *mWidget;
-    HbRadioButtonList *mRadio;
-    HbLabel *mTitle;
-    HbLabel *mHeading;
-    bool mValid;
-    };
 
-/*! @} */
+    Q_DISABLE_COPY(WpsPageStepFive)
+	
+private slots:
+
+private:    
+    
+    //data
+
+    //! Pointer to the HbWidget object
+    HbWidget *mWidget;
+    //! Radio button list object
+    HbRadioButtonList *mRadio;
+    //! Heading label object
+    HbLabel *mHeading;
+    //! variable used to determine if next button has to be enabled.
+    bool mValid;
+    //! Documentloader object
+    HbDocumentLoader *mLoader;
+    };
 
 #endif /* WPSWIZARDSTEPFIVE_H_ */

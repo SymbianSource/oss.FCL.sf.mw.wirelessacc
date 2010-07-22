@@ -12,6 +12,7 @@
 # Contributors:
 #
 # Description: 
+# WLAN Entry Plugin Qt project file.
 #
 
 TEMPLATE = lib
@@ -22,10 +23,17 @@ INCLUDEPATH += traces
 # wlanutilities Private API
 INCLUDEPATH += ../inc
 CONFIG += hb plugin
-MOC_DIR = moc
-OBJECTS_DIR = obj
-RCC_DIR = rcc
-LIBS += -lwlanqtutilities -lcpframework -lxqservice -lqtsysteminfo
+LIBS += -lwlanqtutilities -lcpframework -lxqservice -lxqserviceutil -lqtsysteminfo -lxqsettingsmanager
+
+# Temporary solution to fix tracecompiler
+# When tracecompiler is fixed, this can be removed
+symbian: {
+    MMP_RULES += "USERINCLUDE traces"
+}
+
+#Store generated files to their own directory
+MOC_DIR = build
+RCC_DIR = build
 
 # Sources
 HEADERS += \

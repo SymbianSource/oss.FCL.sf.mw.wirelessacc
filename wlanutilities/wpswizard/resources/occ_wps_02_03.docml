@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hbdocument version="1.1">
+    <widget name="occ_wps_P2" type="HbWidget">
+        <widget name="label_heading" type="HbLabel">
+            <enums name="textWrapping" value="TextWordWrap"/>
+			<enums name="alignment" value="AlignTop"/>
+        </widget>
+        <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Expanding" verticalStretch="0"/>
+        <layout orientation="Vertical" type="linear">
+            <contentsmargins bottom="0un" left="var(hb-param-margin-gene-popup)" right="var(hb-param-margin-gene-popup)" top="var(hb-param-margin-gene-popup)"/>
+            <linearitem itemname="label_heading"/>
+        </layout>
+    </widget>
+    <metadata activeUIState="Common ui state" display="NHD portrait" unit="un">
+        <uistate name="Common ui state" sections="#common"/>
+    </metadata>
+</hbdocument>

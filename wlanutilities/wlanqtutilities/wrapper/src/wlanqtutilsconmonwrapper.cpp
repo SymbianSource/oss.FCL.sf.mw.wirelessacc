@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,68 +12,89 @@
 * Contributors:
 *
 * Description:
-*
+* Wrapper for Symbian Connection Monitor library.
 */
 
-// INCLUDE FILES
-#include <cmdestinationext.h>
-#include <cmmanagerext.h>
+// System includes
+
+#include <QSharedPointer>
+#include <QScopedPointer>
+
+// User includes
+
+#include "wlanqtutilsconmonwrapperdisconnect_symbian.h"
+#include "wlanqtutilsconmonwrapperinfo_symbian.h"
 #include "wlanqtutilsconmonwrapper.h"
-#include "wlanqtutilsconmonwrapper_s60_p.h"
 
-// ================= MEMBER FUNCTIONS =======================
+/*!
+    \class WlanQtUtilsConMonWrapper
+    \brief Wrapper for Symbian Connection Monitor library.
 
-ConMonWrapper::ConMonWrapper(QObject *parent)
- : QObject(parent)
+    Provides functionality to retrieve connection information,
+    and to disconnect connections.
+*/
+
+// External function prototypes
+
+// Local constants
+
+// ======== LOCAL FUNCTIONS ========
+
+// ======== MEMBER FUNCTIONS ========
+
+/*!
+    Constructor.
+    
+    @param [in] parent Parent object.
+*/
+
+WlanQtUtilsConMonWrapper::WlanQtUtilsConMonWrapper(QObject *parent) :
+    QObject(parent),
+    d_ptrInfo(new WlanQtUtilsConMonWrapperInfo(this)),
+    d_ptrDisconnect(new WlanQtUtilsConMonWrapperDisconnect(this))
 {
-    d_ptrScanWlans = new ConnMonScanWlanAps(this);
-    d_ptrConnInfo = new ConnMonConnInfo(this);
-    d_ptrConnDisconnect = new ConnMonConnDisconnect(this);
 }
 
-ConMonWrapper::~ConMonWrapper()
+/*!
+    Destructor.
+*/
+
+WlanQtUtilsConMonWrapper::~WlanQtUtilsConMonWrapper()
 {
-    delete d_ptrScanWlans;
-    delete d_ptrConnInfo;
-    delete d_ptrConnDisconnect;
 }
 
-int ConMonWrapper::scanAvailableWlanAPs()
+/*!
+   Return active connection information.
+
+   @return Information of active connection, 0 if not found.
+*/ 
+
+WlanQtUtilsConnection *WlanQtUtilsConMonWrapper::activeConnection() const
 {
-    return d_ptrScanWlans->scanAvailableWlanAPs();
+    return d_ptrInfo->ActiveConnection();
 }
 
-void ConMonWrapper::emitAvailableWlans(QList<WlanQtUtilsWlanAp *> &availableWlanAPs)
+/*!
+   Returns information of a connection with the given connection ID.
+
+   @param [in] connectionId Connection ID.
+
+   @return Information of the given connection, 0 if not found.
+*/ 
+
+WlanQtUtilsConnection* WlanQtUtilsConMonWrapper::connectionInfo(
+    uint connectionId) const
 {
-    emit availableWlanApsFromWrapper(availableWlanAPs);
+    return d_ptrInfo->ConnectionInfo(connectionId);
 }
 
-void ConMonWrapper::emitConnCreatedEvent(uint connectionId)
-{
-   emit connCreatedEventFromWrapper(connectionId);
-}
+/*!
+   Stops given connection regardless of how many applications are using it.
 
-void ConMonWrapper::emitConnDeletedEvent(uint connectionId)
-{
-   emit connDeletedEventFromWrapper(connectionId);
-}
+   @param [in] iapId IAP ID to disconnect.
+*/ 
 
-void ConMonWrapper::emitConnStatusEvent(uint connectionId, WlanQtUtilsConnectionStatus connectionStatus)
+void WlanQtUtilsConMonWrapper::disconnectIap(int iapId)
 {
-   emit connStatusEventFromWrapper(connectionId, connectionStatus);
-}
-
-WlanQtUtilsActiveConn *ConMonWrapper::activeConnection()
-{
-    return d_ptrConnInfo->activeConnection();
-}
-
-WlanQtUtilsActiveConn* ConMonWrapper::connectionInfo(uint connectionId)
-{
-    return d_ptrConnInfo->connectionInfo(connectionId);
-}
-
-void ConMonWrapper::disconnectIap(int iapId)
-{
-   d_ptrConnDisconnect->disconnectConnection(iapId);
+   d_ptrDisconnect->DisconnectConnection(iapId);
 }

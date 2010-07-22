@@ -14,13 +14,14 @@
 * Description: WPS wizard page step 4
 *
 */
+
 #ifndef WPSWIZARDSTEPFOUR_H_
 #define WPSWIZARDSTEPFOUR_H_
 
 
 // System includes
 #include <QObject>
-#include<e32base.h>
+#include <HbDocumentLoader>
 
 // User includes
 #include "wpswizardpage.h"
@@ -28,76 +29,86 @@
 #include "cwpsactiverunner.h"
 
 // Forward declarations
-class HbRadioButtonList;
 class HbWidget;
-class HbLabel;
-class HbProgressBar;
 class WpsWizardPrivate;
+class WpsPageStepFourPrivate;
 
 // External data types
 // Constants
 
+/*!
+ * @addtogroup group_wps_wizard_plugin
+ * @{
+ */
+
 // Class declaration
-class WpsPageStepFour : public WpsWizardPage, public MWpsActiveRunnerCallback
+class WpsPageStepFour : public WpsWizardPage
     {
 Q_OBJECT
+
 public:
-    WpsPageStepFour(WpsWizardPrivate* parent);
+
+    explicit WpsPageStepFour(WpsWizardPrivate* parent);
     ~WpsPageStepFour();
 
 public:
-    /*!
-     * Creates a visualization of the page.
-     */
+
     HbWidget* initializePage();
-    /*!
-     * Returns id of next page. updates settings EapWizard.
-     */
+
     int nextId(bool &removeFromStack) const;
-    /*!
-     * Returns how many steps should be gone backwards. 
-     */
-    int stepsBackwards();
-    /*!
-     * This method is called when Previous button has been pressed.
-     */
-    void previousTriggered();
-    /*!
-     * This method is called when Cancel button has been pressed.
-     */
+
+    int previousTriggered();
+
     void cancelTriggered();
-    /*!
-     * This method is called when a visualization is displayed to detect
-     * whether next button should be enabled or not.
-     */
-    bool validate() const;
-    /*!
-     * From mwpsactiverunnercallback.h
-     * This method is called from the active runner class to notify the end
-     * of operation
-     */
-    void WpsActiveRunnerStopped(
-            QList<TWlanProtectedSetupCredentialAttribute>& aCredentials,
-            TInt aError);
+
+    void startOperation();
+
+    bool requiresStartOperation();
+
+    void setCredentials(
+            QList<TWlanProtectedSetupCredentialAttribute>& credentials,
+            int credentialscount);
+
+    void handleError( int aErrorCode );
+
+    bool showPage();
+
+signals:
 
 public slots:
 
+    void loadDocmlSection(Qt::Orientation orientation);
+
+protected:
+
+protected slots:
+
 private:
+
+    void startWpsRunner();
+
     Q_DISABLE_COPY(WpsPageStepFour)
-    void StartWpsRunner();
 
+private slots:
+
+private:
+
+    //data
+
+    //! HbWidget object displayed on the page
     HbWidget *mWidget;
-    HbRadioButtonList *mRadio;
-    HbLabel *mTitle;
-    HbLabel *mHeading;
-    HbProgressBar *mProgressBar;
-    CWpsActiveRunner *mWpsActiveRunner;
+    //! Member variable to hold the result of of the WPS operation
     int mWpsErrorCode;
-    int countCredentials;
+    //! Member variable containing the count of received settings.
+    int mCountCredentials;
+    //! variable to determine whether to enable the next button or not.
     bool mValid;
+    //! Document loader object.
+    HbDocumentLoader *mLoader;
+    //! Pointer to Private Implementation
+    QScopedPointer<WpsPageStepFourPrivate> d_ptr;
 
+    friend class TestWlanWizardContext;
     };
-
-/*! @} */
 
 #endif /* WPSWIZARDSTEPFOUR_H_ */

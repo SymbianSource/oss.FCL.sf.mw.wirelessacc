@@ -1,80 +1,46 @@
 EXPORTS
-	?getStaticMetaObject@WlanQtUtilsWlanIap@@SAABUQMetaObject@@XZ @ 1 NONAME ; struct QMetaObject const & WlanQtUtilsWlanIap::getStaticMetaObject(void)
-	?connectedWlanId@WlanQtUtils@@QBEHXZ @ 2 NONAME ; int WlanQtUtils::connectedWlanId(void) const
-	?masterWlanStatus@WlanQtUtils@@IAEX_N@Z @ 3 NONAME ; void WlanQtUtils::masterWlanStatus(bool)
-	?Start@RConnection@@QAEXAAVTConnPref@@AAVTRequestStatus@@@Z @ 4 NONAME ; void RConnection::Start(class TConnPref &, class TRequestStatus &)
-	?connectionMode@WlanQtUtilsWlanAp@@QBEHXZ @ 5 NONAME ; int WlanQtUtilsWlanAp::connectionMode(void) const
-	??1WlanQtUtilsIap@@UAE@XZ @ 6 NONAME ; WlanQtUtilsIap::~WlanQtUtilsIap(void)
-	??0WlanQtUtilsWlanAp@@QAE@VQString@@0HHW4WlanQtUtilsWlanSecMode@@@Z @ 7 NONAME ; WlanQtUtilsWlanAp::WlanQtUtilsWlanAp(class QString, class QString, int, int, enum WlanQtUtilsWlanSecMode)
-	?staticMetaObject@WlanQtUtilsWlanIap@@2UQMetaObject@@B @ 8 NONAME ; struct QMetaObject const WlanQtUtilsWlanIap::staticMetaObject
+	?iapName@WlanQtUtils@@QBE?AVQString@@H@Z @ 1 NONAME ; class QString WlanQtUtils::iapName(int) const
+	??0WlanQtUtilsAp@@QAE@XZ @ 2 NONAME ; WlanQtUtilsAp::WlanQtUtilsAp(void)
+	?updateIap@WlanQtUtils@@QAE_NHPBVWlanQtUtilsAp@@@Z @ 3 NONAME ; bool WlanQtUtils::updateIap(int, class WlanQtUtilsAp const *)
+	?createIap@WlanQtUtils@@QAEHPBVWlanQtUtilsAp@@@Z @ 4 NONAME ; int WlanQtUtils::createIap(class WlanQtUtilsAp const *)
+	?Start@RConnection@@QAEXAAVTConnPref@@AAVTRequestStatus@@@Z @ 5 NONAME ; void RConnection::Start(class TConnPref &, class TRequestStatus &)
+	?value@WlanQtUtilsAp@@QBE?AVQVariant@@H@Z @ 6 NONAME ; class QVariant WlanQtUtilsAp::value(int) const
+	??1WlanQtUtilsIap@@UAE@XZ @ 7 NONAME ; WlanQtUtilsIap::~WlanQtUtilsIap(void)
+	?qt_metacast@WlanQtUtils@@UAEPAXPBD@Z @ 8 NONAME ; void * WlanQtUtils::qt_metacast(char const *)
 	?qt_metacall@WlanQtUtils@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 9 NONAME ; int WlanQtUtils::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?metaObject@WlanQtUtilsWlanIap@@UBEPBUQMetaObject@@XZ @ 10 NONAME ; struct QMetaObject const * WlanQtUtilsWlanIap::metaObject(void) const
-	?tr@WlanQtUtilsWlanIap@@SA?AVQString@@PBD0H@Z @ 11 NONAME ; class QString WlanQtUtilsWlanIap::tr(char const *, char const *, int)
-	?networkId@WlanQtUtilsIap@@QBEHXZ @ 12 NONAME ; int WlanQtUtilsIap::networkId(void) const
-	?qt_metacall@WlanQtUtilsWlanIap@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 13 NONAME ; int WlanQtUtilsWlanIap::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?staticMetaObject@WlanQtUtils@@2UQMetaObject@@B @ 14 NONAME ; struct QMetaObject const WlanQtUtils::staticMetaObject
-	?disconnectIap@WlanQtUtils@@QAEXH@Z @ 15 NONAME ; void WlanQtUtils::disconnectIap(int)
-	??0WlanQtUtilsIap@@QAE@HHVQString@@W4WlanQtUtilsBearerType@@@Z @ 16 NONAME ; WlanQtUtilsIap::WlanQtUtilsIap(int, int, class QString, enum WlanQtUtilsBearerType)
-	?ssid@WlanQtUtilsWlanAp@@QBE?AVQString@@XZ @ 17 NONAME ; class QString WlanQtUtilsWlanAp::ssid(void) const
-	??1WlanQtUtilsWlanAp@@UAE@XZ @ 18 NONAME ; WlanQtUtilsWlanAp::~WlanQtUtilsWlanAp(void)
-	?bearerType@WlanQtUtilsIap@@QBE?AW4WlanQtUtilsBearerType@@XZ @ 19 NONAME ; enum WlanQtUtilsBearerType WlanQtUtilsIap::bearerType(void) const
-	?GetPckgAttribute@RConnectionMonitor@@QBEXIIIAAVTDes16@@AAVTRequestStatus@@@Z @ 20 NONAME ; void RConnectionMonitor::GetPckgAttribute(unsigned int, unsigned int, unsigned int, class TDes16 &, class TRequestStatus &) const
-	?signalStrength@WlanQtUtilsWlanIap@@QBEHXZ @ 21 NONAME ; int WlanQtUtilsWlanIap::signalStrength(void) const
-	??_EWlanQtUtilsWlanIap@@UAE@I@Z @ 22 NONAME ; WlanQtUtilsWlanIap::~WlanQtUtilsWlanIap(unsigned int)
-	?wlanNetworkOpened@WlanQtUtils@@IAEXH@Z @ 23 NONAME ; void WlanQtUtils::wlanNetworkOpened(int)
-	?metaObject@WlanQtUtils@@UBEPBUQMetaObject@@XZ @ 24 NONAME ; struct QMetaObject const * WlanQtUtils::metaObject(void) const
-	?setId@WlanQtUtilsIap@@QAEXH@Z @ 25 NONAME ; void WlanQtUtilsIap::setId(int)
-	?setConnectionStatus@WlanQtUtilsIap@@QAEXW4WlanQtUtilsConnectionStatus@@@Z @ 26 NONAME ; void WlanQtUtilsIap::setConnectionStatus(enum WlanQtUtilsConnectionStatus)
-	?createWlanIap@WlanQtUtils@@QAEHPBVWlanQtUtilsWlanAp@@@Z @ 27 NONAME ; int WlanQtUtils::createWlanIap(class WlanQtUtilsWlanAp const *)
-	?setName@WlanQtUtilsIap@@QAEXVQString@@@Z @ 28 NONAME ; void WlanQtUtilsIap::setName(class QString)
-	?setSsid@WlanQtUtilsWlanIap@@QAEXVQString@@@Z @ 29 NONAME ; void WlanQtUtilsWlanIap::setSsid(class QString)
-	?setSecurityMode@WlanQtUtilsWlanIap@@QAEXW4WlanQtUtilsWlanSecMode@@@Z @ 30 NONAME ; void WlanQtUtilsWlanIap::setSecurityMode(enum WlanQtUtilsWlanSecMode)
-	?tr@WlanQtUtils@@SA?AVQString@@PBD0H@Z @ 31 NONAME ; class QString WlanQtUtils::tr(char const *, char const *, int)
-	?name@WlanQtUtilsIap@@QBE?AVQString@@XZ @ 32 NONAME ; class QString WlanQtUtilsIap::name(void) const
-	?masterWlan@WlanQtUtils@@QBE_NXZ @ 33 NONAME ; bool WlanQtUtils::masterWlan(void) const
-	?qt_metacast@WlanQtUtilsWlanIap@@UAEPAXPBD@Z @ 34 NONAME ; void * WlanQtUtilsWlanIap::qt_metacast(char const *)
-	?securityKey@WlanQtUtilsWlanAp@@QBE?AVQString@@XZ @ 35 NONAME ; class QString WlanQtUtilsWlanAp::securityKey(void) const
-	??0WlanQtUtilsIap@@QAE@XZ @ 36 NONAME ; WlanQtUtilsIap::WlanQtUtilsIap(void)
-	?iap@WlanQtUtils@@QBEPAVWlanQtUtilsIap@@H@Z @ 37 NONAME ; class WlanQtUtilsIap * WlanQtUtils::iap(int) const
-	??_EWlanQtUtilsWlanAp@@UAE@I@Z @ 38 NONAME ; WlanQtUtilsWlanAp::~WlanQtUtilsWlanAp(unsigned int)
-	?tr@WlanQtUtilsWlanIap@@SA?AVQString@@PBD0@Z @ 39 NONAME ; class QString WlanQtUtilsWlanIap::tr(char const *, char const *)
-	?setSecurityKey@WlanQtUtilsWlanAp@@QAEXVQString@@@Z @ 40 NONAME ; void WlanQtUtilsWlanAp::setSecurityKey(class QString)
-	??0WlanQtUtilsWlanAp@@QAE@XZ @ 41 NONAME ; WlanQtUtilsWlanAp::WlanQtUtilsWlanAp(void)
-	?qt_metacast@WlanQtUtils@@UAEPAXPBD@Z @ 42 NONAME ; void * WlanQtUtils::qt_metacast(char const *)
-	?ssid@WlanQtUtilsWlanIap@@QBE?AVQString@@XZ @ 43 NONAME ; class QString WlanQtUtilsWlanIap::ssid(void) const
-	?setNetworkId@WlanQtUtilsIap@@QAEXH@Z @ 44 NONAME ; void WlanQtUtilsIap::setNetworkId(int)
-	?availableWlanAps@WlanQtUtils@@QAEXAAV?$QList@PAVWlanQtUtilsWlanIap@@@@AAV?$QList@PAVWlanQtUtilsWlanAp@@@@@Z @ 45 NONAME ; void WlanQtUtils::availableWlanAps(class QList<class WlanQtUtilsWlanIap *> &, class QList<class WlanQtUtilsWlanAp *> &)
-	?trUtf8@WlanQtUtilsWlanIap@@SA?AVQString@@PBD0@Z @ 46 NONAME ; class QString WlanQtUtilsWlanIap::trUtf8(char const *, char const *)
-	??0WlanQtUtilsWlanIap@@QAE@HHVQString@@W4WlanQtUtilsBearerType@@0W4WlanQtUtilsWlanSecMode@@@Z @ 47 NONAME ; WlanQtUtilsWlanIap::WlanQtUtilsWlanIap(int, int, class QString, enum WlanQtUtilsBearerType, class QString, enum WlanQtUtilsWlanSecMode)
-	?tr@WlanQtUtils@@SA?AVQString@@PBD0@Z @ 48 NONAME ; class QString WlanQtUtils::tr(char const *, char const *)
-	??0WlanQtUtilsWlanIap@@QAE@XZ @ 49 NONAME ; WlanQtUtilsWlanIap::WlanQtUtilsWlanIap(void)
-	?setBssid@WlanQtUtilsWlanAp@@QAEXVQString@@@Z @ 50 NONAME ; void WlanQtUtilsWlanAp::setBssid(class QString)
-	?setSsid@WlanQtUtilsWlanAp@@QAEXVQString@@@Z @ 51 NONAME ; void WlanQtUtilsWlanAp::setSsid(class QString)
-	?signalStrength@WlanQtUtilsWlanAp@@QBEHXZ @ 52 NONAME ; int WlanQtUtilsWlanAp::signalStrength(void) const
-	?setBearerType@WlanQtUtilsIap@@QAEXW4WlanQtUtilsBearerType@@@Z @ 53 NONAME ; void WlanQtUtilsIap::setBearerType(enum WlanQtUtilsBearerType)
-	?setSignalStrength@WlanQtUtilsWlanAp@@QAEXH@Z @ 54 NONAME ; void WlanQtUtilsWlanAp::setSignalStrength(int)
-	??1WlanQtUtils@@UAE@XZ @ 55 NONAME ; WlanQtUtils::~WlanQtUtils(void)
-	?scanWlans@WlanQtUtils@@QAEXXZ @ 56 NONAME ; void WlanQtUtils::scanWlans(void)
-	?setSignalStrength@WlanQtUtilsWlanIap@@QAEXH@Z @ 57 NONAME ; void WlanQtUtilsWlanIap::setSignalStrength(int)
-	?EventType@CConnMonEventBase@@QBEHXZ @ 58 NONAME ; int CConnMonEventBase::EventType(void) const
-	?setSecurityMode@WlanQtUtilsWlanAp@@QAEXW4WlanQtUtilsWlanSecMode@@@Z @ 59 NONAME ; void WlanQtUtilsWlanAp::setSecurityMode(enum WlanQtUtilsWlanSecMode)
-	?trUtf8@WlanQtUtilsWlanIap@@SA?AVQString@@PBD0H@Z @ 60 NONAME ; class QString WlanQtUtilsWlanIap::trUtf8(char const *, char const *, int)
-	?id@WlanQtUtilsIap@@QBEHXZ @ 61 NONAME ; int WlanQtUtilsIap::id(void) const
-	??1WlanQtUtilsWlanIap@@UAE@XZ @ 62 NONAME ; WlanQtUtilsWlanIap::~WlanQtUtilsWlanIap(void)
-	?securityMode@WlanQtUtilsWlanIap@@QBE?AW4WlanQtUtilsWlanSecMode@@XZ @ 63 NONAME ; enum WlanQtUtilsWlanSecMode WlanQtUtilsWlanIap::securityMode(void) const
-	??_EWlanQtUtilsIap@@UAE@I@Z @ 64 NONAME ; WlanQtUtilsIap::~WlanQtUtilsIap(unsigned int)
-	??_EWlanQtUtils@@UAE@I@Z @ 65 NONAME ; WlanQtUtils::~WlanQtUtils(unsigned int)
-	?wlanScanReady@WlanQtUtils@@IAEXXZ @ 66 NONAME ; void WlanQtUtils::wlanScanReady(void)
-	?wlanNetworkClosed@WlanQtUtils@@IAEXH@Z @ 67 NONAME ; void WlanQtUtils::wlanNetworkClosed(int)
-	?bssid@WlanQtUtilsWlanAp@@QBE?AVQString@@XZ @ 68 NONAME ; class QString WlanQtUtilsWlanAp::bssid(void) const
-	??0WlanQtUtilsWlanAp@@QAE@ABV0@@Z @ 69 NONAME ; WlanQtUtilsWlanAp::WlanQtUtilsWlanAp(class WlanQtUtilsWlanAp const &)
-	??0WlanQtUtils@@QAE@XZ @ 70 NONAME ; WlanQtUtils::WlanQtUtils(void)
-	?getStaticMetaObject@WlanQtUtils@@SAABUQMetaObject@@XZ @ 71 NONAME ; struct QMetaObject const & WlanQtUtils::getStaticMetaObject(void)
-	?setConnectionMode@WlanQtUtilsWlanAp@@QAEXH@Z @ 72 NONAME ; void WlanQtUtilsWlanAp::setConnectionMode(int)
-	?trUtf8@WlanQtUtils@@SA?AVQString@@PBD0@Z @ 73 NONAME ; class QString WlanQtUtils::trUtf8(char const *, char const *)
-	?setMasterWlan@WlanQtUtils@@QAEX_N@Z @ 74 NONAME ; void WlanQtUtils::setMasterWlan(bool)
-	?connectionStatus@WlanQtUtilsIap@@QBE?AW4WlanQtUtilsConnectionStatus@@XZ @ 75 NONAME ; enum WlanQtUtilsConnectionStatus WlanQtUtilsIap::connectionStatus(void) const
-	?securityMode@WlanQtUtilsWlanAp@@QBE?AW4WlanQtUtilsWlanSecMode@@XZ @ 76 NONAME ; enum WlanQtUtilsWlanSecMode WlanQtUtilsWlanAp::securityMode(void) const
-	?connectIap@WlanQtUtils@@QAEXH@Z @ 77 NONAME ; void WlanQtUtils::connectIap(int)
-	?trUtf8@WlanQtUtils@@SA?AVQString@@PBD0H@Z @ 78 NONAME ; class QString WlanQtUtils::trUtf8(char const *, char const *, int)
+	?availableWlanAps@WlanQtUtils@@QBEXAAV?$QList@V?$QSharedPointer@VWlanQtUtilsAp@@@@@@@Z @ 10 NONAME ; void WlanQtUtils::availableWlanAps(class QList<class QSharedPointer<class WlanQtUtilsAp> > &) const
+	??1WlanQtUtilsAp@@UAE@XZ @ 11 NONAME ; WlanQtUtilsAp::~WlanQtUtilsAp(void)
+	?wlanScanApReady@WlanQtUtils@@IAEXH@Z @ 12 NONAME ; void WlanQtUtils::wlanScanApReady(int)
+	?staticMetaObject@WlanQtUtils@@2UQMetaObject@@B @ 13 NONAME ; struct QMetaObject const WlanQtUtils::staticMetaObject
+	??0WlanQtUtilsAp@@QAE@ABV0@@Z @ 14 NONAME ; WlanQtUtilsAp::WlanQtUtilsAp(class WlanQtUtilsAp const &)
+	??_EWlanQtUtilsAp@@UAE@I@Z @ 15 NONAME ; WlanQtUtilsAp::~WlanQtUtilsAp(unsigned int)
+	?disconnectIap@WlanQtUtils@@QAEXH@Z @ 16 NONAME ; void WlanQtUtils::disconnectIap(int)
+	?scanWlanDirect@WlanQtUtils@@QAEXABVQString@@@Z @ 17 NONAME ; void WlanQtUtils::scanWlanDirect(class QString const &)
+	?tr@WlanQtUtils@@SA?AVQString@@PBD0@Z @ 18 NONAME ; class QString WlanQtUtils::tr(char const *, char const *)
+	?wlanNetworkClosed@WlanQtUtils@@IAEXHH@Z @ 19 NONAME ; void WlanQtUtils::wlanNetworkClosed(int, int)
+	?ictResult@WlanQtUtils@@IAEXHH@Z @ 20 NONAME ; void WlanQtUtils::ictResult(int, int)
+	?compare@WlanQtUtilsAp@@SAHPBV1@0P6AHABVQString@@1@Z@Z @ 21 NONAME ; int WlanQtUtilsAp::compare(class WlanQtUtilsAp const *, class WlanQtUtilsAp const *, int (*)(class QString const &, class QString const &))
+	?connectionStatus@WlanQtUtils@@QBE?AW4ConnStatus@1@XZ @ 22 NONAME ; enum WlanQtUtils::ConnStatus WlanQtUtils::connectionStatus(void) const
+	?setValue@WlanQtUtilsAp@@QAEXHVQVariant@@@Z @ 23 NONAME ; void WlanQtUtilsAp::setValue(int, class QVariant)
+	??1WlanQtUtils@@UAE@XZ @ 24 NONAME ; WlanQtUtils::~WlanQtUtils(void)
+	?scanWlans@WlanQtUtils@@QAEXXZ @ 25 NONAME ; void WlanQtUtils::scanWlans(void)
+	?EventType@CConnMonEventBase@@QBEHXZ @ 26 NONAME ; int CConnMonEventBase::EventType(void) const
+	?activeIap@WlanQtUtils@@QBEHXZ @ 27 NONAME ; int WlanQtUtils::activeIap(void) const
+	?scanWlanAps@WlanQtUtils@@QAEXXZ @ 28 NONAME ; void WlanQtUtils::scanWlanAps(void)
+	?wlanNetworkOpened@WlanQtUtils@@IAEXH@Z @ 29 NONAME ; void WlanQtUtils::wlanNetworkOpened(int)
+	?connectIap@WlanQtUtils@@QAEXH_N@Z @ 30 NONAME ; void WlanQtUtils::connectIap(int, bool)
+	??_EWlanQtUtilsIap@@UAE@I@Z @ 31 NONAME ; WlanQtUtilsIap::~WlanQtUtilsIap(unsigned int)
+	?metaObject@WlanQtUtils@@UBEPBUQMetaObject@@XZ @ 32 NONAME ; struct QMetaObject const * WlanQtUtils::metaObject(void) const
+	??_EWlanQtUtils@@UAE@I@Z @ 33 NONAME ; WlanQtUtils::~WlanQtUtils(unsigned int)
+	?wlanScanReady@WlanQtUtils@@IAEXH@Z @ 34 NONAME ; void WlanQtUtils::wlanScanReady(int)
+	??0WlanQtUtils@@QAE@XZ @ 35 NONAME ; WlanQtUtils::WlanQtUtils(void)
+	?stopWlanScan@WlanQtUtils@@QAEXXZ @ 36 NONAME ; void WlanQtUtils::stopWlanScan(void)
+	?availableWlans@WlanQtUtils@@QBEXAAV?$QList@V?$QSharedPointer@VWlanQtUtilsIap@@@@@@AAV?$QList@V?$QSharedPointer@VWlanQtUtilsAp@@@@@@@Z @ 37 NONAME ; void WlanQtUtils::availableWlans(class QList<class QSharedPointer<class WlanQtUtilsIap> > &, class QList<class QSharedPointer<class WlanQtUtilsAp> > &) const
+	?tr@WlanQtUtils@@SA?AVQString@@PBD0H@Z @ 38 NONAME ; class QString WlanQtUtils::tr(char const *, char const *, int)
+	?getStaticMetaObject@WlanQtUtils@@SAABUQMetaObject@@XZ @ 39 NONAME ; struct QMetaObject const & WlanQtUtils::getStaticMetaObject(void)
+	?trUtf8@WlanQtUtils@@SA?AVQString@@PBD0@Z @ 40 NONAME ; class QString WlanQtUtils::trUtf8(char const *, char const *)
+	?deleteIap@WlanQtUtils@@QAEXH@Z @ 41 NONAME ; void WlanQtUtils::deleteIap(int)
+	??0WlanQtUtilsIap@@QAE@XZ @ 42 NONAME ; WlanQtUtilsIap::WlanQtUtilsIap(void)
+	?wlanScanDirectReady@WlanQtUtils@@IAEXH@Z @ 43 NONAME ; void WlanQtUtils::wlanScanDirectReady(int)
+	?trUtf8@WlanQtUtils@@SA?AVQString@@PBD0H@Z @ 44 NONAME ; class QString WlanQtUtils::trUtf8(char const *, char const *, int)
 
