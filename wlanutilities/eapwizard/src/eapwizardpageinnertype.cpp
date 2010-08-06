@@ -132,11 +132,10 @@ HbWidget* EapWizardPageInnerType::initializePage()
     }
 
     mTitle->setPlainText(
-        HbParameterLengthLimiter(
-            hbTrId("txt_occ_title_select_innear_eap_type_for_1")).arg(
-                mWizard->eapTypeToString(
-                    mWizard->configurations(
-                        EapWizardPrivate::OuterType).toInt())));
+        HbParameterLengthLimiter("txt_occ_title_select_innear_eap_type_for_1").arg(
+            mWizard->eapTypeToString(
+                mWizard->configurations(
+                    EapWizardPrivate::OuterType).toInt())));
 
     OstTraceFunctionExit0( EAPWIZARDPAGEINNERTYPE_INITIALIZEPAGE_EXIT );
     return mWidget;

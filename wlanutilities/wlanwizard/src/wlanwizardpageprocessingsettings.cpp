@@ -137,7 +137,7 @@ HbWidget* WlanWizardPageProcessingSettings::initializePage()
     
     mLabel->setPlainText(
         HbParameterLengthLimiter(
-            hbTrId("txt_occ_dialog_checking_connection_to_1")).arg(
+            "txt_occ_dialog_checking_connection_to_1").arg(
                 mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
 
     OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_INITIALIZEPAGE_EXIT );

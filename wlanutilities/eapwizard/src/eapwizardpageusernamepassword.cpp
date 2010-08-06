@@ -155,9 +155,8 @@ HbWidget* EapWizardPageUsernamePassword::initializePage()
     mValidatorPassword->updateEditor(mEditPassword);
 
     mTitleUsername->setPlainText(
-        HbParameterLengthLimiter(
-            hbTrId("txt_occ_setlabel_user_name_for_1")).arg(
-                mWizard->eapTypeToString(eapType)));
+        HbParameterLengthLimiter("txt_occ_setlabel_user_name_for_1").arg(
+            mWizard->eapTypeToString(eapType)));
 
     OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_INITIALIZEPAGE_EXIT );
     return mWidget;

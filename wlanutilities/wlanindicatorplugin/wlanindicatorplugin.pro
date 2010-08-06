@@ -20,12 +20,12 @@ CONFIG += hb
 
 # directories
 DEPENDPATH += .
-INCLUDEPATH += .\inc
+INCLUDEPATH += ./inc
 
-HEADERS += inc\wlanindicatorplugin.h \
-           traces\OstTraceDefinitions.h
+HEADERS += inc/wlanindicatorplugin.h \
+           traces/OstTraceDefinitions.h
 
-SOURCES += src\wlanindicatorplugin.cpp
+SOURCES += src/wlanindicatorplugin.cpp
 
 TRANSLATIONS = wlanindicatorplugin.ts
 

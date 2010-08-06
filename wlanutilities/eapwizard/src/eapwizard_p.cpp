@@ -244,7 +244,7 @@ QString EapWizardPrivate::errorString(int errorCode)
 
     QString string;
     if (textId) {
-        string = HbParameterLengthLimiter(hbTrId(textId)).arg(eapTypeToString(eapType));
+        string = HbParameterLengthLimiter(textId).arg(eapTypeToString(eapType));
     }
 
     OstTraceFunctionExit0( EAPWIZARDPRIVATE_ERRORSTRING_EXIT );

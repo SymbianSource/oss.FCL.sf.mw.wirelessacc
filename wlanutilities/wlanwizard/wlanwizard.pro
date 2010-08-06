@@ -73,7 +73,7 @@ LIBS += \
 symbian {
     INCLUDEPATH += \
         inc \
-        ..\inc
+        ../inc
 
     TARGET.UID3 = 0x2002C39A
     TARGET.CAPABILITY = CAP_GENERAL_DLL

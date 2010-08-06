@@ -29,6 +29,7 @@
 #include <HbDocumentLoader>
 #include <HbInstance>
 #include <HbMessageBox>
+#include <HbParameterLengthLimiter>
 
 #include <xqserviceutil.h>
 
@@ -274,15 +275,17 @@ void WlanSnifferListView::updateWlanStatusLabel(bool enabled)
         case WlanQtUtils::ConnStatusConnecting:
             // WLAN is connecting
             Q_ASSERT(iapId != WlanQtUtils::IapIdNone);
-            status = hbTrId("txt_occ_grid_connecting_to_1").arg(
-                mEngine->wlanQtUtils()->iapName(iapId));
+            status = HbParameterLengthLimiter(
+                "txt_occ_grid_connecting_to_1").arg(
+                    mEngine->wlanQtUtils()->iapName(iapId));
             break;
             
         case WlanQtUtils::ConnStatusConnected:
             // WLAN is connected
             Q_ASSERT(iapId != WlanQtUtils::IapIdNone);
-            status = hbTrId("txt_occ_grid_connected_to_1").arg(
-                mEngine->wlanQtUtils()->iapName(iapId));
+            status = HbParameterLengthLimiter(
+                "txt_occ_grid_connected_to_1").arg(
+                    mEngine->wlanQtUtils()->iapName(iapId));
             break;
             
         default:
@@ -337,8 +340,9 @@ void WlanSnifferListView::handleConnect(QVariant data)
         // Item was an IAP, connect it.
         mConnectingIapId = iapId;
         mStatusLabel->setPlainText(
-            hbTrId("txt_occ_grid_connecting_to_1").arg(
-                mEngine->wlanQtUtils()->iapName(iapId)));
+            HbParameterLengthLimiter(
+                "txt_occ_grid_connecting_to_1").arg(
+                    mEngine->wlanQtUtils()->iapName(iapId)));
         mEngine->wlanQtUtils()->connectIap(iapId);
     } else {
         // Item is a WLAN AP. Summon the Wlan Wizard to handle creation
@@ -439,8 +443,9 @@ void WlanSnifferListView::updateConnectionOpened(int iapId)
     
     mConnectingIapId = WlanQtUtils::IapIdNone;
     mStatusLabel->setPlainText(
-        hbTrId("txt_occ_grid_connected_to_1").arg(
-            mEngine->wlanQtUtils()->iapName(iapId)));
+        HbParameterLengthLimiter(
+            "txt_occ_grid_connected_to_1").arg(
+                mEngine->wlanQtUtils()->iapName(iapId)));
     
     // Update the list widget content
     updateListContent();

@@ -326,23 +326,23 @@ bool TestWlanWizardContext::verifyCurrentPageWithInfo(
                 return verifyDialogText("dialog", info);
 
             case WlanWizardPageInternal::PageKeyQuery:
-                return verifyDialogText("dialog", HbParameterLengthLimiter(hbTrId("txt_occ_dialog_enter_key_for_1")).arg(info));
+                return verifyDialogText("dialog", HbParameterLengthLimiter("txt_occ_dialog_enter_key_for_1").arg(info));
 
             case WlanWizardPageInternal::PageProcessSettings:
-                return verifyDialogText("dialog", HbParameterLengthLimiter(hbTrId("txt_occ_dialog_checking_connection_to_1")).arg(info));
+                return verifyDialogText("dialog", HbParameterLengthLimiter("txt_occ_dialog_checking_connection_to_1").arg(info));
 
             case WlanWizardPageInternal::PageScanning:
-                return verifyDialogText("dialog", HbParameterLengthLimiter(hbTrId("txt_occ_dialog_searching")).arg(info));
+                return verifyDialogText("dialog", HbParameterLengthLimiter("txt_occ_dialog_searching").arg(info));
                
             case EapWizardPage::PageUsernamePassword:
                 ret &= verifyDialogText(
                     "setlabel_55",
-                    HbParameterLengthLimiter(hbTrId("txt_occ_setlabel_user_name_for_1")).arg(info));
+                    HbParameterLengthLimiter("txt_occ_setlabel_user_name_for_1").arg(info));
                 ret &= verifyDialogText("setlabel_56", hbTrId("txt_occ_setlabel_eap_password"));
                 return ret;
                 
             case EapWizardPage::PageIdentity:
-                ret &= verifyDialogText("setlabel_53", HbParameterLengthLimiter(hbTrId("txt_occ_setlabel_user_name_for_1")).arg(info));
+                ret &= verifyDialogText("setlabel_53", HbParameterLengthLimiter("txt_occ_setlabel_user_name_for_1").arg(info));
                 ret &= verifyDialogText("setlabel_53_val", hbTrId("txt_occ_setlabel_user_name_val_generate_automatic"));
                 ret &= verifyDialogText("setlabel_54", hbTrId("txt_occ_setlabel_eap_realm"));
                 ret &= verifyDialogText("setlabel_54_val", hbTrId("txt_occ_setlabel_eap_realm_val_generate_automatically"));
@@ -350,7 +350,7 @@ bool TestWlanWizardContext::verifyCurrentPageWithInfo(
                 
             case EapWizardPage::PageInnerTypePeap:
             case EapWizardPage::PageInnerTypeEapTtls:
-                return verifyDialogText("title", HbParameterLengthLimiter(hbTrId("txt_occ_title_select_innear_eap_type_for_1")).arg(info));
+                return verifyDialogText("title", HbParameterLengthLimiter("txt_occ_title_select_innear_eap_type_for_1").arg(info));
             
             default:
                 return verifyCurrentPage(pageId, retries, wait_ms);

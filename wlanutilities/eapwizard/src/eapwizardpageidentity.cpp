@@ -154,9 +154,8 @@ HbWidget* EapWizardPageIdentity::initializePage()
         mWizard->configurations(EapWizardPrivate::OuterType).toInt() );
 
     mLabelUsername->setPlainText(
-        HbParameterLengthLimiter(
-            hbTrId("txt_occ_setlabel_user_name_for_1")).arg(
-                mWizard->eapTypeToString(plugin.pluginId())));
+        HbParameterLengthLimiter("txt_occ_setlabel_user_name_for_1").arg(
+            mWizard->eapTypeToString(plugin.pluginId())));
 
     // Configure editors properties
     mValidatorUsername.reset( 

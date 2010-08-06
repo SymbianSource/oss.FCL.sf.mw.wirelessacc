@@ -136,9 +136,8 @@ HbWidget* WlanWizardPageKeyQuery::initializePage()
     }
     
     mLabelTitle->setPlainText(
-        HbParameterLengthLimiter(
-            hbTrId("txt_occ_dialog_enter_key_for_1")).arg(
-                mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
+        HbParameterLengthLimiter("txt_occ_dialog_enter_key_for_1").arg(
+            mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
     
     OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_INITIALIZEPAGE_EXIT );
     return mWidget;
