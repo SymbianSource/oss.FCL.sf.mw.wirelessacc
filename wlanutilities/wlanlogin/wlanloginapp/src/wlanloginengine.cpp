@@ -46,6 +46,7 @@
 // External function prototypes
 
 // Local constants
+const QString iapIdentifierPrefix = "I_";
 
 // ======== LOCAL FUNCTIONS ========
 
@@ -86,8 +87,10 @@ WlanLoginEngine::WlanLoginEngine(QObject *parent):
 WlanLoginEngine::~WlanLoginEngine()
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_DESTRUCTOR_ENTRY);
-   
-    mNetworkSession->close();
+
+    if (mNetworkSession) {
+        mNetworkSession->close();
+    }
     
     OstTraceFunctionExit0(WLANLOGINENGINE_DESTRUCTOR_EXIT);
 }
@@ -228,7 +231,8 @@ void WlanLoginEngine::openSession()
     setEngineState(WlanLoginEngine::OpeningNetworkSession);
     
     //Get configuration that matches the provided IAP
-    QNetworkConfiguration netConfiguration = mNetConfigurationManager->configurationFromIdentifier(QString::number(mIap));    
+	//Note that identifier must be given in format I_ + IAP ID
+    QNetworkConfiguration netConfiguration = mNetConfigurationManager->configurationFromIdentifier(iapIdentifierPrefix + QString::number(mIap));    
     
     OstTrace1(
         TRACE_NORMAL,

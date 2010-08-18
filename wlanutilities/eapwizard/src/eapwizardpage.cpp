@@ -24,6 +24,11 @@
 // User includes
 #include "eapwizardpage.h"
 #include "eapwizard_p.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpageTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPage
@@ -51,13 +56,15 @@
 
 /*!
    Constructor.
-   
+
    @param [in] parent Pointer to EAP Wizard private implementation.
  */
 EapWizardPage::EapWizardPage(EapWizardPrivate* parent) :
     QObject(parent), 
     mWizard(parent)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGE_EAPWIZARDPAGE_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGE_EAPWIZARDPAGE_EXIT );
 }
 
 /*!
@@ -65,7 +72,9 @@ EapWizardPage::EapWizardPage(EapWizardPrivate* parent) :
  */
 EapWizardPage::~EapWizardPage()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGE_EAPWIZARDPAGE_ENTRY );
     mWizard = NULL;
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGE_EAPWIZARDPAGE_EXIT );
 }
 
 /*!
@@ -73,13 +82,15 @@ EapWizardPage::~EapWizardPage()
  */
 int EapWizardPage::nextId(bool &removeFromStack) const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGE_NEXTID_ENTRY );
     removeFromStack = false;
+    OstTraceFunctionExit0( EAPWIZARDPAGE_NEXTID_EXIT );
     return nextId();
 }
 
 /*!
    Loads requested section from given docml file.
-   
+
    @param [in] loader Document loader for docml
    @param [in] orientation Orientation to be loaded
    @param [in] filename the name of docml filename
@@ -93,8 +104,9 @@ void EapWizardPage::loadDocmlSection(
     const QString &portraitSection,
     const QString &landscapeSection) const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGE_LOADDOCMLSECTION_ENTRY );
     bool ok;
-    
+
     // Then load the orientation specific section
     if (orientation == Qt::Horizontal) {
         loader->load(filename, landscapeSection, &ok);
@@ -104,4 +116,5 @@ void EapWizardPage::loadDocmlSection(
         loader->load(filename, portraitSection, &ok);
         Q_ASSERT(ok);
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGE_LOADDOCMLSECTION_EXIT );
 }

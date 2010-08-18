@@ -54,8 +54,16 @@ public:
 class WlanSecuritySetting
 {
 public:
+    //! Enumerated value defined by CMManagerShim::WlanSecMode
     int mode;
+    
+    //! true, if passkey is required, false otherwise
     bool usePsk;
+    
+    /*! 
+     * Identifier of the next page associated with this security mode.
+     * Page ids are defined in WlanWizardPageInternal::WlanPageIds
+     */
     int nextPageId;
     
     bool operator==(const WlanSecuritySetting& setting) const {
@@ -72,8 +80,13 @@ public:
 class WlanNetworkSetting 
 {
 public:
+    //! Enumerated value defined by CMManagerShim::WlanConnMode
     int mode;
+    
+    //! true, if hidden, false otherwise
     bool hidden;
+    
+    //! true, if supported, false otherwise
     bool wpsSupported;
     
     bool operator==(const WlanNetworkSetting& setting) const {
@@ -110,6 +123,7 @@ public:
     int netModes() const;
     int secModes(WlanNetworkSetting netMode) const;
     QList<WlanNetworkSetting> getNetModes() const;
+    bool wpsSelected() const;
     
 private:
     // Disabling implicit assignment operator
@@ -117,6 +131,7 @@ private:
     
 private:
     QHash<WlanNetworkSetting, QList<WlanSecuritySetting> > mOpenOptions;
+    bool mWpsSelected;
 };
 
 /*!

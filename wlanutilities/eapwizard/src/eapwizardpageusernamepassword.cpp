@@ -33,6 +33,11 @@
 #include "wlanwizardhelper.h"
 #include "eapwizardpageusernamepassword.h"
 #include "eapwizard_p.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpageusernamepasswordTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPageUsernamePassword
@@ -50,7 +55,7 @@
 
 /*!
    Constructor.
-   
+
    @param [in] parent Pointer to EAP Wizard private implementation.
  */
 EapWizardPageUsernamePassword::EapWizardPageUsernamePassword(
@@ -65,6 +70,8 @@ EapWizardPageUsernamePassword::EapWizardPageUsernamePassword(
     mTitleUsername(NULL), 
     mTitlePassword(NULL)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_EAPWIZARDPAGEUSERNAMEPASSWORD_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_EAPWIZARDPAGEUSERNAMEPASSWORD_EXIT );
 }
 
 /*!
@@ -72,6 +79,8 @@ EapWizardPageUsernamePassword::EapWizardPageUsernamePassword(
  */
 EapWizardPageUsernamePassword::~EapWizardPageUsernamePassword()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGEUSERNAMEPASSWORD_EAPWIZARDPAGEUSERNAMEPASSWORD_ENTRY );
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGEUSERNAMEPASSWORD_EAPWIZARDPAGEUSERNAMEPASSWORD_EXIT );
 }
 
 /*!
@@ -79,6 +88,7 @@ EapWizardPageUsernamePassword::~EapWizardPageUsernamePassword()
  */
 HbWidget* EapWizardPageUsernamePassword::initializePage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_INITIALIZEPAGE_ENTRY );
     if (!mWidget) {
         bool ok = true;
         mDocumentLoader.reset(
@@ -101,21 +111,21 @@ HbWidget* EapWizardPageUsernamePassword::initializePage()
 
         mEditPassword = qobject_cast<HbLineEdit*> (mDocumentLoader->findWidget("lineEditPassword"));
         Q_ASSERT(mEditPassword);
-        
+
         mTitlePassword->setPlainText(hbTrId("txt_occ_setlabel_eap_password"));
-        
+
         ok = connect(
             mWizard->wizardHelper()->mainWindow(),
             SIGNAL(orientationChanged(Qt::Orientation)), 
             this, 
             SLOT(loadDocmlSection(Qt::Orientation)));
         Q_ASSERT(ok);
-        
+
         ok = connect(
             mEditUsername, SIGNAL(textChanged(const QString &)), 
             this, SLOT(textChanged(const QString &)));
         Q_ASSERT(ok);
-        
+
         ok = connect(
             mEditPassword, SIGNAL(textChanged(const QString &)), 
             this, SLOT(textChanged(const QString &)));
@@ -127,7 +137,7 @@ HbWidget* EapWizardPageUsernamePassword::initializePage()
     if (eapType != EapQtPluginHandle::PluginLeap) {
         eapType = mWizard->configurations(EapWizardPrivate::InnerType).toInt();
     }
-    
+
     EapQtPluginHandle plugin(static_cast<EapQtPluginHandle::Plugin>(eapType));
 
     mValidatorUsername.reset(
@@ -143,68 +153,76 @@ HbWidget* EapWizardPageUsernamePassword::initializePage()
             EapQtConfig::Password));
     Q_ASSERT(mValidatorPassword.data());
     mValidatorPassword->updateEditor(mEditPassword);
-    
-    mTitleUsername->setPlainText(
-        HbParameterLengthLimiter(
-            hbTrId("txt_occ_setlabel_user_name_for_1")).arg(
-                mWizard->eapTypeToString(eapType)));
 
+    mTitleUsername->setPlainText(
+        HbParameterLengthLimiter("txt_occ_setlabel_user_name_for_1").arg(
+            mWizard->eapTypeToString(eapType)));
+
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
 /*!
    Loads the required orientation of docml.
-   
+
    @param [in] orientation Orientation to be loaded. 
  */
 void EapWizardPageUsernamePassword::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_LOADDOCMLSECTION_ENTRY );
     EapWizardPage::loadDocmlSection(
         mDocumentLoader.data(),
         orientation,
         ":/docml/occ_eap_wizard_05_07.docml",
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
    See WlanWizardPage.
-   
+
    Validates the content of the page.
-   
+
    @return true if content is valid.
  */
 bool EapWizardPageUsernamePassword::showPage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_SHOWPAGE_ENTRY );
     bool valid = false;
     if (mValidatorUsername->validate(mEditUsername->text()) == 
         EapQtValidator::StatusOk && 
         mValidatorPassword->validate(mEditPassword->text()) == 
-        EapQtValidator::StatusOk) {
+            EapQtValidator::StatusOk) {
         valid = true;
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_SHOWPAGE_EXIT );
     return valid;
 }
 
 /*!
    See WlanWizardPage.
-   
+
    @return next wizard page: EapWizardPage::PageProcessSettings
  */
 int EapWizardPageUsernamePassword::nextId() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_NEXTID_ENTRY );
     mWizard->setConfigurations(EapWizardPrivate::Username, mEditUsername->text());
     mWizard->setConfigurations(EapWizardPrivate::Password, mEditPassword->text());
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_NEXTID_EXIT );
     return EapWizardPage::PageProcessSettings;
 }
 
 /*!
    Slot for textChanged() signal from HbLineEdit.
-   
+
    @param [in] text NOT USED.
  */
 void EapWizardPageUsernamePassword::textChanged(const QString & text )
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEUSERNAMEPASSWORD_TEXTCHANGED_ENTRY );
     Q_UNUSED(text);
     mWizard->wizardHelper()->enableNextButton(showPage());
+    OstTraceFunctionExit0( EAPWIZARDPAGEUSERNAMEPASSWORD_TEXTCHANGED_EXIT );
 }

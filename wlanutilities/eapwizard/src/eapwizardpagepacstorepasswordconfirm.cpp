@@ -31,6 +31,11 @@
 #include "wlanwizardhelper.h"
 #include "eapwizardpagepacstorepasswordconfirm.h"
 #include "eapwizard_p.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpagepacstorepasswordconfirmTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPagePacStorePasswordConfirm
@@ -60,6 +65,8 @@ EapWizardPagePacStorePasswordConfirm::EapWizardPagePacStorePasswordConfirm(
     mEditPasswordConfirm(NULL),
     mLabelError(NULL)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EXIT );
 }
 
 /*!
@@ -67,6 +74,8 @@ EapWizardPagePacStorePasswordConfirm::EapWizardPagePacStorePasswordConfirm(
  */
 EapWizardPagePacStorePasswordConfirm::~EapWizardPagePacStorePasswordConfirm()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_ENTRY );
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EXIT );
 }
 
 /*!
@@ -74,6 +83,7 @@ EapWizardPagePacStorePasswordConfirm::~EapWizardPagePacStorePasswordConfirm()
  */
 HbWidget* EapWizardPagePacStorePasswordConfirm::initializePage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_INITIALIZEPAGE_ENTRY );
     if (!mWidget) {
         bool ok;
         mDocumentLoader.reset(
@@ -112,6 +122,7 @@ HbWidget* EapWizardPagePacStorePasswordConfirm::initializePage()
         Q_ASSERT(ok);
     }
 
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -123,12 +134,14 @@ HbWidget* EapWizardPagePacStorePasswordConfirm::initializePage()
  */
 void EapWizardPagePacStorePasswordConfirm::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_LOADDOCMLSECTION_ENTRY );
     EapWizardPage::loadDocmlSection(
         mDocumentLoader.data(),
         orientation,
         ":/docml/occ_eap_wizard_08.docml", 
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -140,6 +153,7 @@ void EapWizardPagePacStorePasswordConfirm::loadDocmlSection(Qt::Orientation orie
  */
 int EapWizardPagePacStorePasswordConfirm::nextId() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_NEXTID_ENTRY );
     int id;
     if (mValidator->validate(mEditPasswordConfirm->text()) == 
         EapQtValidator::StatusOk) {
@@ -154,6 +168,7 @@ int EapWizardPagePacStorePasswordConfirm::nextId() const
         mLabelError->setPlainText(hbTrId("txt_occ_info_incorrect_password"));
     }
 
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_NEXTID_EXIT );
     return id;
 }
 
@@ -166,7 +181,9 @@ int EapWizardPagePacStorePasswordConfirm::nextId() const
  */
 bool EapWizardPagePacStorePasswordConfirm::showPage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_SHOWPAGE_ENTRY );
     mEditPasswordConfirm->setFocus();
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_SHOWPAGE_EXIT );
     return true;
 }
 
@@ -180,8 +197,10 @@ bool EapWizardPagePacStorePasswordConfirm::showPage()
 bool EapWizardPagePacStorePasswordConfirm::eventFilter(
     QObject *obj, QEvent *event)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EVENTFILTER_ENTRY );
     if (obj == mEditPasswordConfirm && event->type() == QEvent::FocusIn) {
         mLabelError->setPlainText("");
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGEPACSTOREPASSWORDCONFIRM_EVENTFILTER_EXIT );
     return false;
 }

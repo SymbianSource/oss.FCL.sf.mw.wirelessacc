@@ -992,6 +992,11 @@ void TestWlanWizardManual::tc_multiple_ssids_with_same_name_2_netmode_options()
     QCOMPARE( mouseClickNext(), true );
 
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageNetworkMode), true );
+    QStringList buttons;
+    buttons << hbTrId("txt_occ_list_infrastructure_hidden") 
+            << hbTrId("txt_occ_list_adhoc_1");
+    QCOMPARE( verifyRadioButtons("list"), buttons );
+    
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( selectRadioButton( "list", 1 ), true );
     QTest::qWait(WaitTimeForUi);
@@ -1102,6 +1107,11 @@ void TestWlanWizardManual::tc_multiple_ssids_with_same_name_all_sec_modes()
     QCOMPARE( mouseClickNext(), true );
 
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageNetworkMode), true );
+    QStringList buttons;
+    buttons << hbTrId("txt_occ_dblist_val_infrastructure_public") 
+            << hbTrId("txt_occ_list_infrastructure_hidden") 
+            << hbTrId("txt_occ_list_adhoc_1");
+    QCOMPARE( verifyRadioButtons("list"), buttons );
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( selectRadioButton( "list", 0 ), true );
     QTest::qWait(WaitTimeForUi);
@@ -1166,5 +1176,82 @@ void TestWlanWizardManual::tc_multiple_ssids_with_same_name_orientation_switch()
     QCOMPARE( mouseClickNext(), true );
     
     QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageKeyQuery, "huuhaa3421"), true );
+#endif
+}
+
+/*!
+ * 
+ */
+void TestWlanWizardManual::tc_multiple_ssids_with_same_name_wps_and_nonwps()
+{
+#ifdef tc_multiple_ssids_with_same_name_wps_and_nonwps_enabled
+    mApList->Add("huuhaa", CMManagerShim::Infra, CMManagerShim::WlanSecModeWpa, false, false, 100);
+    
+    // Add all five kinds of security modes.
+    mApList->Add("huuhaa", CMManagerShim::Infra, CMManagerShim::WlanSecModeWep, true, true, 300);
+    
+    mWlanQtUtilsContext->setScanWlanDirectResult("huuhaa", mApList->List());
+    mWlanQtUtilsContext->setCreateWlanIapResult(100);
+    mWlanQtUtilsContext->setSignalIctResult(100, WlanQtUtils::IctPassed);
+    mWlanQtUtilsContext->setSignalWlanNetworkOpened(100);
+    mWlanQtUtilsContext->setConnectionSuccessed(true);
+
+    mView->showWizard();
+
+    QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageSsid), true );
+
+    QCOMPARE( mouseClickObject("lineEditKey"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( insertTextToObject("lineEditKey", "huuhaa"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( mouseClickObject("dialog"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( mouseClickNext(), true );
+
+    QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageScanning, "huuhaa"), true );
+    QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageNetworkMode), true );
+    QStringList buttons;
+    buttons << hbTrId("txt_occ_list_infrastructure_hidden") 
+            << hbTrId("txt_occ_list_wifi_protected_setup");
+    QCOMPARE( verifyRadioButtons("list"), buttons );
+    QCOMPARE( selectRadioButton( "list", 1 ), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( mouseClickNext(), true );
+
+    QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageWpsStart), true );
+#endif 
+}
+
+/*!
+ * 
+ */
+void TestWlanWizardManual::tc_multiple_ssids_with_same_name_two_wps_aps()
+{
+#ifdef tc_multiple_ssids_with_same_name_two_wps_aps_enabled
+    mApList->Add("huuhaa", CMManagerShim::Infra, CMManagerShim::WlanSecModeWpa, false, true, 100);
+
+    // Add all five kinds of security modes.
+    mApList->Add("huuhaa", CMManagerShim::Infra, CMManagerShim::WlanSecModeWep, true, true, 300);
+
+    mWlanQtUtilsContext->setScanWlanDirectResult("huuhaa", mApList->List());
+    mWlanQtUtilsContext->setCreateWlanIapResult(100);
+    mWlanQtUtilsContext->setSignalIctResult(100, WlanQtUtils::IctPassed);
+    mWlanQtUtilsContext->setSignalWlanNetworkOpened(100);
+    mWlanQtUtilsContext->setConnectionSuccessed(true);
+
+    mView->showWizard();
+
+    QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageSsid), true );
+
+    QCOMPARE( mouseClickObject("lineEditKey"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( insertTextToObject("lineEditKey", "huuhaa"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( mouseClickObject("dialog"), true );
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( mouseClickNext(), true );
+
+    QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageScanning, "huuhaa"), true );
+    QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageWpsStart), true );
 #endif
 }

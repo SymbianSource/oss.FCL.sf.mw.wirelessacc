@@ -31,6 +31,11 @@
 #include "wlanwizardhelper.h"
 #include "eapwizard_p.h"
 #include "eapwizardpagecertca.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpagecertcaTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPageCertCa
@@ -48,7 +53,7 @@
 
 /*!
    Constructor.
-   
+
    @param [in] parent Pointer to EAP Wizard private implementation.
  */
 EapWizardPageCertCa::EapWizardPageCertCa(EapWizardPrivate* parent) :
@@ -58,6 +63,8 @@ EapWizardPageCertCa::EapWizardPageCertCa(EapWizardPrivate* parent) :
     mTitle(NULL), 
     mCertList(NULL)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGECERTCA_EAPWIZARDPAGECERTCA_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGECERTCA_EAPWIZARDPAGECERTCA_EXIT );
 }
 
 /*!
@@ -65,6 +72,8 @@ EapWizardPageCertCa::EapWizardPageCertCa(EapWizardPrivate* parent) :
  */
 EapWizardPageCertCa::~EapWizardPageCertCa()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGECERTCA_EAPWIZARDPAGECERTCA_ENTRY );
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGECERTCA_EAPWIZARDPAGECERTCA_EXIT );
 }
 
 /*!
@@ -72,16 +81,17 @@ EapWizardPageCertCa::~EapWizardPageCertCa()
  */
 HbWidget* EapWizardPageCertCa::initializePage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGECERTCA_INITIALIZEPAGE_ENTRY );
     if (!mWidget) {
         mDocumentLoader.reset( new HbDocumentLoader(
             mWizard->wizardHelper()->mainWindow()) );
-        
+
         bool ok;
         mDocumentLoader->load(":/docml/occ_eap_wizard_01_02_04.docml", &ok);
         Q_ASSERT(ok);
-        
+
         loadDocmlSection(mWizard->wizardHelper()->mainWindow()->orientation());
-        
+
         mWidget = qobject_cast<HbWidget*> (
             mDocumentLoader->findWidget("occ_eap_wizard_01"));
         Q_ASSERT(mWidget);
@@ -89,13 +99,13 @@ HbWidget* EapWizardPageCertCa::initializePage()
         mCertList = qobject_cast<HbRadioButtonList*> (
             mDocumentLoader->findWidget("list"));
         Q_ASSERT(mCertList);
-        
+
         mTitle = qobject_cast<HbLabel*> (mDocumentLoader->findWidget("title"));
         Q_ASSERT(mTitle);
-        
+
         mTitle->setPlainText(
             hbTrId("txt_occ_title_select_authority_certificate"));
-        
+
         ok = connect(
             mWizard->wizardHelper()->mainWindow(),
             SIGNAL(orientationChanged(Qt::Orientation)), 
@@ -103,7 +113,7 @@ HbWidget* EapWizardPageCertCa::initializePage()
             SLOT(loadDocmlSection(Qt::Orientation)));
         Q_ASSERT(ok);
     }
-    
+
     EapQtConfigInterface* confIf = mWizard->eapConfigurationInterface();
     // ignore return value
     confIf->updateCertificates();
@@ -112,15 +122,15 @@ HbWidget* EapWizardPageCertCa::initializePage()
     QStringList list;
     list << hbTrId("txt_occ_setlabel_val_select_automatically");
 
-     for (int i = 0; i < mCerts.count(); ++i) {
-         // TODO: workaround for BBHA-863EJN
-         // graphics memory runs out for long lists and items
-         QString tmp(mCerts.at(i).value(
-             EapQtCertificateInfo::CertificateLabel).toString());
-         tmp.truncate(10);
-         list << tmp;
+    for (int i = 0; i < mCerts.count(); ++i) {
+        // TODO: workaround for BBHA-863EJN
+        // graphics memory runs out for long lists and items
+        QString tmp(mCerts.at(i).value(
+            EapQtCertificateInfo::CertificateLabel).toString());
+        tmp.truncate(10);
+        list << tmp;
     }
-    
+
     // If certificate list has been changed update the content otherwise do not
     // change it
     if (list != mCertList->items()) {
@@ -128,33 +138,37 @@ HbWidget* EapWizardPageCertCa::initializePage()
         // Automatic is selected by default
         mCertList->setSelected(IndexForAutomatic);
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGECERTCA_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
 /*!
    Loads the required orientation of docml.
-   
+
    @param [in] orientation Orientation to be loaded. 
  */
 void EapWizardPageCertCa::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGECERTCA_LOADDOCMLSECTION_ENTRY );
     EapWizardPage::loadDocmlSection(
         mDocumentLoader.data(),
         orientation,
         ":/docml/occ_eap_wizard_01_02_04.docml",
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( EAPWIZARDPAGECERTCA_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
    See WlanWizardPage.
-   
+
    @return next wizard page:
    - EapWizardPage::PageCertificateUser: For EAP-TLS 
    - EapWizardPage::PageIdentity: For EAP-TTLS and PEAP
  */
 int EapWizardPageCertCa::nextId() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGECERTCA_NEXTID_ENTRY );
     int id = WlanWizardPage::PageNone;
     bool ok;
     int type = mWizard->configurations(EapWizardPrivate::OuterType).toInt(&ok);
@@ -177,5 +191,6 @@ int EapWizardPageCertCa::nextId() const
                 selected - AmountOfNonCertItems)));
     }
 
+    OstTraceFunctionExit0( EAPWIZARDPAGECERTCA_NEXTID_EXIT );
     return id;
 }

@@ -65,13 +65,24 @@ protected slots:
     
 private:
     Q_DISABLE_COPY(WlanWizardPageNetworkMode)
-    void addToList(QStringList &list, const QString &item, int mode, bool isHidden);
+    void addToList(
+        QStringList &list,
+        const QString &item,
+        int mode,
+        bool isHidden,
+        bool wpsSupported);
     void populateRadioButtonList(QStringList &list);
     int selectNextPage(const WlanNetworkSetting &setting) const;
 
 private slots:
 
 private:
+
+    /*!
+     * Internal network mode value constant. Used when wps used.
+     */
+    static const int NetworkModeNone = -1;
+    
     /*!
      * Pointer to the view.
      */
@@ -108,6 +119,12 @@ private:
      * the initialization of the page.
      */
     QList<bool> mIsHidden;
+    
+    /*!
+     * List of wps support. This list is tied to the radio buttons during
+     * the initialization of the page.
+     */
+    QList<bool> mWpsSupported;
 };
 
 /*! @} */

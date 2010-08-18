@@ -49,6 +49,7 @@ WlanWizardPageScanning::WlanWizardPageScanning(WlanWizardPrivate* parent) :
     mScanResultsAvailable(false),
     mScanStatus(WlanQtUtils::ScanStatusOk)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_WLANWIZARDPAGESCANNING_ENTRY );
     WlanQtUtils* utils = mWizard->wlanQtUtils();
 
     // Connect normal scan completion signal from wlanQtUtils to result
@@ -61,6 +62,7 @@ WlanWizardPageScanning::WlanWizardPageScanning(WlanWizardPrivate* parent) :
         SLOT(wlanScanResultPreCheck(int)));
     
     Q_ASSERT(ok);
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_WLANWIZARDPAGESCANNING_EXIT );
 }
 
 /*!
@@ -69,7 +71,9 @@ WlanWizardPageScanning::WlanWizardPageScanning(WlanWizardPrivate* parent) :
  */
 WlanWizardPageScanning::~WlanWizardPageScanning()
 {
+    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGESCANNING_WLANWIZARDPAGESCANNING_ENTRY );
     delete mLoader;
+    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGESCANNING_WLANWIZARDPAGESCANNING_EXIT );
 }
 
 /*!
@@ -79,6 +83,7 @@ WlanWizardPageScanning::~WlanWizardPageScanning()
  */
 HbWidget* WlanWizardPageScanning::initializePage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_INITIALIZEPAGE_ENTRY );
     OstTrace0(
         TRACE_NORMAL,
         WLANWIZARDPAGESCANNING_INITIALIZEPAGE,
@@ -128,10 +133,10 @@ HbWidget* WlanWizardPageScanning::initializePage()
     }
 
     mLabel->setPlainText(HbParameterLengthLimiter(
-        hbTrId("txt_occ_dialog_searching")).arg(mWizard->configuration(
+        "txt_occ_dialog_searching").arg(mWizard->configuration(
             WlanWizardPrivate::ConfSsid).toString()));
 
-
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -143,8 +148,10 @@ HbWidget* WlanWizardPageScanning::initializePage()
  */
 int WlanWizardPageScanning::nextId(bool &removeFromStack) const
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_NEXTID_ENTRY );
     removeFromStack = true;
 
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_NEXTID_EXIT );
     return mNextPageId;
 }
 
@@ -158,6 +165,7 @@ int WlanWizardPageScanning::nextId(bool &removeFromStack) const
  */
 int WlanWizardPageScanning::previousTriggered()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_PREVIOUSTRIGGERED_ENTRY );
     disconnect(this, SLOT(wlanScanDirectReady(int)));
     disconnect(this, SLOT(wlanScanResultPreCheck(int)));
     
@@ -179,6 +187,7 @@ int WlanWizardPageScanning::previousTriggered()
         SLOT(wlanScanDirectReady(int)));
     Q_ASSERT(ok);
     
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_PREVIOUSTRIGGERED_EXIT );
     return OneStepBackwards;
     
 }
@@ -193,7 +202,9 @@ int WlanWizardPageScanning::previousTriggered()
  */
 bool WlanWizardPageScanning::showPage()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_SHOWPAGE_ENTRY );
     mWizard->setConfiguration(WlanWizardHelper::ConfProcessSettings, false);
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_SHOWPAGE_EXIT );
     return false;
 }
 
@@ -205,6 +216,8 @@ bool WlanWizardPageScanning::showPage()
  */
 bool WlanWizardPageScanning::requiresStartOperation()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_REQUIRESSTARTOPERATION_ENTRY );
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_REQUIRESSTARTOPERATION_EXIT );
     return true;
 }
 
@@ -214,6 +227,7 @@ bool WlanWizardPageScanning::requiresStartOperation()
  */
 void WlanWizardPageScanning::startOperation()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_STARTOPERATION_ENTRY );
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESCANNING_STARTOPERATION,
         "WlanWizardPageScanning::startOperation - start AP scan if results"
         " are available." );
@@ -222,6 +236,7 @@ void WlanWizardPageScanning::startOperation()
         mScanResultsAvailable = false;
         wlanScanApReady();
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_STARTOPERATION_EXIT );
 }
 
 /*!
@@ -232,6 +247,7 @@ void WlanWizardPageScanning::startOperation()
  */
 void WlanWizardPageScanning::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_LOADDOCMLSECTION_ENTRY );
     OstTrace1( TRACE_NORMAL, WLANWIZARDPAGESCANNING_LOADDOCML,
         "WlanWizardPageScanning::loadDocml - orientation ;orientation=%x",
         ( TUint )( orientation ) );
@@ -242,6 +258,7 @@ void WlanWizardPageScanning::loadDocmlSection(Qt::Orientation orientation)
         ":/docml/occ_add_wlan_06.docml", 
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -252,6 +269,7 @@ void WlanWizardPageScanning::loadDocmlSection(Qt::Orientation orientation)
  */
 void WlanWizardPageScanning::wlanScanResultPreCheck(int scanStatus)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_WLANSCANRESULTPRECHECK_ENTRY );
     mScanStatus = scanStatus;
     
     if (!mWidget) {
@@ -276,6 +294,7 @@ void WlanWizardPageScanning::wlanScanResultPreCheck(int scanStatus)
             mScanResultsAvailable = true;
         }
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_WLANSCANRESULTPRECHECK_EXIT );
 }
 
 /*!
@@ -285,6 +304,7 @@ void WlanWizardPageScanning::wlanScanResultPreCheck(int scanStatus)
  */
 void WlanWizardPageScanning::wlanScanDirectReady(int scanStatus)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_WLANSCANDIRECTREADY_ENTRY );
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESCANNING_WLANSCANDIRECTREADY,
         "WlanWizardPageScanning::wlanScanDirectReady" );
 
@@ -306,6 +326,7 @@ void WlanWizardPageScanning::wlanScanDirectReady(int scanStatus)
     // Process the scan results. If scan status is not ok, feed an empty
     // result table to the selection function.
     selectNextPageActions(filteredResults);
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_WLANSCANDIRECTREADY_EXIT );
 }
 
 /*!
@@ -316,6 +337,7 @@ void WlanWizardPageScanning::wlanScanDirectReady(int scanStatus)
  */
 void WlanWizardPageScanning::wlanScanApReady()
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_WLANSCANAPREADY_ENTRY );
     OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESCANNING_WLANSCANAPREADY,
         "WlanWizardPageScanning::wlanScanApReady" );
 
@@ -343,6 +365,7 @@ void WlanWizardPageScanning::wlanScanApReady()
         mNextPageId = WlanWizardPageInternal::PageNetworkMode;
         mWizard->nextPage();
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_WLANSCANAPREADY_EXIT );
 }
 
 /*!
@@ -355,6 +378,7 @@ void WlanWizardPageScanning::getSsidMatchList(
     QString ssid,
     const QList<QSharedPointer<WlanQtUtilsAp> > &matchList)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_GETSSIDMATCHLIST_ENTRY );
     mWlanApList.clear();
     QSharedPointer<WlanQtUtilsAp> item;
 
@@ -364,6 +388,7 @@ void WlanWizardPageScanning::getSsidMatchList(
             mWlanApList.append(item);
         }
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_GETSSIDMATCHLIST_EXIT );
 }
 
 /*
@@ -378,6 +403,7 @@ void WlanWizardPageScanning::getFinalScanResults(
     const QList<QSharedPointer<WlanQtUtilsAp> > &openScanResults,
     QList<WlanScanResult> &finalResults)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_GETFINALSCANRESULTS_ENTRY );
     finalResults.clear();
 
     // The key assumption of this algorithm is that both direct and public scan
@@ -404,6 +430,7 @@ void WlanWizardPageScanning::getFinalScanResults(
 
         finalResults.append(resultItem);
     }
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_GETFINALSCANRESULTS_EXIT );
 }
 
 /*!
@@ -415,6 +442,7 @@ void WlanWizardPageScanning::getFinalScanResults(
 int WlanWizardPageScanning::processMultipleScanResults(
     const QList<WlanScanResult> &finalResults)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_PROCESSMULTIPLESCANRESULTS_ENTRY );
     WlanWizardScanList networkOptions;
     int nextPage;
 
@@ -427,9 +455,13 @@ int WlanWizardPageScanning::processMultipleScanResults(
     mWizard->setConfiguration(
         WlanWizardHelper::ConfAvailableNetworkOptions, tmp);
 
-    // If there are more than one network mode choices, go to manual selection
-    // of network mode.
-    if (networkOptions.netModes() > SingleResult) {
+    if (networkOptions.wpsSelected()) {
+        // In case all available network mode options support wps, go directly
+        // to wps-wizard.
+        nextPage = WlanWizardPageInternal::PageWpsStart;
+    } else if (networkOptions.netModes() > SingleResult) {
+        // If there are more than one network mode choices, go to manual selection
+        // of network mode.
         nextPage = WlanWizardPageInternal::PageNetworkMode;
     } else {
         // if only a single network mode option is available, the mode query
@@ -437,9 +469,11 @@ int WlanWizardPageScanning::processMultipleScanResults(
         WlanNetworkSetting setting = networkOptions.getNetModes().at(0);
         mWizard->setConfiguration(WlanWizardHelper::ConfNetworkMode, setting.mode);
         mWizard->setConfiguration(WlanWizardHelper::ConfHiddenWlan, setting.hidden);
+        mWizard->setConfiguration(WlanWizardHelper::ConfWpsSupported, setting.wpsSupported);
         nextPage = WlanWizardPageInternal::PageNetworkSecurity;
     }
     
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_PROCESSMULTIPLESCANRESULTS_EXIT );
     return nextPage;
 }
 
@@ -450,6 +484,7 @@ int WlanWizardPageScanning::processMultipleScanResults(
 void WlanWizardPageScanning::selectNextPageActions(
     const QList<WlanScanResult> &finalResults)
 {
+    OstTraceFunctionEntry0( WLANWIZARDPAGESCANNING_SELECTNEXTPAGEACTIONS_ENTRY );
     mWizard->clearConfiguration(WlanWizardHelper::ConfAvailableNetworkOptions);
     
     if (finalResults.isEmpty()) {
@@ -472,4 +507,5 @@ void WlanWizardPageScanning::selectNextPageActions(
     }
 
     mWizard->nextPage();
+    OstTraceFunctionExit0( WLANWIZARDPAGESCANNING_SELECTNEXTPAGEACTIONS_EXIT );
 }

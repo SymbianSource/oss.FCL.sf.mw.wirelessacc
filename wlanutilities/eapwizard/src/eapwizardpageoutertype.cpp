@@ -32,6 +32,11 @@
 #include "wlanwizardhelper.h"
 #include "eapwizard_p.h"
 #include "eapwizardpageoutertype.h"
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "eapwizardpageoutertypeTraces.h"
+#endif
+
 
 /*!
    \class EapWizardPageOuterType
@@ -60,6 +65,8 @@ EapWizardPageOuterType::EapWizardPageOuterType(EapWizardPrivate* parent) :
     mDocumentLoader(NULL),    
     mValid(false)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_EAPWIZARDPAGEOUTERTYPE_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_EAPWIZARDPAGEOUTERTYPE_EXIT );
 }
 
 /*!
@@ -67,6 +74,8 @@ EapWizardPageOuterType::EapWizardPageOuterType(EapWizardPrivate* parent) :
  */
 EapWizardPageOuterType::~EapWizardPageOuterType()
 {
+    OstTraceFunctionEntry0( DUP1_EAPWIZARDPAGEOUTERTYPE_EAPWIZARDPAGEOUTERTYPE_ENTRY );
+    OstTraceFunctionExit0( DUP1_EAPWIZARDPAGEOUTERTYPE_EAPWIZARDPAGEOUTERTYPE_EXIT );
 }
 
 /*!
@@ -74,6 +83,7 @@ EapWizardPageOuterType::~EapWizardPageOuterType()
  */
 HbWidget* EapWizardPageOuterType::initializePage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_INITIALIZEPAGE_ENTRY );
     if (!mWidget) {
         bool ok;
         mDocumentLoader.reset(
@@ -116,6 +126,7 @@ HbWidget* EapWizardPageOuterType::initializePage()
             SLOT(loadDocmlSection(Qt::Orientation)));
         Q_ASSERT(ok);
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_INITIALIZEPAGE_EXIT );
     return mWidget;
 }
 
@@ -126,12 +137,14 @@ HbWidget* EapWizardPageOuterType::initializePage()
  */
 void EapWizardPageOuterType::loadDocmlSection(Qt::Orientation orientation)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_LOADDOCMLSECTION_ENTRY );
     EapWizardPage::loadDocmlSection(
         mDocumentLoader.data(),
         orientation,
         ":/docml/occ_eap_wizard_01_02_04.docml",
         "portrait_section",
         "landscape_section");
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_LOADDOCMLSECTION_EXIT );
 }
 
 /*!
@@ -146,6 +159,7 @@ void EapWizardPageOuterType::loadDocmlSection(Qt::Orientation orientation)
  */
 int EapWizardPageOuterType::nextId() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_NEXTID_ENTRY );
     int id = WlanWizardPage::PageNone;
     EapQtPluginHandle::Plugin handle = 
         static_cast<EapQtPluginHandle::Plugin>(mEapTypes.at(mRadio->selected()));
@@ -173,6 +187,7 @@ int EapWizardPageOuterType::nextId() const
     
     mWizard->setConfigurations(EapWizardPrivate::OuterType, handle);
 
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_NEXTID_EXIT );
     return id;
 }
 
@@ -185,6 +200,8 @@ int EapWizardPageOuterType::nextId() const
  */
 bool EapWizardPageOuterType::showPage()
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_SHOWPAGE_ENTRY );
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_SHOWPAGE_EXIT );
     return mValid;
 }
 
@@ -195,9 +212,11 @@ bool EapWizardPageOuterType::showPage()
  */
 void EapWizardPageOuterType::itemSelected(int index)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_ITEMSELECTED_ENTRY );
     Q_UNUSED(index);
     mValid = true;
     mWizard->wizardHelper()->enableNextButton(mValid);
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_ITEMSELECTED_EXIT );
 }
 
 /*!
@@ -209,11 +228,13 @@ void EapWizardPageOuterType::itemSelected(int index)
 void EapWizardPageOuterType::appendToList(
     QStringList &items, int pluginHandle)
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_APPENDTOLIST_ENTRY );
     if (mWizard->eapConfigurationInterface()->isSupportedOuterType(
         (EapQtPluginHandle::Plugin)pluginHandle)) {
         items << mWizard->eapTypeToString(pluginHandle);
         mEapTypes.append(pluginHandle);
     }
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_APPENDTOLIST_EXIT );
 }
 
 /*
@@ -223,6 +244,7 @@ void EapWizardPageOuterType::appendToList(
  */
 int EapWizardPageOuterType::nextIdForEapFast() const
 {
+    OstTraceFunctionEntry0( EAPWIZARDPAGEOUTERTYPE_NEXTIDFOREAPFAST_ENTRY );
     int pageId;
     
     mWizard->setConfigurations(EapWizardPrivate::InnerType,
@@ -256,5 +278,6 @@ int EapWizardPageOuterType::nextIdForEapFast() const
         break;
     }
     
+    OstTraceFunctionExit0( EAPWIZARDPAGEOUTERTYPE_NEXTIDFOREAPFAST_EXIT );
     return pageId;
 }

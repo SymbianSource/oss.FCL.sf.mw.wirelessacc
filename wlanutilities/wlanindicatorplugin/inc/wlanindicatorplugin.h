@@ -22,6 +22,10 @@
 #include <QtCore/QProcess>
 #include <hbindicatorplugininterface.h>
 #include <hbindicatorinterface.h>
+#include <QSharedPointer>
+
+// Forward declarations
+class HbTranslator;
 
 const int wlanNotConnected = 0;
 const int wlanConnected = 1;
@@ -51,7 +55,7 @@ public:
     bool handleClientRequest (RequestType type, const QVariant &parameter);
     bool handleInteraction (InteractionType type); 
     QVariant indicatorData(int role) const;
-    
+
 private:
     
     Q_DISABLE_COPY(WlanIndicatorPlugin)
@@ -59,5 +63,6 @@ private:
     int mError;                   // Indicator error
     QVariant mParameter;          // Used to contain the status of wlan    
     QProcess process;             // Process to start external programs
+    QSharedPointer<HbTranslator> mTranslator; // Translator for the localisation Text Id's
 };
 #endif //WLANINDICATORPLUGIN_H
