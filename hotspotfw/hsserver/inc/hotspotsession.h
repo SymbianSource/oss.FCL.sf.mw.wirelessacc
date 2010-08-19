@@ -229,7 +229,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * Updates UI state of HotSpot browser logon application.
         * @param aMessage, Message for completing request
         */
-        void ProcessUiState( const RMessage2& aMessage );
+        void ProcessUiStateL( const RMessage2& aMessage );
         
         /**
         * Start HotSpot browser logon application.

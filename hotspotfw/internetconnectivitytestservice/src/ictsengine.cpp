@@ -225,7 +225,10 @@ void CIctsEngine::PollingIntervalTimeout()
         StopPolling();
         iClient.ConnectivityObserver( EConnectionNotOk, iString );    
         }
-    iPollingIntervalTimer->After( iPollingInterval );
+    else
+        {
+        iPollingIntervalTimer->After( iPollingInterval );
+        }
     }
     
 // ---------------------------------------------------------------------------

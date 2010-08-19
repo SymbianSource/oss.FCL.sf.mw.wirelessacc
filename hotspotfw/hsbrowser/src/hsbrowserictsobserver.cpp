@@ -85,13 +85,16 @@ void CHsBrowserIctsObserver::ProcessConnectionOk()
     if ( iContainer )
         {
         CHsBrowserModel* model = iContainer->Model();
-        if ( model )
+        if ( model && !iAuthenticatedOkSent )
             {
+            // Send this only once per session
+            iAuthenticatedOkSent = ETrue;
             model->SetState( EHsBrowserUiAuthenticatedOk, ETrue );
+            // Do this only once too 
+            iContainer->ShowLoginCompleteNote();
+            iContainer->SendToBackground();
+            iContainer->UpdateSoftkeys();
             }
-        iContainer->ShowLoginCompleteNote();
-        iContainer->SendToBackground();
-        iContainer->UpdateSoftkeys();
         }
     }
 
@@ -100,7 +103,8 @@ void CHsBrowserIctsObserver::ProcessConnectionOk()
 // ---------------------------------------------------------
 //
 CHsBrowserIctsObserver::CHsBrowserIctsObserver(
-    CHsBrowserContainer* aContainer ) : iContainer( aContainer )
+    CHsBrowserContainer* aContainer ) : iContainer( aContainer ),
+    iAuthenticatedOkSent( EFalse )
   	{
   	DEBUG( "CHsBrowserIctsObserver::CHsBrowserIctsObserver()" );
   	}      

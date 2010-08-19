@@ -50,7 +50,8 @@ const TInt KBrowserUid = 0x2000AFCC; // WLAN Login UID
 //
 CHotSpotSession::CHotSpotSession( CHotSpotServer& aServer ) :
     iServer( aServer ), iClient( NULL ), iSrvNotifications ( NULL ), 
-    iNotificationHandle( NULL ), iAllowNotifications( ETrue ), iHotspotExtension( ETrue )
+    iNotificationHandle( NULL ), iAllowNotifications( ETrue ), 
+    iHotspotExtension( ETrue )
     {
     
     }
@@ -160,7 +161,6 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
     switch ( aMessage.Function() )
         {
         case EHssActivateNotifications :
-            DEBUG( "CHotSpotSession::ActivateNotificationsL" );
             iAllowNotifications = EFalse;
             
             if ( iNotifications == NULL )
@@ -171,7 +171,6 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             HandleOrderNotifications( aMessage );
             break;
         case EHssCancelNotifications :
-            DEBUG( "CHotSpotSession::CancelNotifications" );
             iAllowNotifications = EFalse;
             iMgtClient->CancelNotifications( );
         
@@ -259,12 +258,10 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                 {
                 if ( value == KErrNone )
                     {
-                    DEBUG( "EHssLoginComplete1" );
                     iServer.CompleteMessage( indx, KErrNone );
                     }
                 else
                     {
-                    DEBUG( "EHssLoginComplete2" );
                     iServer.CompleteMessage( indx, KErrCancel );
                     iServer.SetLogoutFlag( ETrue );
                     }
@@ -303,7 +300,7 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                 // Otherwise message completed elsewhere. 
                 if ( KErrNone != err )
                     {
-                    indx = iServer.FindMessage(iIapId, EHssStartLogin );
+                    indx = iServer.FindMessage( iIapId, EHssStartLogin );
                     if ( indx >= 0 )
                         {
                         iServer.CompleteMessage( indx , KErrNone );
@@ -466,7 +463,9 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             aMessage.Complete( KErrNone );
             break;
         case EHssUiState:
-            ProcessUiState( aMessage );
+            TRAP_IGNORE( ProcessUiStateL( aMessage ) );
+            // Just complete the message
+            aMessage.Complete( KErrNone );
             break;
         case EHssStartBrowser:
             {
@@ -630,7 +629,7 @@ void CHotSpotSession::ConnectivityObserver( TIctsTestResult aResult,
         {
         case EConnectionOk :
             // Create IAP first, then complete the message to connection.
-            TRAP_IGNORE( iIapSettingsHandler->CreateIapL() );
+            TRAP_IGNORE( iIapSettingsHandler->CreateIapL( EFalse ) );
             indx = iServer.FindMessage( iIapId, EHssStartLogin );
             if ( KErrNotFound != indx )
                 {
@@ -1038,12 +1037,12 @@ void CHotSpotSession::ProcessServerShutdown( const RMessage2& aMessage )
     }
     
 // -----------------------------------------------------------------------------
-// ProcessUiState
+// ProcessUiStateL
 // -----------------------------------------------------------------------------
 //    
-void CHotSpotSession::ProcessUiState( const RMessage2& aMessage )
+void CHotSpotSession::ProcessUiStateL( const RMessage2& aMessage )
     {
-    DEBUG( "CHotSpotSession::ProcessUiState()" );
+    DEBUG( "CHotSpotSession::ProcessUiStateL()" );
     TBool completeMsg = EFalse;
     TInt indx( KErrNone );
     TInt indxBrowser( KErrNone );
@@ -1057,31 +1056,57 @@ void CHotSpotSession::ProcessUiState( const RMessage2& aMessage )
         {
         case EHsBrowserUiRunning:
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() EHsBrowserUiRunning" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiRunning" );
             break;
             }
         case EHsBrowserUiAuthenticatedOk:
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() EHsBrowserUiAuthenticatedOk" );
-
+            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedOk" );
+            // Check if Easy WLAN.
+            TInt easyWlan = iServer.GetEasyWlanId();
+            if ( easyWlan != iIapId )
+                {
+                iIapSettingsHandler->MoveIapL( iIapId );
+                // Activate notifications and mark as client IAP so that 
+                // IAP can be deleted after the use.
+                TBuf<KIapNameLength> clientUid;
+                iServer.SetClientIap( iIapId, clientUid );
+                iServer.ActivateWlanNotificationsL();
+                }
+            else
+                {
+                TInt iapId( 0 );
+                iapId = iIapSettingsHandler->CreateIapL( ETrue );
+                if ( iapId > 0 )
+                    {
+                    // Activate notifications and mark as client IAP so that 
+                    // IAP can be deleted after the use.
+                    TBuf<KIapNameLength> clientUid;
+                    iServer.SetClientIap( iapId, clientUid );
+                    iServer.ActivateWlanNotificationsL();
+                    }
+                }
+            
             completeMsg = ETrue;
+            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedOk Done" );
             break;
                }
         case EHsBrowserUiAuthenticatedNok:
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() EHsBrowserUiAuthenticatedNok" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedNok" );
+            
             completeMsg = ETrue;
             break;
             }
         case EHsBrowserUiClosed:
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() EHsBrowserUiClosed" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiClosed" );
             completeMsg = ETrue;
             break;
             }
         default:
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() default" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() default" );
             completeMsg = ETrue;
             }
         }
@@ -1091,20 +1116,14 @@ void CHotSpotSession::ProcessUiState( const RMessage2& aMessage )
         // complete messages EHssStartLogin/EHssStartBrowser
         if ( indx >= 0 )
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() completing EHssStartLogin" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() completing EHssStartLogin" );
             iServer.CompleteMessage( indx , KErrNone );
-            aMessage.Complete( KErrNone );
             }
-        else if ( indxBrowser >= 0 )
+        
+        if ( indxBrowser >= 0 )
             {
-            DEBUG( "CHotSpotSession::ProcessUiState() completing EHssStartBrowser" );
+            DEBUG( "CHotSpotSession::ProcessUiStateL() completing EHssStartBrowser" );
             iServer.CompleteMessage( indxBrowser, ret );
-            aMessage.Complete( KErrNone );
-            }
-        else
-            {
-            DEBUG( "CHotSpotSession::ProcessUiState() completing EHssUiState" );
-            aMessage.Complete( KErrNotFound );
             }
         }
     }    

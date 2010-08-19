@@ -239,6 +239,13 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         void CheckIapsL();
         
         /**
+        * Activates WLAN notifications.
+        * @since Series 60 5.2
+        * @return None
+        */
+        void ActivateWlanNotificationsL();
+        
+        /**
         * Get login timer value for the specified client.
         * @since Series 60 5.2
         * @param aClientUid, clients user id

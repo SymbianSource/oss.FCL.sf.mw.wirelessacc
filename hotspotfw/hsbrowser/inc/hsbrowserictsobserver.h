@@ -84,6 +84,11 @@ class CHsBrowserIctsObserver : public CBase, public MIctsObserver
         * Not owned.
         */
         CHsBrowserContainer* iContainer;
+        
+        /**
+        * Flag for authentication ok indication to Hotspot Server
+        */
+        TBool iAuthenticatedOkSent;
     };
 
 #endif // HSBROWSERICTSOBSERVER_H

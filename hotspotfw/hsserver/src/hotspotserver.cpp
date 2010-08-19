@@ -165,9 +165,7 @@ void CHotSpotServer::ConstructL()
     // Activate notifications for IAP check purposes. Done with every server startup.
     // When EWlanConnectionModeNotConnected is received we can cancel this.
     iMgtClient = CWlanMgmtClient::NewL();
-#ifndef __WINS__
-    iMgtClient->ActivateNotificationsL( *this );
-#endif 
+    ActivateWlanNotificationsL();
     }
 
 // -----------------------------------------------------------------------------
@@ -278,7 +276,7 @@ void CHotSpotServer::CheckIapsL()
         delete plugin;
 
         DEBUG1("CHotSpotServer::CheckIapsL find client error: %d", error );
-        if ( error == KErrNotFound )
+        if ( error != KErrNone )
             {
             // Remove from database
             RCmManagerExt cmManager;
@@ -301,6 +299,19 @@ void CHotSpotServer::CheckIapsL()
             }
         }
     DEBUG("CHotSpotServer::CheckIapsL Done");
+    }
+
+// -----------------------------------------------------------------------------
+// ActivateWlanNotificationsL
+// -----------------------------------------------------------------------------
+//
+void CHotSpotServer::ActivateWlanNotificationsL()
+    {
+    DEBUG("CHotSpotServer::ActivateWlanNotificationsL");
+#ifndef __WINS__
+    iMgtClient->CancelNotifications();
+    iMgtClient->ActivateNotificationsL( *this );
+#endif 
     }
 
 // -----------------------------------------------------------------------------

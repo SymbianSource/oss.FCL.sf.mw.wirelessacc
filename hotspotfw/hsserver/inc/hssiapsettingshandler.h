@@ -136,15 +136,23 @@ class CHssIapSettingsHandler : public CBase
         
         /**
         * Create new IAP to Internet SNAP.
+        * @param aHotspot, ETrue if captive portal detected
+        * @return Iap ID, Otherwise aIapId will be null
         */
-        void CreateIapL();
+        TInt CreateIapL( TBool aHotspot );
         
         /**
         * Deletes the IAP
         * @param aIapID, IAP id
         */
         void DeleteIapL( const TUint aIapId );
-                  
+        
+        /**
+        * Moves the IAP to Internet SNAP
+        * @param aIapID, IAP id
+        */
+        void MoveIapL( const TUint aIapId );
+        
     protected:
     
         /**
