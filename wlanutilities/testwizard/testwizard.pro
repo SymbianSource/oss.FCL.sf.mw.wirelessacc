@@ -40,6 +40,8 @@ SOURCES += src/MyAppEngine.cpp \
     
 RESOURCES = resources/resource.qrc
 
+DOCML += resources/mainview.docml
+
 symbian {
     # TODO: gain UID
     TARGET.UID3 = 0xE5C15256

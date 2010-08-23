@@ -126,7 +126,7 @@ protected:
      */
     bool eventFilter(QObject *obj, QEvent *event);
     
-    QGraphicsWidget* findChildItem(const QString &itemName, QGraphicsWidget *widget);
+    QGraphicsWidget* findChildItem(const QString &itemName, QGraphicsItem *widget);
     bool verifyStatus(WizardStatusSignal status, int iapId = -100);
     bool verifyCurrentPage(int pageId, int retries = 10, int wait_ms = 200);
     bool verifyCurrentPageWithInfo(int pageId, const QString &info, int retries = 10, int wait_ms = 200);

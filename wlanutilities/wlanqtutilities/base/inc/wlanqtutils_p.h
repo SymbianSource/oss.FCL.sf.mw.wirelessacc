@@ -111,6 +111,9 @@ private:
 
 private slots:
 
+    void updateAvailableWlanIaps(
+        QList< QSharedPointer<WlanQtUtilsIap> > &availableIaps);
+
     void updateAvailableWlanAps(
         QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
     
@@ -164,6 +167,9 @@ private: // data
 
     //! Current WLAN scan mode.
     ScanMode mScanMode;
+
+    //! List of available WLAN IAPs according to the latest scan.
+    QList< QSharedPointer<WlanQtUtilsIap> > mIapScanList;
     
     //! List of available WLAN APs according to the latest scan.
     QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanList;

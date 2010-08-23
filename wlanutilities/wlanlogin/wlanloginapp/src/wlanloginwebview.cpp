@@ -43,8 +43,8 @@
 /*!
     Constructor       
  */
-WlanLoginWebView::WlanLoginWebView(QGraphicsWidget* parent): 
-    QGraphicsWebView(parent),
+WlanLoginWebView::WlanLoginWebView(): 
+    QGraphicsWebView(),
     mWebPage(NULL),
     mMousePressed(false)
 {

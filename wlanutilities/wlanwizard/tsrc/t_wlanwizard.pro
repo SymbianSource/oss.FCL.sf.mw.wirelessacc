@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+# Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
 # All rights reserved.
 # This component and the accompanying materials are made available
 # under the terms of "Eclipse Public License v1.0"
@@ -12,6 +12,7 @@
 # Contributors:
 #
 # Description:
+# WLAN Wizard unit testing Qt project file.
 #
 
 include(stubs/stubs.pri)
@@ -39,9 +40,20 @@ RESOURCES += ../../wpswizard/resources/wpswizard_resource.qrc
 
 INCLUDEPATH += \
     stubs
-        
-# OST trace system requires traces directory to be in USERINCLUDES
-MMP_RULES += "USERINCLUDE ../traces"
+
+# Stub headers must be used instead of real ones
+symbian {
+	MMP_RULES += "USERINCLUDE stubs"
+}
+
+# Temporary solution to fix tracecompiler
+# When tracecompiler is fixed, these can be removed
+symbian: {
+    MMP_RULES += \
+        "USERINCLUDE ../traces" \
+        "USERINCLUDE ../../eapwizard/traces" \
+        "USERINCLUDE ../../wpswizard/traces"
+}
 
 # WLAN WIZARD HEADERS
 HEADERS   += \

@@ -19,6 +19,7 @@
 
 #include <QGraphicsWidget>
 #include <QSharedPointer>
+#include <QObjectList>
 
 #include <HbLabel>
 #include <HbPushButton>
@@ -62,6 +63,9 @@
 //! WLAN Sniffer list view docml file location
 static const QString WlanSnifferListViewDocml(":/docml/wlansnifferlistview.docml");
 
+//! WLAN Sniffer list view object name
+static const QString WlanSnifferListViewName("occ_list");
+
 // ======== LOCAL FUNCTIONS ========
 
 // ======== MEMBER FUNCTIONS ========
@@ -75,7 +79,8 @@ static const QString WlanSnifferListViewDocml(":/docml/wlansnifferlistview.docml
 
 WlanSnifferListView::WlanSnifferListView(
     WlanSnifferEngine *engine,
-    WlanSnifferMainWindow *mainWindow) : 
+    WlanSnifferMainWindow *mainWindow) :
+    HbView(),
     mDocLoader(new HbDocumentLoader(mainWindow)),
     mWlanListWidget(),
     mContextMenu(),
@@ -208,9 +213,16 @@ WlanSnifferListView::~WlanSnifferListView()
 void WlanSnifferListView::loadDocml(bool isEmbedded)
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTVIEW_LOADDOCML_ENTRY);
-    
-    bool ok = false;
+
+    // Pass the view to the document loader. Document loader uses this view
+    // when docml is parsed, instead of creating a new view.
+    setObjectName(WlanSnifferListViewName);
+    QObjectList objectList;
+    objectList.append(this);
+    mDocLoader->setObjectTree(objectList);
+
     // First load the common section
+    bool ok = false;
     mDocLoader->load(WlanSnifferListViewDocml, &ok);
     Q_ASSERT(ok);
     
@@ -223,10 +235,8 @@ void WlanSnifferListView::loadDocml(bool isEmbedded)
     Q_ASSERT(ok);
     
     // Load the view by name from the xml file
-    QGraphicsWidget *widget = mDocLoader->findWidget("occ_list");
+    QGraphicsWidget *widget = mDocLoader->findWidget(WlanSnifferListViewName);
     Q_ASSERT(widget);
-    // Set the WlanListView view to be the widget that was loaded from the xml
-    setWidget(widget);
 
     // Set view menu
     HbMenu *viewMenu = qobject_cast<HbMenu *>(mDocLoader->findWidget("viewMenu"));

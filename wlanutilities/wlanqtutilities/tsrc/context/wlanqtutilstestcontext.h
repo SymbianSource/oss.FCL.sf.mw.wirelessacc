@@ -147,11 +147,27 @@ public:
     void initialize();
 
     /**
+     * Creates a list of WLAN IAPs for scan results.
+     * 
+     * @param[in] numberOfWlanIaps Number of WLAN IAPs that are created.
+     */
+    void createDefaultWlanScanIapResultList(int numberOfWlanIaps);
+    
+    /**
+     * Verifies that the given WLAN IAP list returned by the real application matches
+     * with the one in the context.
+     * 
+     * @param[in] wlanIapList WLAN IAPs that are verified against the context.
+     */
+    void verifyWlanScanIapResultList(
+        QList< QSharedPointer<WlanQtUtilsIap> > wlanIapList);
+
+    /**
      * Creates a list of WLAN APs for scan results.
      * 
      * @param[in] numberOfWlanAps Number of WLAN APs that are created.
      */
-    void createDefaultWlanScanResultList(int numberOfWlanAps);
+    void createDefaultWlanScanApResultList(int numberOfWlanAps);
 
     /**
      * Verifies that the given WLAN AP list returned by the real application matches
@@ -159,30 +175,47 @@ public:
      * 
      * @param[in] wlanApList WLAN APs that are verified against the context.
      */
-    void verifyWlanScanResultList(
+    void verifyWlanScanApResultList(
         QList< QSharedPointer<WlanQtUtilsAp> > wlanApList); // TODO: Maybe boolean return value
 
     // Scan result list iterator. Holds the current index, starting from zero (0).
     int mScanResultIterator;
     
+    // List of WLAN IAPs that WLAN Management API stub will return when
+    // requesting for wlan IAP scan results.
+    QList< QSharedPointer<WlanQtUtilsIap> > mWlanScanIapResultList;
+    
     // List of WLAN access points that WLAN Management API stub will return when
     // requesting for wlan scan results.
-    QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanResultList;
+    QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanApResultList;
     
     /**
-     * Should scan be completed immediately or not?
+     * Should IAP scan be completed immediately or not?
      */
-    bool mCompleteWlanScan;
+    bool mCompleteWlanIapScan;
+
+    /**
+     * Should AP scan be completed immediately or not?
+     */
+    bool mCompleteWlanApScan;
     
-    /** Return value of scan request. */
-    int mScanRetValue;
+    /** Return value of IAP scan request. */
+    int mIapScanRetValue;
+    
+    /** Return value of AP scan request. */
+    int mApScanRetValue;
     
 private:
     
     /**
+     * Destroys and clears the list of WLAN IAPs.
+     */
+    void clearWlanScanIapResultList();
+    
+    /**
      * Destroys and clears the list of WLAN APs.
      */
-    void clearWlanScanResultList();
+    void clearWlanScanApResultList();
 };
 
 /**

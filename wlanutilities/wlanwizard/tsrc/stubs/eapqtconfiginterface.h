@@ -1,24 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   EAP method configuration QT interface
- *
- */
-
-/*
- * %version: 5 %
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* EAP method configuration QT interface.
+*/
 
 #ifndef EAPQTCONFIGINTERFACE_H
 #define EAPQTCONFIGINTERFACE_H
@@ -27,7 +22,6 @@
 #include <QStringList>
 #include <eapqtexpandedeaptype.h>
 #include <eapqtpluginhandle.h>
-#include <eapqtconfigdefs.h>
 #include "eapqtconfig.h"
 #include "eapqtpacstoreconfig.h"
 #include "eapqtcertificateinfo.h"
@@ -48,7 +42,7 @@ public:
     enum EapBearerType
     {
         // EAP configuration interface for WLAN
-        EapBearerTypeWlan,
+        EapBearerTypeWlan = 0,
         // EAP configuration interface for VPN
         EapBearerTypeVpn,
     };
@@ -58,6 +52,10 @@ public:
 public:
     EapQtConfigInterface(const EapBearerType bearerType, const int iapId);
     ~EapQtConfigInterface();
+    
+    EapQtValidator *validatorEap(const EapQtExpandedEapType &type, const EapQtConfig::SettingsId id);    
+    EapQtValidator *validatorPacStore(const EapQtPacStoreConfig::PacStoreSettings id);
+    
     bool setConfigurationReference(const int iapId);
     QList<EapQtCertificateInfo> certificateAuthorityCertificates();
     QList<EapQtCertificateInfo> userCertificates();
@@ -69,13 +67,12 @@ public:
         const EapQtPluginHandle& innerHandle);
     
     bool setSelectedOuterTypes(const QList<EapQtPluginHandle>& outerHandles);
-    bool saveConfiguration(const EapQtPluginHandle& pluginHandle, EapQtConfig &config);
+    bool saveConfiguration(const EapQtPluginHandle& pluginHandle, const EapQtConfig &config);
     bool deleteConfiguration();
-    EapQtValidator *validatorEap(EapQtExpandedEapType type, EapQtConfig::SettingsId id);
     
     bool readPacStoreConfiguration(EapQtPacStoreConfig &config);
     bool savePacStoreConfiguration(EapQtPacStoreConfig &config);
-    EapQtValidator *validatorPacStore(EapQtPacStoreConfig::PacStoreSettings id);
+    
     
 private:
     Q_DISABLE_COPY(EapQtConfigInterface)

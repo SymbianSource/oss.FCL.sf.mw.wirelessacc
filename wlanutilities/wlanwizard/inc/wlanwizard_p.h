@@ -66,7 +66,6 @@ public:
         int networkMode, 
         int securityMode,
         bool usePsk, 
-        bool hidden, 
         bool wps);
 
     void show();

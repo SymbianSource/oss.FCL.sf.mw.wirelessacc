@@ -31,18 +31,11 @@
 
 // Forward declarations
 
+class WlanSettings;
+
 // External data types
 
 // Constants
-/**  Value for automatic scanning. */
-LOCAL_D const TUint KWlanSettingsScanNetworkAuto = 0xFFFFFFFF;
-
-/**  Default "Scan Networks" setting. */
-LOCAL_D const TUint KWlanSettingsDefaultScanNetwork =
-    KWlanSettingsScanNetworkAuto;
-
-/**  Default "Power saving" setting. */
-LOCAL_D const TBool KWlanSettingsDefaultPowerSaving = ETrue;
 
 // Class declaration
 
@@ -60,7 +53,7 @@ public:
         EWlanScanInterval        
     };
     
-    static CWlanSettingsPrivate* NewL(int psmKeyValue);
+    static CWlanSettingsPrivate* NewL(WlanSettings *q_ptr);
     
     ~CWlanSettingsPrivate();
     
@@ -80,27 +73,23 @@ public:
     
     void SetPowerSaving(TBool powerSavingOption);
     
-    TBool IsPsmEnabled();
-    
 private:
     
-    CWlanSettingsPrivate(int psmKeyValue);
+    CWlanSettingsPrivate(WlanSettings *q_ptr);
     
     void ConstructL();
-    
-    void CheckPsmModeL();
     
     void LoadJoinWlanSettingL();
     
 private:    //data
     
+    //! Pointer to public implementation.
+    WlanSettings *q_ptr;
+
     CommsDat::CMDBSession *mSession;
 
     //Wlan management
     CWlanMgmtClient *mWlanMgmtClient;
-
-    // Full or partial PSM mode.
-    TBool mPsmMode;   
 
     // Power saving.
     TBool mPowerSaving;
@@ -112,9 +101,6 @@ private:    //data
     
     //Struct to hold current settings
     TCmGenConnSettings mCmSettings;
-    
-    int mPsmKeyMode;
-
 };
 
 #endif /* WLANSETTINGS_S60_H_ */

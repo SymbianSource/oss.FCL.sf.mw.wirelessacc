@@ -20,9 +20,11 @@
 #include <xqsettingsmanager.h>
 #include <xqsettingskey.h>
 #include <psmsrvdomaincrkeys.h>
+#include <psmtypes.h>
 
 // User includes
 
+#include "wlansettings_s60_p.h"
 #include "wlansettings.h"
 
 #include "OstTraceDefinitions.h"
@@ -38,9 +40,13 @@
 // External function prototypes
 
 // Local constants
-/**  Default value for Scan Interval. */
-const int KDefaultScanInterval = 5;
 
+//! Device Power Saving Mode setting key
+static const XQSettingsKey devicePowerSavingKey(
+    XQSettingsKey::TargetCentralRepository,
+    KCRUidPowerSaveMode.iUid, 
+    KPsmCurrentMode);
+    
 // ======== MEMBER FUNCTIONS ========
 
 /*!
@@ -48,11 +54,13 @@ const int KDefaultScanInterval = 5;
 */
 
 WlanSettings::WlanSettings() :
-    QObject(), mPsmKeyValue(0)
+    QObject(),
+    mSettingsManager(new XQSettingsManager(this)),
+    mDevicePowerSavingMode(0),
+    mDevicePowerSavingModeUpToDate(false)
 {
-
-    OstTraceFunctionEntry1(WLANSETTINGS_WLANSETTINGS_ENTRY, this);
-    OstTraceFunctionExit1(WLANSETTINGS_WLANSETTINGS_EXIT, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_WLANSETTINGS_ENTRY );
+    OstTraceFunctionExit0( WLANSETTINGS_WLANSETTINGS_EXIT );
 }
 
 /*!
@@ -61,11 +69,11 @@ WlanSettings::WlanSettings() :
 
 WlanSettings::~WlanSettings()
 {
-    OstTraceFunctionEntry1(DUP1_WLANSETTINGS_WLANSETTINGS_ENTRY, this);
+    OstTraceFunctionEntry0( DUP1_WLANSETTINGS_WLANSETTINGS_ENTRY );
 
-    delete mImpl;
+    delete d_ptr;
     
-    OstTraceFunctionExit1(DUP1_WLANSETTINGS_WLANSETTINGS_EXIT, this);
+    OstTraceFunctionExit0( DUP1_WLANSETTINGS_WLANSETTINGS_EXIT );
 }
 
 /*!
@@ -75,32 +83,59 @@ WlanSettings::~WlanSettings()
 
 int WlanSettings::init()
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_INIT_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_INIT_ENTRY );
     
-    readPsmKey();
+    // Listen for changes in the key value
+    bool connectStatus = connect(
+        mSettingsManager,
+        SIGNAL(valueChanged(XQSettingsKey, QVariant)),
+        this,
+        SLOT(devicePowerSavingKeyChanged()));
+    Q_ASSERT(connectStatus);
+    mSettingsManager->startMonitoring(devicePowerSavingKey);
     
-    TRAPD(error,(mImpl = CWlanSettingsPrivate::NewL(mPsmKeyValue)));
+    TRAPD(error,(d_ptr = CWlanSettingsPrivate::NewL(this)));
     
-    OstTraceFunctionExit1(WLANSETTINGS_INIT_EXIT, this);
+    OstTraceFunctionExit0( WLANSETTINGS_INIT_EXIT );
     return error;
 }
 
+/*!
+    Reads the value of the Device Power Saving Mode setting.
+*/
 
-void WlanSettings::readPsmKey()
+void WlanSettings::readDevicePowerSavingKey()
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_READPSMKEY_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_READDEVICEPOWERSAVINGKEY_ENTRY );
     
-    QScopedPointer<XQSettingsManager> settingsManager;
-    settingsManager.reset(new XQSettingsManager());
+    mDevicePowerSavingMode = 
+        mSettingsManager->readItemValue(devicePowerSavingKey).toInt();
 
-    XQSettingsKey key(XQSettingsKey::TargetCentralRepository,
-            KCRUidPowerSaveMode.iUid, KPsmCurrentMode);
-
-    QVariant keyValue = settingsManager->readItemValue(key);
-
-    mPsmKeyValue = keyValue.toInt();
+    mDevicePowerSavingModeUpToDate = true;
     
-    OstTraceFunctionExit1(WLANSETTINGS_READPSMKEY_EXIT, this);
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANSETTINGS_READDEVICEPOWERSAVINGKEY,
+        "WlanSettings::readDevicePowerSavingKey;powerSaving=%d",
+        mDevicePowerSavingMode );
+
+    OstTraceFunctionExit0( WLANSETTINGS_READDEVICEPOWERSAVINGKEY_EXIT );
+}
+
+/*!
+    Slot for handling updates in the Device Power Saving Mode setting.
+*/
+
+void WlanSettings::devicePowerSavingKeyChanged()
+{
+    OstTraceFunctionEntry0( WLANSETTINGS_DEVICEPOWERSAVINGKEYCHANGED_ENTRY );
+    
+    // Remember that we need to read the setting value again before
+    // using it, and notify UI of the change.
+    mDevicePowerSavingModeUpToDate = false;
+    emit devicePowerSavingUpdated();
+    
+    OstTraceFunctionExit0( WLANSETTINGS_DEVICEPOWERSAVINGKEYCHANGED_EXIT );
 }
 
 /*!
@@ -110,11 +145,17 @@ void WlanSettings::readPsmKey()
 
 int WlanSettings::loadSettings()
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_LOADSETTINGS_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_LOADSETTINGS_ENTRY );
     
-    TRAPD(error, mImpl->LoadDBSettingsL());
+    TRAPD(error, d_ptr->LoadDBSettingsL());
     
-    OstTraceFunctionExit1(WLANSETTINGS_LOADSETTINGS_EXIT, this);
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANSETTINGS_LOADSETTINGS,
+        "WlanSettings::loadSettings;error=%d",
+        error );
+    
+    OstTraceFunctionExit0( WLANSETTINGS_LOADSETTINGS_EXIT );
     return error;
 }
 
@@ -125,19 +166,22 @@ int WlanSettings::loadSettings()
 
 WlanSettings::ScanNetworkType WlanSettings::scanNetworkType()
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_SCANNETWORKTYPE_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_SCANNETWORKTYPE_ENTRY );
     
     ScanNetworkType scanType;
-    uint scanInterval = mImpl->ScanInterval();
-    
-    if (scanInterval == KWlanSettingsScanNetworkAuto) {
+    if (d_ptr->ScanInterval() == ScanNetworkAuto) {
         scanType = EScanNetworkAuto;
-    }
-    else {
+    } else {
         scanType = EScanNetworkUserDefined;
     }
     
-    OstTraceFunctionExit1(WLANSETTINGS_SCANNETWORKTYPE_EXIT, this);
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANSETTINGS_SCANNETWORKTYPE,
+        "WlanSettings::scanNetworkType;scanType=%d",
+        scanType );
+    
+    OstTraceFunctionExit0( WLANSETTINGS_SCANNETWORKTYPE_EXIT );
     return scanType;
 }
 
@@ -148,26 +192,30 @@ WlanSettings::ScanNetworkType WlanSettings::scanNetworkType()
 
 uint WlanSettings::scanInterval()
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_SCANINTERVAL_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_SCANINTERVAL_ENTRY );
     
-    uint scanInterval = mImpl->ScanInterval();
+    uint scanInterval = d_ptr->ScanInterval();
     
-    if (scanInterval == KWlanSettingsScanNetworkAuto) {
-        scanInterval = KDefaultScanInterval;
-    }
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANSETTINGS_SCANINTERVAL,
+        "WlanSettings::scanInterval;scanInterval=%u",
+        scanInterval );
     
-    OstTraceFunctionExit1(WLANSETTINGS_SCANINTERVAL_EXIT, this);
+    OstTraceFunctionExit0( WLANSETTINGS_SCANINTERVAL_EXIT );
     return scanInterval;
 }
 
 /*!
-    Function to get Power Saving Option.
+    Function to get Wlan Power Saving Option.
     \return True if Power Saving option is enabled, otherwise False.
 */
 
-int WlanSettings::isPowerSavingEnabled() const
+bool WlanSettings::isWlanPowerSavingEnabled() const
 {
-    return mImpl->PowerSaving();
+    OstTraceFunctionEntry0( WLANSETTINGS_ISWLANPOWERSAVINGENABLED_ENTRY );
+    OstTraceFunctionExit0( WLANSETTINGS_ISWLANPOWERSAVINGENABLED_EXIT );
+    return d_ptr->PowerSaving();
 }
 
 /*!
@@ -178,12 +226,12 @@ int WlanSettings::isPowerSavingEnabled() const
 
 int WlanSettings::setWlanPowerSaving(int powerSavingOption)
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_SETWLANPOWERSAVING_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_SETWLANPOWERSAVING_ENTRY );
     
-    mImpl->SetPowerSaving(powerSavingOption);
-    TRAPD(error, mImpl->SaveDBSettingsL(CWlanSettingsPrivate::EWlanPowerSaving));
+    d_ptr->SetPowerSaving(powerSavingOption);
+    TRAPD(error, d_ptr->SaveDBSettingsL(CWlanSettingsPrivate::EWlanPowerSaving));
 
-    OstTraceFunctionExit1(WLANSETTINGS_SETWLANPOWERSAVING_EXIT, this);
+    OstTraceFunctionExit0( WLANSETTINGS_SETWLANPOWERSAVING_EXIT );
     return error;
 }
 
@@ -195,12 +243,12 @@ int WlanSettings::setWlanPowerSaving(int powerSavingOption)
 
 int WlanSettings::setWlanScanInterval(uint scanInterval)
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_SETWLANSCANINTERVAL_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_SETWLANSCANINTERVAL_ENTRY );
     
-    mImpl->SetScanInterval(scanInterval);
-    TRAPD(error, mImpl->SaveDBSettingsL(CWlanSettingsPrivate::EWlanScanInterval));
+    d_ptr->SetScanInterval(scanInterval);
+    TRAPD(error, d_ptr->SaveDBSettingsL(CWlanSettingsPrivate::EWlanScanInterval));
 
-    OstTraceFunctionExit1(WLANSETTINGS_SETWLANSCANINTERVAL_EXIT, this);
+    OstTraceFunctionExit0( WLANSETTINGS_SETWLANSCANINTERVAL_EXIT );
     return error;
 }
 
@@ -211,7 +259,9 @@ int WlanSettings::setWlanScanInterval(uint scanInterval)
 
 int WlanSettings::joinWlanMode() const
 {
-    return mImpl->JoinWlanMode();
+    OstTraceFunctionEntry0( WLANSETTINGS_JOINWLANMODE_ENTRY );
+    OstTraceFunctionExit0( WLANSETTINGS_JOINWLANMODE_EXIT );
+    return d_ptr->JoinWlanMode();
 }
 
 /*!
@@ -222,11 +272,11 @@ int WlanSettings::joinWlanMode() const
 
 int WlanSettings::setJoinWlanMode(int mode)
 {
-    OstTraceFunctionEntry1(WLANSETTINGS_SETJOINWLANMODE_ENTRY, this);
+    OstTraceFunctionEntry0( WLANSETTINGS_SETJOINWLANMODE_ENTRY );
     
-    TRAPD(error, mImpl->SaveJoinWlanSettingL(mode));
+    TRAPD(error, d_ptr->SaveJoinWlanSettingL(mode));
     
-    OstTraceFunctionExit1(WLANSETTINGS_SETJOINWLANMODE_EXIT, this);
+    OstTraceFunctionExit0( WLANSETTINGS_SETJOINWLANMODE_EXIT );
     return error;
 }
 
@@ -235,7 +285,18 @@ int WlanSettings::setJoinWlanMode(int mode)
     \return True if Power Saving is enabled.
 */
 
-int WlanSettings::isPsmEnabled() const
+bool WlanSettings::isDevicePowerSavingEnabled()
 {
-    return mImpl->IsPsmEnabled();
+    OstTraceFunctionEntry0( WLANSETTINGS_ISDEVICEPOWERSAVINGENABLED_ENTRY );
+    
+    if (!mDevicePowerSavingModeUpToDate) {
+        readDevicePowerSavingKey();
+    }
+    if (mDevicePowerSavingMode == EPsmsrvModeNormal) {
+        OstTraceFunctionExit0( WLANSETTINGS_ISDEVICEPOWERSAVINGENABLED_EXIT );
+        return false;
+    } else {
+        OstTraceFunctionExit0( DUP1_WLANSETTINGS_ISDEVICEPOWERSAVINGENABLED_EXIT );
+        return true;
+    }
 }

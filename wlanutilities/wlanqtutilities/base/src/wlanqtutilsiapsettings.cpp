@@ -404,6 +404,12 @@ void WlanQtUtilsIapSettings::storeSettings(
     iap->setIntAttribute(
         CMManagerShim::WlanConnectionMode, 
         wlanAp->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt());
+    iap->setBoolAttribute(
+        CMManagerShim::CmHidden,
+        wlanAp->value(WlanQtUtilsAp::ConfIdHidden).toBool());
+    iap->setBoolAttribute(
+        CMManagerShim::WlanScanSSID,
+        wlanAp->value(WlanQtUtilsAp::ConfIdWlanScanSSID).toBool());
 
     // Store the WEP settings
     storeWepKey(

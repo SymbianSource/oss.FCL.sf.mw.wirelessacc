@@ -26,11 +26,12 @@
 
 // User includes
 
-#include "wlanqtutilsap.h"
+#include "wlanqtutilsiap.h"
 
 // Forward declarations
 
-class WlanQtUtilsScanPrivate;
+class WlanQtUtilsScanIapPrivate;
+class WlanQtUtilsScanApPrivate;
 
 // External data types
 
@@ -50,6 +51,8 @@ public:
     
     ~WlanQtUtilsScan();
 
+    void scanWlanIaps();
+
     void scanWlanAps();
 
     void scanWlanDirect(const QString &ssid);
@@ -59,8 +62,16 @@ public:
 signals:
     
     /*!
-        Signal indicating available WLAN access points.
+        Signal indicating available WLAN IAP's.
+    
+        @param [in] availableIaps Available WLAN IAP's found in scan.
+    */
+    void availableWlanIaps(
+        QList< QSharedPointer<WlanQtUtilsIap> > &availableIaps);
 
+    /*!
+        Signal indicating available WLAN access points.
+    
         @param [in] availableWlans Available WLAN access points found in scan.
     */
     void availableWlanAps(
@@ -89,8 +100,11 @@ private: // data
 
     // Owned data
 
-    //! Private implementation of scan interface
-    WlanQtUtilsScanPrivate *d_ptr;
+    //! Private implementation of IAP scan interface
+    WlanQtUtilsScanIapPrivate *d_ptrIap;
+    
+    //! Private implementation of AP scan interface
+    WlanQtUtilsScanApPrivate *d_ptrAp;
 
     // Not owned data
     
@@ -98,7 +112,8 @@ private: // data
 
     // Needed to be able to emit public signals directly from
     // private implementation.
-    friend class WlanQtUtilsScanPrivate;
+    friend class WlanQtUtilsScanIapPrivate;
+    friend class WlanQtUtilsScanApPrivate;
 };
 
 #endif // WLANQTUTILSSCAN_H

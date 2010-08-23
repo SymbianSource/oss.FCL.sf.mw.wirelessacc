@@ -30,6 +30,13 @@ RCC_DIR = build
 
 RESOURCES += resources/eapwizard_resource.qrc
 
+DOCML += \
+    resources/occ_eap_wizard_01_02_04.docml \
+    resources/occ_eap_wizard_03.docml \
+    resources/occ_eap_wizard_05_07.docml \
+    resources/occ_eap_wizard_06.docml \
+    resources/occ_eap_wizard_08.docml
+
 TRANSLATIONS = eapwizard.ts
 
 HEADERS   += \

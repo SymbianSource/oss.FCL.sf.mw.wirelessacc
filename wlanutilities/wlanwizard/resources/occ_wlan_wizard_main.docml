@@ -14,6 +14,7 @@
     </object>
     <widget name="dialog" type="HbDialog">
         <bool name="backgroundFaded" value="TRUE"/>
+        <bool name="dismissOnAction" value="FALSE"/>
         <integer name="timeout" value="0"/>
         <enums name="frameType" value="Strong"/>
         <enums name="dismissPolicy" value="NoDismiss"/>

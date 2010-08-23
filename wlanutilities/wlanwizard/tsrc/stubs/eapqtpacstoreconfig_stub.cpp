@@ -17,7 +17,7 @@
  */
 
 /*
- * %version: 2 %
+ * %version: 3 %
  */
 #include <QDebug>
 #include <eapqtpacstoreconfig.h>
@@ -31,7 +31,7 @@ EapQtPacStoreConfig::~EapQtPacStoreConfig()
     // scoped pointer deleted automatically
 }
 
-QVariant EapQtPacStoreConfig::value(PacStoreSettings id)
+QVariant EapQtPacStoreConfig::value(const PacStoreSettings id) const
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id >= PacStoreLast) {
@@ -41,7 +41,9 @@ QVariant EapQtPacStoreConfig::value(PacStoreSettings id)
     return mPacStoreSettings[id];
 }
 
-void EapQtPacStoreConfig::setValue(PacStoreSettings id, QVariant newValue)
+void EapQtPacStoreConfig::setValue(
+    const PacStoreSettings id, 
+    const QVariant & newValue)
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id < PacStoreLast) {
@@ -51,7 +53,8 @@ void EapQtPacStoreConfig::setValue(PacStoreSettings id, QVariant newValue)
     }
 }
 
-void EapQtPacStoreConfig::clear() {
+void EapQtPacStoreConfig::clear()
+{
     mPacStoreSettings.clear();
 }
 

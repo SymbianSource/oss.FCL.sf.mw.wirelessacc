@@ -41,10 +41,15 @@ LIBS += -lcpframework \
 		-lecom \
 		-lxqsettingsmanager
 				
+# Temporary solution to fix tracecompiler
+# When tracecompiler is fixed, this can be removed
+symbian: {
+    MMP_RULES += "USERINCLUDE traces"
+}
+
 symbian: { 
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.UID3 = 0x2002DC79
-    SYMBIAN_PLATFORMS = WINSCW ARMV5
     
     BLD_INF_RULES.prj_exports += "rom/cpwlansettingsplugin.iby CORE_MW_LAYER_IBY_EXPORT_PATH(cpwlansettingsplugin.iby)"
     BLD_INF_RULES.prj_exports += "rom/cpwlansettingsplugin_resources.iby LANGUAGE_APP_LAYER_IBY_EXPORT_PATH(cpwlansettingsplugin_resources.iby)"

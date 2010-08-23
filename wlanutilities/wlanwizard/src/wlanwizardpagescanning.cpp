@@ -468,7 +468,7 @@ int WlanWizardPageScanning::processMultipleScanResults(
         // may be skipped and the next page is set to security mode query.
         WlanNetworkSetting setting = networkOptions.getNetModes().at(0);
         mWizard->setConfiguration(WlanWizardHelper::ConfNetworkMode, setting.mode);
-        mWizard->setConfiguration(WlanWizardHelper::ConfHiddenWlan, setting.hidden);
+        mWizard->setConfiguration(WlanWizardHelper::ConfWlanScanSSID, setting.hidden);
         mWizard->setConfiguration(WlanWizardHelper::ConfWpsSupported, setting.wpsSupported);
         nextPage = WlanWizardPageInternal::PageNetworkSecurity;
     }

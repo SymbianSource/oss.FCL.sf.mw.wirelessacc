@@ -25,6 +25,7 @@
 #include "wlanqtutils.h"
 #include "wlanqtutilstestcontext.h"
 #include "wlanqtutilsap.h"
+#include "wlanqtutilsiap.h"
 #include "wlanqtutilsconnection.h"
 
 // ---------------------------------------------------------
@@ -138,27 +139,77 @@ WlanQtUtilsCtxActiveConn *WlanQtUtilsCtxActiveConnections::findActiveConn(uint c
 
 WlanQtUtilsWlanScan::WlanQtUtilsWlanScan() :
     mScanResultIterator(0),
-    mWlanScanResultList(),
-    mCompleteWlanScan(true),
-    mScanRetValue(KErrNone)
+    mWlanScanIapResultList(),
+    mWlanScanApResultList(),
+    mCompleteWlanIapScan(true),
+    mCompleteWlanApScan(true),
+    mIapScanRetValue(KErrNone),
+    mApScanRetValue(KErrNone)
 {
 }
 
 WlanQtUtilsWlanScan::~WlanQtUtilsWlanScan()
 {
-    clearWlanScanResultList();
+    clearWlanScanIapResultList();
+    clearWlanScanApResultList();
 }
 
 void WlanQtUtilsWlanScan::initialize()
 {
-    clearWlanScanResultList();
-    mCompleteWlanScan = true;
-    mScanRetValue = KErrNone;
+    clearWlanScanIapResultList();
+    clearWlanScanApResultList();
+    mCompleteWlanIapScan = true;
+    mCompleteWlanApScan = true;
+    mIapScanRetValue = KErrNone;
+    mApScanRetValue = KErrNone;
 }
 
-void WlanQtUtilsWlanScan::createDefaultWlanScanResultList(int numberOfWlanAps)
+void WlanQtUtilsWlanScan::createDefaultWlanScanIapResultList(int numberOfWlanIaps)
 {
-    clearWlanScanResultList();
+    clearWlanScanIapResultList();
+    
+    for (int i = 0; i < numberOfWlanIaps; i++) {
+        QSharedPointer<WlanQtUtilsIap> iap(new WlanQtUtilsIap());
+        iap->setValue(WlanQtUtilsIap::ConfIdIapId, i);
+        iap->setValue(WlanQtUtilsIap::ConfIdName, "TestWlanAp" + QString::number(i + 1));
+        // ConfIdNetworkId?
+        iap->setValue(WlanQtUtilsAp::ConfIdSsid, "TestWlanAp" + QString::number(i + 1));
+        iap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 20);
+        iap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
+        iap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
+        iap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
+        mWlanScanIapResultList.append(iap);
+    }
+}
+
+void WlanQtUtilsWlanScan::clearWlanScanIapResultList()
+{
+    mWlanScanIapResultList.clear();
+}
+
+void WlanQtUtilsWlanScan::verifyWlanScanIapResultList(
+    QList< QSharedPointer<WlanQtUtilsIap> > wlanIapList)
+{
+    QCOMPARE(wlanIapList.count(), mWlanScanIapResultList.count());
+    
+    for (int i = 0; i < mWlanScanIapResultList.count(); i++) {
+        QCOMPARE(
+            wlanIapList[i]->value(WlanQtUtilsIap::ConfIdIapId),
+            mWlanScanIapResultList[i]->value(WlanQtUtilsIap::ConfIdIapId));
+        QCOMPARE(
+            wlanIapList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength),
+            mWlanScanIapResultList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength));
+        //QCOMPARE(
+        //    wlanIapList[i]->value(WlanQtUtilsAp::ConfIdSsid),
+        //    mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdSsid));
+    }
+}
+
+
+void WlanQtUtilsWlanScan::createDefaultWlanScanApResultList(int numberOfWlanAps)
+{
+    clearWlanScanApResultList();
+    
     for (int i = 0; i < numberOfWlanAps; i++) {
         QSharedPointer<WlanQtUtilsAp> ap(new WlanQtUtilsAp());
         ap->setValue(WlanQtUtilsAp::ConfIdSsid, "TestWlanAp" + QString::number(i + 1));
@@ -168,42 +219,42 @@ void WlanQtUtilsWlanScan::createDefaultWlanScanResultList(int numberOfWlanAps)
         ap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
         ap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
         ap->setValue(WlanQtUtilsAp::ConfIdWpsSupported, false);
-        mWlanScanResultList.append(ap);
+        mWlanScanApResultList.append(ap);
     }
 }
 
-void WlanQtUtilsWlanScan::clearWlanScanResultList()
+void WlanQtUtilsWlanScan::clearWlanScanApResultList()
 {
-    mWlanScanResultList.clear();
+    mWlanScanApResultList.clear();
 }
 
-void WlanQtUtilsWlanScan::verifyWlanScanResultList(
+void WlanQtUtilsWlanScan::verifyWlanScanApResultList(
     QList< QSharedPointer<WlanQtUtilsAp> > wlanApList)
 {
-    QCOMPARE(wlanApList.count(), mWlanScanResultList.count());
+    QCOMPARE(wlanApList.count(), mWlanScanApResultList.count());
 
-    for (int i = 0; i < mWlanScanResultList.count(); i++) {
+    for (int i = 0; i < mWlanScanApResultList.count(); i++) {
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdSsid),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdSsid));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdSsid));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdBssid),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdBssid));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdBssid));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdConnectionMode),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdConnectionMode));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdConnectionMode));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdSecurityMode),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdSecurityMode));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdSecurityMode));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdWpaPskUse),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdWpaPskUse));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdWpaPskUse));
         QCOMPARE(
             wlanApList[i]->value(WlanQtUtilsAp::ConfIdWpsSupported),
-            mWlanScanResultList[i]->value(WlanQtUtilsAp::ConfIdWpsSupported));
+            mWlanScanApResultList[i]->value(WlanQtUtilsAp::ConfIdWpsSupported));
     }
 }
 

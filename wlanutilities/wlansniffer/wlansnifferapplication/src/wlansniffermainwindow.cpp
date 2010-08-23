@@ -165,7 +165,6 @@ void WlanSnifferMainWindow::startWlanWizard(const WlanQtUtilsAp *ap)
             ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
             ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
             ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),
-            ap->value(WlanQtUtilsAp::ConfIdHidden).toBool(),
             ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool());
     }
     // else: Add WLAN IAP manually

@@ -67,6 +67,7 @@ WlanQtUtilsPrivate::WlanQtUtilsPrivate(WlanQtUtils *q_ptr) :
     mEsockWrapper(new WlanQtUtilsEsockWrapper(this)),
     mIctService(),
     mScanMode(ScanModeNone),
+    mIapScanList(),
     mWlanScanList(),
     mToBeTestedIapId(WlanQtUtils::IapIdNone), 
     mConnectingIapId(WlanQtUtils::IapIdNone),
@@ -76,6 +77,13 @@ WlanQtUtilsPrivate::WlanQtUtilsPrivate(WlanQtUtils *q_ptr) :
 
     // Make all connections.
     bool connectStatus = connect(
+        mScanWrapper,
+        SIGNAL(availableWlanIaps(QList< QSharedPointer<WlanQtUtilsIap> > &)),
+        this,
+        SLOT(updateAvailableWlanIaps(QList< QSharedPointer<WlanQtUtilsIap> > &)));
+    Q_ASSERT(connectStatus);
+    
+    connectStatus = connect(
         mScanWrapper, 
         SIGNAL(availableWlanAps(QList< QSharedPointer<WlanQtUtilsAp> >&)), 
         this, 
@@ -145,9 +153,9 @@ void WlanQtUtilsPrivate::scanWlans()
     // Scanning while there is an ongoing scan is not supported
     Q_ASSERT(mScanMode == ScanModeNone);
     
-    // Just forward the request to wrapper, which triggers a broadcast WLAN scan
+    // Starting with an IAP scan, and continuing with AP scan
     mScanMode = ScanModeAvailableWlans;
-    mScanWrapper->scanWlanAps();
+    mScanWrapper->scanWlanIaps();
 
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_SCANWLANS_EXIT, this);
 }
@@ -225,19 +233,16 @@ void WlanQtUtilsPrivate::availableWlans(
     QList< QSharedPointer<WlanQtUtilsIap> > configuredIapList;
     mSettings->fetchIaps(configuredIapList);
 
-    // Match IAPs against WLAN scan results
-    foreach (QSharedPointer<WlanQtUtilsIap> iap, configuredIapList) {
-        foreach (QSharedPointer<WlanQtUtilsAp> scanAp, mWlanScanList) {
-            if (WlanQtUtilsAp::compare(iap.data(), scanAp.data()) == 0) {
-                // IAP found, add it to caller's list of known IAPs
-                // (signal strength needs to be updated manually since
-                // the IAP in our list does not have that information yet)
-                iap->setValue(
-                    WlanQtUtilsAp::ConfIdSignalStrength,
-                    scanAp->value(WlanQtUtilsAp::ConfIdSignalStrength));
-                wlanIapList.append(iap);
-                break;
-            }
+    // Update the list of available IAPs
+    foreach (QSharedPointer<WlanQtUtilsIap> iapIter, mIapScanList) {
+        int iapId = iapIter->value(WlanQtUtilsIap::ConfIdIapId).toInt();
+        QSharedPointer<WlanQtUtilsIap> iap(mSettings->fetchIap(iapId));
+        if (iap) {
+            // Only add the IAP if we (still) have the settings for it
+            iap->setValue(
+                WlanQtUtilsAp::ConfIdSignalStrength,
+                iapIter->value(WlanQtUtilsAp::ConfIdSignalStrength));
+            wlanIapList.append(iap);
         }
     }
 
@@ -506,7 +511,28 @@ void WlanQtUtilsPrivate::traceIapsAndAps(
 }
 
 /*!
-    Slot for handling WLAN scan result event from wrapper. Results are
+    Slot for handling WLAN IAP scan result event from wrapper. Results are
+    stored in a member variable.
+
+    @param [in] availableIaps Available WLAN IAP's found in scan.
+*/
+
+void WlanQtUtilsPrivate::updateAvailableWlanIaps(
+    QList< QSharedPointer<WlanQtUtilsIap> > &availableIaps)
+{
+    OstTraceFunctionEntry0(WLANQTUTILSPRIVATE_UPDATEAVAILABLEWLANIAPS_ENTRY);
+
+    // Store the new IAP list
+    mIapScanList = availableIaps;
+
+    // Continue with AP scan (which should come immediately from WLAN's scan cache)
+    mScanWrapper->scanWlanAps();
+    
+    OstTraceFunctionExit0(WLANQTUTILSPRIVATE_UPDATEAVAILABLEWLANIAPS_EXIT);
+}
+
+/*!
+    Slot for handling WLAN AP scan result event from wrapper. Results are
     stored in member variable (possible duplicates are removed).
 
     @param [in] availableWlanList WLAN networks found in scan.
@@ -519,6 +545,7 @@ void WlanQtUtilsPrivate::updateAvailableWlanAps(
 
     // Old results are removed
     mWlanScanList.clear();
+    
     // Copy available WLANs to scan result list (duplicates are removed)
     for (int i = 0; i < availableWlanList.count(); i++) {
         bool duplicate = false;
@@ -537,10 +564,10 @@ void WlanQtUtilsPrivate::updateAvailableWlanAps(
 
     // The information is forwarded to the client
     reportScanResult(WlanQtUtils::ScanStatusOk);
-    
+
     // Scan is complete
     mScanMode = ScanModeNone;
-    
+
     OstTraceFunctionExit1(WLANQTUTILSPRIVATE_UPDATEAVAILABLEWLANAPS_EXIT, this);
 }
 

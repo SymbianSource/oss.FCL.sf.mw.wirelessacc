@@ -1,34 +1,37 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard Page: Security mode Selection.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard Page: Security mode Selection.
+*/
 
 // System includes
+
 #include <HbDocumentLoader>
 #include <HbWidget>
 #include <HbRadioButtonList>
 #include <HbMainWindow>
 #include <HbLabel>
+
 #include <cmmanagerdefines_shim.h>
 
 // User includes
+
 #include "wlanwizard_p.h"
 #include "wlanwizard.h"
 #include "wlanwizardpagesecuritymode.h"
 #include "wlanwizardscanlist.h"
+
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpagesecuritymodeTraces.h"
@@ -47,8 +50,8 @@ WlanWizardPageSecurityMode::WlanWizardPageSecurityMode(
     mLoader(NULL),
     mValid(false)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_EXIT);
 }
 
 /*!
@@ -57,9 +60,11 @@ WlanWizardPageSecurityMode::WlanWizardPageSecurityMode(
  */
 WlanWizardPageSecurityMode::~WlanWizardPageSecurityMode()
 {
-    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_ENTRY );
+    OstTraceFunctionEntry0(DUP1_WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_ENTRY);
+    
     delete mLoader;
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_EXIT );
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_EXIT);
 }
 
 /*!
@@ -68,9 +73,12 @@ WlanWizardPageSecurityMode::~WlanWizardPageSecurityMode()
  */
 HbWidget* WlanWizardPageSecurityMode::initializePage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE_ENTRY );
-    OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE,
-        "WlanWizardPageSecurityMode::initializePage" );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE_ENTRY);
+    
+    OstTrace0(
+        TRACE_NORMAL,
+        WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE,
+        "WlanWizardPageSecurityMode::initializePage");
     
     if (mWidget==NULL) {
         
@@ -113,7 +121,7 @@ HbWidget* WlanWizardPageSecurityMode::initializePage()
     // Create contents to the security mode radio button list.
     populateSecModeList();
 
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE_EXIT);
     return mWidget;
 }
 
@@ -126,19 +134,23 @@ HbWidget* WlanWizardPageSecurityMode::initializePage()
  */
 int WlanWizardPageSecurityMode::nextId(bool &removeFromStack) const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_NEXTID_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_NEXTID_ENTRY);
+    
     removeFromStack = false;
     
     // The configuration is selected from the mSecModes list, which is ordered
     // during the page initialization.
-    mWizard->setConfiguration( WlanWizardPrivate::ConfSecurityMode,
-        mSecModes.at( mList->selected() ) );
+    mWizard->setConfiguration(
+        WlanWizardPrivate::ConfSecurityMode,
+        mSecModes.at(mList->selected()));
 
     // The configuration is selected from the mUsePsk list, which is ordered
     // during the page initialization.
-    mWizard->setConfiguration( WlanWizardPrivate::ConfUsePsk,
-        mUsePsk.at( mList->selected() ) );
-    OstTraceFunctionExit0( LANWIZARDPAGESECURITYMODE_NEXTID_EXIT );
+    mWizard->setConfiguration(
+        WlanWizardPrivate::ConfUsePsk,
+        mUsePsk.at(mList->selected()));
+    
+    OstTraceFunctionExit0(LANWIZARDPAGESECURITYMODE_NEXTID_EXIT);
     return mPageIds.at( mList->selected() );
 }
 
@@ -149,8 +161,8 @@ int WlanWizardPageSecurityMode::nextId(bool &removeFromStack) const
  */
 bool WlanWizardPageSecurityMode::showPage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_SHOWPAGE_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_SHOWPAGE_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_SHOWPAGE_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_SHOWPAGE_EXIT);
     return mValid;
 }
 
@@ -160,13 +172,17 @@ bool WlanWizardPageSecurityMode::showPage()
  */
 void WlanWizardPageSecurityMode::itemSelected()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_ITEMSELECTED_ENTRY );
-    OstTrace0( TRACE_BORDER, WLANWIZARDPAGESECURITYMODE_ITEMSELECTED,
-        "WlanWizardPageSecurityMode::itemSelected" );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_ITEMSELECTED_ENTRY);
+    
+    OstTrace0(
+        TRACE_BORDER,
+        WLANWIZARDPAGESECURITYMODE_ITEMSELECTED,
+        "WlanWizardPageSecurityMode::itemSelected");
     
     mValid = true;
     mWizard->enableNextButton(mValid);
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_ITEMSELECTED_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_ITEMSELECTED_EXIT);
 }
 
 /*!
@@ -177,10 +193,13 @@ void WlanWizardPageSecurityMode::itemSelected()
  */
 void WlanWizardPageSecurityMode::loadDocmlSection(Qt::Orientation orientation)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_LOADDOCMLSECTION_ENTRY );
-    OstTrace1( TRACE_NORMAL, WLANWIZARDPAGESECURITYMODE_LOADDOCML,
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_LOADDOCMLSECTION_ENTRY);
+    
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANWIZARDPAGESECURITYMODE_LOADDOCML,
         "WlanWizardPageSecurityMode::loadDocml - orientation;orientation=%x",
-        ( TUint )( orientation ) );
+        (TUint)orientation);
     
     WlanWizardPageInternal::loadDocmlSection(
         mLoader,
@@ -188,7 +207,8 @@ void WlanWizardPageSecurityMode::loadDocmlSection(Qt::Orientation orientation)
         ":/docml/occ_add_wlan_02_03.docml", 
         "portrait_section",
         "landscape_section");
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_LOADDOCMLSECTION_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_LOADDOCMLSECTION_EXIT);
 }
 
 /*!
@@ -196,7 +216,8 @@ void WlanWizardPageSecurityMode::loadDocmlSection(Qt::Orientation orientation)
  */
 void WlanWizardPageSecurityMode::populateSecModeList()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_ENTRY);
+    
     QStringList items;
     
     mSecModes.clear();
@@ -211,12 +232,16 @@ void WlanWizardPageSecurityMode::populateSecModeList()
     // Create the radio button list to correspond to correct security mode
     // identifiers and page identifiers.
     // Populate the list according to network mode selection.
-    addToList(items, hbTrId("txt_occ_list_open"), 
+    addToList(
+        items,
+        hbTrId("txt_occ_list_open"), 
         CMManagerShim::WlanSecModeOpen,
         WlanWizardPage::PageProcessSettings,
         false);
 
-    addToList(items, hbTrId("txt_occ_list_wep_1"),
+    addToList(
+        items,
+        hbTrId("txt_occ_list_wep_1"),
         CMManagerShim::WlanSecModeWep,
         WlanWizardPageInternal::PageKeyQuery,
         true);
@@ -225,17 +250,23 @@ void WlanWizardPageSecurityMode::populateSecModeList()
     if (mWizard->configuration(WlanWizardPrivate::ConfNetworkMode).toInt()
         != CMManagerShim::Adhoc) {
 
-        addToList(items, hbTrId("txt_occ_list_wpa_with_password"),
+        addToList(
+            items,
+            hbTrId("txt_occ_list_wpa_with_password"),
             CMManagerShim::WlanSecModeWpa,
             WlanWizardPageInternal::PageKeyQuery,
             true);
 
-        addToList(items, hbTrId("txt_occ_list_wpa_with_eap"),
+        addToList(
+            items,
+            hbTrId("txt_occ_list_wpa_with_eap"),
             CMManagerShim::WlanSecModeWpa,
             WlanWizardPage::PageEapStart,
             false);
 
-        addToList(items, hbTrId("txt_occ_list_8021x_1"),
+        addToList(
+            items,
+            hbTrId("txt_occ_list_8021x_1"),
             CMManagerShim::WlanSecMode802_1x,
             WlanWizardPage::PageEapStart,
             false);
@@ -243,7 +274,7 @@ void WlanWizardPageSecurityMode::populateSecModeList()
 
     mList->setItems(items);
     
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_EXIT);
 }
 
 /*!
@@ -258,14 +289,19 @@ void WlanWizardPageSecurityMode::populateSecModeList()
  * @param [in] page is the id of the next wizard page when this item is selected.
  * @param [in] psk indicates whether password needs to be queried. 
  */
-void WlanWizardPageSecurityMode::addToList(QStringList &list,
-    const QString &item, int mode, int page, bool psk)
+void WlanWizardPageSecurityMode::addToList(
+    QStringList &list,
+    const QString &item,
+    int mode,
+    int page,
+    bool psk)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESECURITYMODE_ADDTOLIST_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_ADDTOLIST_ENTRY);
+    
     if (mWizard->configurationExists(WlanWizardHelper::ConfAvailableNetworkOptions)) {
         WlanNetworkSetting netMode;
         netMode.mode = mWizard->configuration(WlanWizardPrivate::ConfNetworkMode).toInt();
-        netMode.hidden = mWizard->configuration(WlanWizardPrivate::ConfHiddenWlan).toBool();
+        netMode.hidden = mWizard->configuration(WlanWizardPrivate::ConfWlanScanSSID).toBool();
         netMode.wpsSupported = mWizard->configuration(WlanWizardPrivate::ConfWpsSupported).toBool();
         WlanWizardScanList networkOptions = mWizard->configuration(
             WlanWizardHelper::ConfAvailableNetworkOptions).value<WlanWizardScanList>();
@@ -287,5 +323,6 @@ void WlanWizardPageSecurityMode::addToList(QStringList &list,
         mPageIds.append(page);
         mUsePsk.append(psk);
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGESECURITYMODE_ADDTOLIST_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_ADDTOLIST_EXIT);
 }

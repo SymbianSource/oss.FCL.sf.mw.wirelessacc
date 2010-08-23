@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   Test application for wizards.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* Test application for wizards.
+*/
 
 #include <qgraphicswidget>
 #include <hbpushbutton.h>
@@ -57,9 +56,6 @@ FirstView::FirstView() :
     mSecurityMode = qobject_cast<HbComboBox *> (loader.findWidget("securityMode"));
     Q_ASSERT_X(mSecurityMode != 0, "TestEapWizard", "securityMode not found");
 
-    mHidden = qobject_cast<HbCheckBox *> (loader.findWidget("isHidden"));
-    Q_ASSERT_X(mHidden != 0, "TestEapWizard", "isHidden not found");
-    
     mUseWpaPsk = qobject_cast<HbCheckBox *> (loader.findWidget("useWpaPsk"));
     Q_ASSERT_X(mUseWpaPsk != 0, "TestEapWizard", "useWpaPsk not found");
         
@@ -94,7 +90,6 @@ void FirstView::start(bool)
             mNetworkMode->currentIndex(), 
             1 << mSecurityMode->currentIndex(),
             mUseWpaPsk->isChecked(),
-            mHidden->isChecked(),
             mUseWps->isChecked());
     }
 
@@ -127,4 +122,3 @@ void FirstView::cancelled()
     mStatus->setPlainText("Cancelled");
     deleteWizard();
 }
-

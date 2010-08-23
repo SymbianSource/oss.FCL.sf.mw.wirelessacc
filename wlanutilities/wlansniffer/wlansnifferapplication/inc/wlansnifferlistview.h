@@ -20,11 +20,12 @@
 
 // System includes
 
+#include <QSharedPointer>
+#include <QScopedPointer>
+
 #include <HbView>
 #include <HbMenu>
 #include <HbMessageBox>
-#include <QSharedPointer>
-#include <QScopedPointer>
 
 // User includes
 

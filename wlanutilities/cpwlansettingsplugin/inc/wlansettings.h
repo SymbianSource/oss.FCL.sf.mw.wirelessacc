@@ -24,9 +24,10 @@
 
 // User includes
 
-#include "wlansettings_s60_p.h"
-
 // Forward declarations
+
+class CWlanSettingsPrivate;
+class XQSettingsManager;
 
 // External data types
 
@@ -40,10 +41,16 @@ class WlanSettings : public QObject
      
 public:
      
+     // Data types
+
      enum ScanNetworkType {
          EScanNetworkAuto = 0,
          EScanNetworkUserDefined        
      };
+     
+     static const uint ScanNetworkAuto = 0xFFFFFFFF;
+     static const uint ScanNetworkMin = 1;
+     static const uint ScanNetworkMax = 30;
      
      WlanSettings();
 
@@ -61,27 +68,47 @@ public:
      
      int setJoinWlanMode(int mode);
      
-     int isPowerSavingEnabled() const;
+     bool isWlanPowerSavingEnabled() const;
      
-     int isPsmEnabled() const;
+     bool isDevicePowerSavingEnabled();
      
      int setWlanPowerSaving(int powerSavingOption);
      
      int setWlanScanInterval(uint scanInterval);
 
-private:
-     
-     void readPsmKey();
-     
-     Q_DISABLE_COPY(WlanSettings)
-     
-private:    //data
-     
-     CWlanSettingsPrivate *mImpl;
-     
-     int mPsmKeyValue;
-     
-};
+signals:
 
+    void devicePowerSavingUpdated();
+
+public slots:
+
+protected:
+
+protected slots:
+
+private:
+
+     Q_DISABLE_COPY(WlanSettings)
+
+     void readDevicePowerSavingKey();
+
+private slots:
+
+    void devicePowerSavingKeyChanged();
+    
+private: // data
+
+     //! Private Symbian specific implementation.
+     CWlanSettingsPrivate *d_ptr;
+     
+     //! Settings manager for platform settings reading & status changes.
+     XQSettingsManager *mSettingsManager;
+     
+     //! Device Power Saving Mode.
+     int mDevicePowerSavingMode;
+     
+     //! Is mDevicePowerSavingMode up to date, or do we need to read it again?
+     bool mDevicePowerSavingModeUpToDate;
+};
 
 #endif /* WLANSETTINGS_H_ */

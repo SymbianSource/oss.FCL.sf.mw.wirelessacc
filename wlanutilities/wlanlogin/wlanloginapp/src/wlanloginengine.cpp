@@ -58,7 +58,7 @@ const QString iapIdentifierPrefix = "I_";
 WlanLoginEngine::WlanLoginEngine(QObject *parent): 
     QObject(parent),
     mEngineState(WaitingForStart),
-    mServiceRequestCompleted(false),
+    mStartRequestCompleted(false),
     mNetConfigurationManager(new QNetworkConfigurationManager(this)),
     mNetworkAccessManager(new WlanLoginNetworkAccessManager(this)),
     mNetworkSession(NULL),
@@ -103,7 +103,11 @@ WlanLoginEngine::~WlanLoginEngine()
  */
 WlanLoginNetworkAccessManager* WlanLoginEngine::networkAccessManager() const
 {
+    OstTraceFunctionEntry0(WLANLOGINENGINE_NETWORKACCESSMANAGER_ENTRY);
+    OstTraceFunctionExit0(WLANLOGINENGINE_NETWORKACCESSMANAGER_EXIT);
+    
     return mNetworkAccessManager;
+
 }
 
 
@@ -114,7 +118,10 @@ WlanLoginNetworkAccessManager* WlanLoginEngine::networkAccessManager() const
  */
 WlanLoginEngine::EngineState WlanLoginEngine::engineState()
 {
-    return mEngineState;    
+    OstTraceFunctionEntry0(WLANLOGINENGINE_ENGINESTATE_ENTRY);
+    OstTraceFunctionExit0(WLANLOGINENGINE_ENGINESTATE_EXIT);
+    
+    return mEngineState;
 }
 
 
@@ -125,7 +132,16 @@ WlanLoginEngine::EngineState WlanLoginEngine::engineState()
  */
 void WlanLoginEngine::setEngineState(WlanLoginEngine::EngineState newState)
 {
+    OstTraceFunctionEntry0(WLANLOGINENGINE_SETENGINESTATE_ENTRY);
+    
     mEngineState = newState;
+    OstTrace1(
+        TRACE_NORMAL,
+        WLANLOGINENGINE_SETENGINESTATE_STATE_TRACE,
+        "WlanLoginEngine::setEngineState;mEngineState=%d",
+        mEngineState);
+    
+    OstTraceFunctionExit0(WLANLOGINENGINE_SETENGINESTATE_EXIT);
 }
 
 
@@ -213,8 +229,11 @@ void WlanLoginEngine::handleUpdateCompleted()
    //States of the available configurations are now updated and
    //we can open the network session to provided IAP
    
-   openSession();
-
+   //Check that cancel has not been pressed
+   if (engineState() != WaitingForStopRequest) {
+       openSession();
+   }
+ 
    OstTraceFunctionExit0(WLANLOGINENGINE_HANDLEUPDATECOMPLETED_EXIT);
 }
 
@@ -312,9 +331,12 @@ void WlanLoginEngine::handleSessionOpened()
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLESESSIONOPENED_ENTRY);
 
-    setEngineState(NetworkSessionOpened);
-    //Send indication to view that connection is ready
-    emit connectionReady(mRedirectionUrl);
+    //Check that cancel has not been pressed
+    if (engineState() != WaitingForStopRequest) {    
+        setEngineState(NetworkSessionOpened);
+        //Send indication to view that connection is ready
+        emit connectionReady(mRedirectionUrl);
+    }
 
     OstTraceFunctionExit0(WLANLOGINENGINE_HANDLESESSIONOPENED_EXIT);
 }
@@ -358,7 +380,8 @@ void WlanLoginEngine::handleSessionError(QNetworkSession::SessionError error)
         break;
         
     case NetworkSessionOpened:
-    case IctsRan:
+    case IctsOk:
+    case IctsFailed:    
         if (error == QNetworkSession::SessionAbortedError ) {
             showConnectionDroppedMessageBox();
         }
@@ -421,11 +444,13 @@ void WlanLoginEngine::handleConnectivityTestResult(IctsWrapper::ConnectivityTest
 
     Q_UNUSED(redirectUrl);
     
-    setEngineState(IctsRan);
     mIctsFirstRun = false;
     
     if (result == IctsWrapper::ConnectionOk){
+        setEngineState(IctsOk);
         emit ictsOk();
+    } else {
+        setEngineState(IctsFailed);
     }
     
     OstTraceFunctionExit0(WLANLOGINENGINE_HANDLECONNECTIVITYTESTRESULT_EXIT);
@@ -439,23 +464,41 @@ void WlanLoginEngine::handleCancelTriggered()
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLECANCELTRIGGERED_ENTRY);
     
-    //Stop ICTS if it is running:
-    if (engineState() == RunningIcts) {
-        stopIcts();
-        if (mIctsFirstRun) {
-            emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusCancel);
-        } else {
-            //Previous ICTS must have failed as cancel action can't be selected from UI if
-            //it has passed
-            emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusFailed);
-        }         
-    } else if (engineState() == IctsRan) {
-        //ICTS must have failed as cancel action can't be selected from UI if
-        //it has passed
-        emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusFailed);
+    //Check if Qt Highway request is completed
+     if (mStartRequestCompleted == false){
+        
+         switch (engineState()) {
+            
+         case UpdatingNetworkConfigurations:
+         case OpeningNetworkSession:
+         case NetworkSessionOpened:
+             setEngineState(WaitingForStopRequest);
+             emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusCancel);
+             break;   
+            
+         case RunningIcts:      
+             stopIcts();
+             setEngineState(WaitingForStopRequest);
+             if (mIctsFirstRun) {
+                 emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusCancel);
+             } else {
+                 emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusFailed);
+             } 
+             break;
+             
+         case IctsFailed:
+             setEngineState(WaitingForStopRequest);
+             emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusFailed);
+             break;
+                 
+         default:          
+             break;
+         }
     } else {
-        //ICTS not run yet
-        emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusCancel); 
+        //Check race condition
+        if(engineState() != WaitingForStopRequest) {
+            qApp->exit();
+        }
     }
 
     OstTraceFunctionExit0(WLANLOGINENGINE_HANDLECANCELTRIGGERED_EXIT);
@@ -468,29 +511,16 @@ void WlanLoginEngine::handleCancelTriggered()
 void WlanLoginEngine::handleNextTriggered()
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLENEXTTRIGGERED_ENTRY);
-        
-    emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusNext);
+
+    if (mStartRequestCompleted == false ) {    
+        emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusNext);
+    }
     
     //put application to background:
     WlanLoginApplication* app = static_cast<WlanLoginApplication *>(this->parent());    
     app->mainWindow()->lower();
     
     OstTraceFunctionExit0(WLANLOGINENGINE_HANDLENEXTTRIGGERED_EXIT);
-}
-
-/*!
-    This slot handles continueTriggered signal from the view
-        
- */
-void WlanLoginEngine::handleContinueTriggered()
-{
-    OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLECONTINUETRIGGERED_ENTRY);
-    
-    //put application to background:
-    WlanLoginApplication* app = static_cast<WlanLoginApplication *>(this->parent());
-    app->mainWindow()->lower();
-    
-    OstTraceFunctionExit0(WLANLOGINENGINE_HANDLECONTINUETRIGGERED_EXIT);
 }
 
 /*!
@@ -515,7 +545,7 @@ void WlanLoginEngine::connectionDroppedMessageBoxClosed(HbAction* action)
     
     Q_UNUSED(action);
         
-    if (mServiceRequestCompleted == false ) {
+    if (mStartRequestCompleted == false ) {
         emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusConnectionDropped);
                 
     } else {
@@ -523,7 +553,7 @@ void WlanLoginEngine::connectionDroppedMessageBoxClosed(HbAction* action)
         qApp->exit();
     }               
       
-    OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLEMESSAGEBOXCLOSED_EXIT);    
+    OstTraceFunctionExit0(WLANLOGINENGINE_HANDLEMESSAGEBOXCLOSED_EXIT);    
 }
 
 /*!
@@ -534,7 +564,7 @@ void WlanLoginEngine::emitCompleteServiceRequest(WlanLoginService::WlanLoginStat
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_EMITCOMPLETESERVICEREQUEST_ENTRY);
         
-    mServiceRequestCompleted = true;
+    mStartRequestCompleted = true;
     OstTrace1(
         TRACE_BORDER,
         WLANLOGINENGINE_EMITCOMPLETESERVICEREQUEST_EMIT_TRACE,

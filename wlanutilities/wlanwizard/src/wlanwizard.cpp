@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard: API.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard: API.
+*/
 
 // System includes
 
@@ -31,8 +30,10 @@
    MyClass::createWizard() {
        mWizard = new WlanWizard(mainWindow());
        connect(
-           mWizard, SIGNAL(finished(int, bool)), 
-           this, SLOT(finished(int, bool)));
+           mWizard,
+           SIGNAL(finished(int, bool)), 
+           this,
+           SLOT(finished(int, bool)));
        connect(mWizard, SIGNAL(cancelled()), this, SLOT(cancelled()));
    
        // If client know the parameters for WLAN Access Point call following
@@ -41,8 +42,7 @@
            CmManagerShim::Infra, 
            CmManagerShim::WlanSecModeWpa,
            true,    // WPA-PSK
-           false,   // Non-Hidden
-           false ); // Non-Wifi Protected Setup  
+           false);  // Non-Wifi Protected Setup  
     
        // and execute wizard
        mWizard->show();
@@ -141,7 +141,6 @@ WlanWizard::~WlanWizard()
    @param [in] networkMode Network mode of known access point
    @param [in] securityMode Security mode of known access point
    @param [in] usePsk used only with WPA or WPA2 \a securityMode
-   @param [in] hidden if true WLAN is hidden.
    @param [in] wps is Wifi Protected Setup supported?
  */
 void WlanWizard::setParameters(
@@ -149,10 +148,9 @@ void WlanWizard::setParameters(
     int networkMode, 
     int securityMode, 
     bool usePsk,
-    bool hidden, 
     bool wps)
 {
-    d_ptr->setParameters(ssid, networkMode, securityMode, usePsk, hidden, wps);
+    d_ptr->setParameters(ssid, networkMode, securityMode, usePsk, wps);
 }
 
 /*!

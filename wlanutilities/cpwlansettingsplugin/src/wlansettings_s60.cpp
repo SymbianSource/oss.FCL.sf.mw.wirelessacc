@@ -18,11 +18,11 @@
 // System includes
 
 #include <internetconnectivitycrkeys.h>
-#include <psmtypes.h>
 #include <cmmanager.h>
 
 // User includes
 
+#include "wlansettings.h"
 #include "wlansettings_s60_p.h"
 
 #include "OstTraceDefinitions.h"
@@ -40,9 +40,12 @@
 
 // Local constants
 /**  Seconds per minute. */
-const TInt KWlanSettingsSecondsInMinute = 60;
-/**  Maximum value for scan interval in minutes. */
-const TInt KWlanSettingsScanNetworkMax = 30;
+static const TInt KWlanSettingsSecondsInMinute = 60;
+/**  Default "Scan Networks" setting. */
+static const TUint KWlanSettingsDefaultScanNetwork =
+    WlanSettings::ScanNetworkAuto;
+/**  Default "Power saving" setting. */
+static const TBool KWlanSettingsDefaultPowerSaving = ETrue;
 
 // ======== MEMBER FUNCTIONS ========
 
@@ -51,17 +54,17 @@ const TInt KWlanSettingsScanNetworkMax = 30;
     \return Pointer to CWlanSettingsPrivate object.
 */
 
-CWlanSettingsPrivate* CWlanSettingsPrivate::NewL(int psmKeyValue)
+CWlanSettingsPrivate* CWlanSettingsPrivate::NewL(WlanSettings *q_ptr)
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_NEWL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_NEWL_ENTRY);
     
-    CWlanSettingsPrivate* impl = new ( ELeave ) CWlanSettingsPrivate(psmKeyValue);
+    CWlanSettingsPrivate* impl = new ( ELeave ) CWlanSettingsPrivate(q_ptr);
     CleanupStack::PushL( impl );
     impl->ConstructL();
     CleanupStack::Pop( impl ); 
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_NEWL_EXIT, this);
-    return impl;    
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_NEWL_EXIT);
+    return impl;
 }
 
 /*!
@@ -70,7 +73,7 @@ CWlanSettingsPrivate* CWlanSettingsPrivate::NewL(int psmKeyValue)
 
 void CWlanSettingsPrivate::ConstructL()
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_CONSTRUCTL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_CONSTRUCTL_ENTRY);
     
     mSession = CMDBSession::NewL( KCDLatestVersion );
     
@@ -78,25 +81,20 @@ void CWlanSettingsPrivate::ConstructL()
     mWlanMgmtClient = CWlanMgmtClient::NewL();
 #endif
     
-    CheckPsmModeL();
-    
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_CONSTRUCTL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_CONSTRUCTL_EXIT);
 }
 
 /*!
     Constructor.
 */
 
-CWlanSettingsPrivate::CWlanSettingsPrivate(int psmKeyValue) :
-    mPsmMode( EFalse ),
+CWlanSettingsPrivate::CWlanSettingsPrivate(WlanSettings *q_ptr) :
+    q_ptr(q_ptr),
     mPowerSaving(KWlanSettingsDefaultPowerSaving),
-    mScanInterval(KWlanSettingsDefaultScanNetwork),
-    mPsmKeyMode(psmKeyValue)
+    mScanInterval(KWlanSettingsDefaultScanNetwork)
 {
-    
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_ENTRY, this);
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_EXIT, this);
-    
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_ENTRY);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_EXIT);
 }
 
 /*!
@@ -105,35 +103,14 @@ CWlanSettingsPrivate::CWlanSettingsPrivate(int psmKeyValue) :
 
 CWlanSettingsPrivate::~CWlanSettingsPrivate()
 {
-    OstTraceFunctionEntry1(DUP1_CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_ENTRY, this);
+    OstTraceFunctionEntry0(DUP1_CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_ENTRY);
     
     delete mSession;
 #ifndef __WINS__
     delete mWlanMgmtClient;
 #endif
     
-    OstTraceFunctionExit1(DUP1_CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_EXIT, this);
-}
-
-/*!
-    Function to get the Power Saving mode of the device.
-*/
-
-void CWlanSettingsPrivate::CheckPsmModeL()
-{
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_CHECKPSMMODEL_ENTRY, this);
-    
-    TPsmsrvMode mode( EPsmsrvModeNormal );
-    
-    mode = static_cast<TPsmsrvMode>( mPsmKeyMode );
-    if ( mode == EPsmsrvModePowerSave || mode == EPsmsrvPartialMode ) {
-        mPsmMode = ETrue;
-    }
-    else {
-        mPsmMode = EFalse;
-    }
-    
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_CHECKPSMMODEL_EXIT, this);
+    OstTraceFunctionExit0(DUP1_CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_EXIT);
 }
 
 /*!
@@ -142,7 +119,7 @@ void CWlanSettingsPrivate::CheckPsmModeL()
 
 void CWlanSettingsPrivate::LoadDBSettingsL()
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_LOADDBSETTINGSL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_LOADDBSETTINGSL_ENTRY);
     
     TBool ownTransaction( EFalse );
     if ( !mSession->IsInTransaction() ) {
@@ -164,22 +141,31 @@ void CWlanSettingsPrivate::LoadDBSettingsL()
     }
 
     // Read scan interval
-
-    mScanInterval = record->iBgScanInterval;
-    //In Case of PSM mode Scan Interval should be set to Auto
-    if (mPsmMode) {
-        mScanInterval = KWlanSettingsScanNetworkAuto;
-    }
-    else {
-        mScanInterval = record->iSavedBgScanInterval;
-        //Safe check for scan interval, control should not come here.
-        if (mScanInterval > (KWlanSettingsScanNetworkMax
-                * KWlanSettingsSecondsInMinute)) {
-            mScanInterval = KWlanSettingsScanNetworkAuto;
-        }
+    OstTrace1(
+        TRACE_NORMAL,
+        CWLANSETTINGSPRIVATE_LOADDBSETTINGSL_SCANINTERVAL,
+        "CWlanSettingsPrivate::LoadDBSettingsL ScanInterval;iBgScanInterval=%u",
+        record->iBgScanInterval );
+    OstTrace1(
+        TRACE_NORMAL,
+        CWLANSETTINGSPRIVATE_LOADDBSETTINGSL_SAVEDSCANINTERVAL,
+        "CWlanSettingsPrivate::LoadDBSettingsL SavedScanInterval;iSavedBgScanInterval=%u",
+        record->iSavedBgScanInterval );
+    mScanInterval = record->iSavedBgScanInterval;
+    //Safe check for scan interval, control should not come here.
+    if (mScanInterval > (WlanSettings::ScanNetworkMax
+            * KWlanSettingsSecondsInMinute)) {
+        mScanInterval = WlanSettings::ScanNetworkAuto;
     }
     
+    // Read power saving mode
     mPowerSaving = record->iWlanPowerMode;
+    OstTraceExt1(
+        TRACE_NORMAL,
+        CWLANSETTINGSPRIVATE_LOADDBSETTINGSL_POWERSAVE,
+        "CWlanSettingsPrivate::LoadDBSettingsL PowerSave;mPowerSaving=%hhu",
+        mPowerSaving );
+    
     CleanupStack::PopAndDestroy( record ); 
     
     if ( ownTransaction ) {
@@ -190,7 +176,7 @@ void CWlanSettingsPrivate::LoadDBSettingsL()
     //To Load CM Settings.
     LoadJoinWlanSettingL();
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_LOADDBSETTINGSL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_LOADDBSETTINGSL_EXIT);
 }
 
 /*!
@@ -199,7 +185,7 @@ void CWlanSettingsPrivate::LoadDBSettingsL()
 
 void CWlanSettingsPrivate::LoadJoinWlanSettingL()
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_LOADJOINWLANSETTINGL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_LOADJOINWLANSETTINGL_ENTRY);
     
     RCmManager CmManager;
     CmManager.CreateTablesAndOpenL();
@@ -207,7 +193,7 @@ void CWlanSettingsPrivate::LoadJoinWlanSettingL()
     CmManager.ReadGenConnSettingsL( mCmSettings );
     CleanupStack::PopAndDestroy( 1 );     //CmManager
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_LOADJOINWLANSETTINGL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_LOADJOINWLANSETTINGL_EXIT);
 }
 
 /*!
@@ -216,7 +202,7 @@ void CWlanSettingsPrivate::LoadJoinWlanSettingL()
 
 void CWlanSettingsPrivate::SaveJoinWlanSettingL(TInt mode)
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_SAVEJOINWLANSETTINGL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_SAVEJOINWLANSETTINGL_ENTRY);
     
     switch ( mode ) {        
         case EJoinWlanKnown:
@@ -237,7 +223,7 @@ void CWlanSettingsPrivate::SaveJoinWlanSettingL(TInt mode)
     CmManager.WriteGenConnSettingsL( mCmSettings );
     CleanupStack::PopAndDestroy( 1 );
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_SAVEJOINWLANSETTINGL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_SAVEJOINWLANSETTINGL_EXIT);
 }
 
 /*!
@@ -247,7 +233,7 @@ void CWlanSettingsPrivate::SaveJoinWlanSettingL(TInt mode)
 
 TInt CWlanSettingsPrivate::JoinWlanMode()
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_JOINWLANMODE_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_JOINWLANMODE_ENTRY);
     
     TInt mode = 0;
     
@@ -264,7 +250,7 @@ TInt CWlanSettingsPrivate::JoinWlanMode()
             break;
     }
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_JOINWLANMODE_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_JOINWLANMODE_EXIT);
     return mode;
 }
 
@@ -274,7 +260,7 @@ TInt CWlanSettingsPrivate::JoinWlanMode()
 
 void CWlanSettingsPrivate::SaveDBSettingsL(TInt option)
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_SAVEDBSETTINGSL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_SAVEDBSETTINGSL_ENTRY);
     
     TBool ownTransaction( EFalse );
     if ( !mSession->IsInTransaction() ) {
@@ -298,13 +284,31 @@ void CWlanSettingsPrivate::SaveDBSettingsL(TInt option)
     switch (option) {
         case EWlanScanInterval:
             record->iBgScanInterval = mScanInterval;
-            if ( !mPsmMode ) {
+            if (!q_ptr->isDevicePowerSavingEnabled()) {
                 record->iSavedBgScanInterval = mScanInterval;
             }
+            OstTrace1(
+                TRACE_NORMAL,
+                CWLANSETTINGSPRIVATE_SAVEDBSETTINGSL_SCANINTERVAL,
+                "CWlanSettingsPrivate::SaveDBSettingsL ScanInterval;iBgScanInterval=%u",
+                record->iBgScanInterval );
+            OstTrace1(
+                TRACE_NORMAL,
+                CWLANSETTINGSPRIVATE_SAVEDBSETTINGSL_SAVEDSCANINTERVAL,
+                "CWlanSettingsPrivate::SaveDBSettingsL SavedScanInterval;iSavedBgScanInterval=%u",
+                record->iSavedBgScanInterval );
             break;
+
         case EWlanPowerSaving:
+            OstTraceExt1(
+                TRACE_NORMAL,
+                CWLANSETTINGSPRIVATE_SAVEDBSETTINGSL_POWERSAVING,
+                "CWlanSettingsPrivate::SaveDBSettingsL PowerSaving;mPowerSaving=%hhu",
+                mPowerSaving );
+            
             record->iWlanPowerMode = mPowerSaving;
             break;
+        
         default:
             break;
     }
@@ -324,7 +328,7 @@ void CWlanSettingsPrivate::SaveDBSettingsL(TInt option)
     mWlanMgmtClient->NotifyChangedSettings();
 #endif
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_SAVEDBSETTINGSL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_SAVEDBSETTINGSL_EXIT);
 }
 
 /*!
@@ -334,13 +338,21 @@ void CWlanSettingsPrivate::SaveDBSettingsL(TInt option)
 
 TUint CWlanSettingsPrivate::ScanInterval()
 {
-    if ( mScanInterval == KWlanSettingsScanNetworkAuto ) {
-        return mScanInterval;   
-    }
-    else {
+    TUint retVal;
+    if ( mScanInterval == WlanSettings::ScanNetworkAuto ) {
+        retVal = mScanInterval;   
+    } else {
         // Return scan time in minutes
-        return ( mScanInterval / KWlanSettingsSecondsInMinute );
+        retVal = mScanInterval / KWlanSettingsSecondsInMinute;
     }
+    
+    OstTrace1(
+        TRACE_NORMAL,
+        CWLANSETTINGSPRIVATE_SCANINTERVAL,
+        "CWlanSettingsPrivate::ScanInterval;retVal=%u",
+        retVal );
+    
+    return retVal;
 }
 
 /*!
@@ -350,6 +362,12 @@ TUint CWlanSettingsPrivate::ScanInterval()
 
 TBool CWlanSettingsPrivate::PowerSaving()
 {
+    OstTraceExt1(
+        TRACE_NORMAL,
+        CWLANSETTINGSPRIVATE_POWERSAVING,
+        "CWlanSettingsPrivate::PowerSaving;mPowerSaving=%hhx",
+        mPowerSaving );
+    
     return mPowerSaving;
 }
 
@@ -360,9 +378,9 @@ TBool CWlanSettingsPrivate::PowerSaving()
 
 void CWlanSettingsPrivate::SetScanInterval(TUint interval)
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_SETSCANINTERVAL_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_SETSCANINTERVAL_ENTRY);
     
-    if ( interval == KWlanSettingsScanNetworkAuto ) {
+    if ( interval == WlanSettings::ScanNetworkAuto ) {
         mScanInterval = interval;
     }
     else {
@@ -370,7 +388,7 @@ void CWlanSettingsPrivate::SetScanInterval(TUint interval)
         mScanInterval = interval * KWlanSettingsSecondsInMinute;
     }
     
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_SETSCANINTERVAL_EXIT, this);
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_SETSCANINTERVAL_EXIT);
 }
 
 /*!
@@ -380,19 +398,9 @@ void CWlanSettingsPrivate::SetScanInterval(TUint interval)
 
 void CWlanSettingsPrivate::SetPowerSaving(TBool powerSavingOption)
 {
-    OstTraceFunctionEntry1(CWLANSETINGPRIVATE_SETPOWERSAVING_ENTRY, this);
+    OstTraceFunctionEntry0(CWLANSETINGPRIVATE_SETPOWERSAVING_ENTRY);
     
     mPowerSaving = powerSavingOption;
-    
-    OstTraceFunctionExit1(CWLANSETINGPRIVATE_SETPOWERSAVING_EXIT, this);
-}
 
-/*!
-    Function to get Power Saving status of the device.
-    \return True if Power Saving is enabled.
-*/
-
-TBool CWlanSettingsPrivate::IsPsmEnabled()
-{
-    return mPsmMode;
+    OstTraceFunctionExit0(CWLANSETINGPRIVATE_SETPOWERSAVING_EXIT);
 }

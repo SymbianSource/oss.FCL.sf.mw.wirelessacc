@@ -58,12 +58,16 @@ private slots:
     void scanValueChanged(int value);
     
     void scanSliderReleased();
+
+    void devicePowerSavingChanged();
     
 private:
     
     Q_DISABLE_COPY(CpWlanSettingsGroupItemData)
     
     void createScanIntervalItem();
+    
+    void removeScanIntervalItem();
     
     void initialise();
     
@@ -78,9 +82,14 @@ private:    // data
     
     CpItemDataHelper &mItemDataHelper;
     
-    int mScanInterval;
+    /*!
+        User defined scan interval. Not in use, while "Automatic" is
+        selected, but remembered so that it can be restored when
+        "User defined" mode is selected again.
+     */
+    int mUserDefinedScanInterval;
     
-    //WlanSettings *mWlanSettings;
+    //! For loading and saving Wlan settings
     QScopedPointer<WlanSettings> mWlanSettings;
 };
 

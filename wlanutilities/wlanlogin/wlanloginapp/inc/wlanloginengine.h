@@ -70,7 +70,9 @@ public:
         OpeningNetworkSession, //!< Engine is opening network session
         NetworkSessionOpened, //!< Network session is opened by engine
         RunningIcts, //!< Internet connectivity test ongoing
-        IctsRan //!< Internet connectivity test has been ran
+        IctsFailed, //!< Internet connectivity test has failed
+        IctsOk, //!< Internet connectivity test has been ran successfully
+        WaitingForStopRequest, //!< Waiting for stop service request
     };
     
     explicit WlanLoginEngine(QObject *parent = 0);
@@ -103,7 +105,6 @@ private slots:
     void handleConnectivityTestResult(IctsWrapper::ConnectivityTestResult result, QUrl redirectUrl);
     void handleCancelTriggered();
     void handleNextTriggered();
-    void handleContinueTriggered();
     
 private: // Data
     
@@ -111,7 +112,7 @@ private: // Data
 
     // Owned data
     EngineState mEngineState; //!< current state of the Engine
-    bool mServiceRequestCompleted; //!<  Variable for storing service request state
+    bool mStartRequestCompleted; //!<  Variable for storing service request state
     QNetworkConfigurationManager* mNetConfigurationManager; //!< pointer to network configuration manager 
     WlanLoginNetworkAccessManager* mNetworkAccessManager; //!< pointer to network access manager
     QNetworkSession* mNetworkSession; //!< pointer to network session

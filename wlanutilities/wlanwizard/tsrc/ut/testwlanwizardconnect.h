@@ -25,7 +25,6 @@ Q_OBJECT
 
 private slots:
     void tc_connect_to_open_success();
-    void tc_connect_to_open_success_hidden();
     void tc_connect_to_open_success_adhoc();
     void tc_connect_to_wep_success();
     void tc_connect_to_wpa_psk_success();

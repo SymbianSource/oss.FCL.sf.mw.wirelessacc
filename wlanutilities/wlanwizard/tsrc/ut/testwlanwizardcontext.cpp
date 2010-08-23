@@ -212,16 +212,21 @@ bool TestWlanWizardContext::eventFilter(QObject *obj, QEvent *event)
     return false;
 }
 
-QGraphicsWidget* TestWlanWizardContext::findChildItem(const QString &itemName, QGraphicsWidget *widget)
+QGraphicsWidget* TestWlanWizardContext::findChildItem(const QString &itemName, QGraphicsItem *widget)
 {
     QList<QGraphicsItem*> list = widget->childItems();
     for (int i = 0; i < list.size(); i++) {
-        QGraphicsWidget* item = (QGraphicsWidget*) list[i];
-        if (item->objectName() == itemName) {
-            return item;
+        QGraphicsItem* item = list[i];
+        
+        QGraphicsWidget* widget = NULL;
+        if (item->isWidget()) {
+            widget = (QGraphicsWidget*)item;
+        }
+        if (widget && widget->objectName() == itemName) {
+            return widget;
         }
         else if ((item = findChildItem(itemName, item))) {
-            return item;
+            return (QGraphicsWidget*)item;
         }
     }
     return 0;
@@ -235,14 +240,12 @@ bool TestWlanWizardContext::verifyStatus(WizardStatusSignal status, int iapId)
 bool TestWlanWizardContext::verifyCurrentPage(int pageId, int retries, int wait_ms)
 {
     bool ret = true;
-    
     for (int i = 0; i < retries; i++) {
         QTest::qWait(wait_ms);
-
         WlanWizardPrivate *pPrivate = mView->mWizard->d_ptr;
         HbWidget* current = qobject_cast<HbWidget*> (pPrivate->mStackedWidget->currentWidget());
         WlanWizardPage *page = pPrivate->mPageMapper[current];
-
+        
         // TODO: verify title in this method
         
         if (page == pPrivate->mPages[pageId]) {
@@ -387,6 +390,7 @@ bool TestWlanWizardContext::verifyDialogText(const QString objName, const QStrin
             }
         }
         HbCheckBox *checkBox = qobject_cast<HbCheckBox*>(widget);
+        
         if (checkBox) {
             if(checkBox->text() == text) {
                 if (!checkBox->isVisible()){
@@ -511,9 +515,11 @@ bool TestWlanWizardContext::verifySummaryPage(
         qWarning("verifySummaryPage: no match network mode");
         ret = false;
     }
-    
-    if (item->secondaryText() != toNetworkModeString(netMode, hidden)){
+    QString netModeString(toNetworkModeString(netMode, hidden));
+    if (item->secondaryText() != netModeString){
         qWarning("verifySummaryPage: no match network mode value");
+        qDebug() << "Actual: " << item->secondaryText();
+        qDebug() << "Expected: " << netModeString;
         ret = false;
     }
     

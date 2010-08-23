@@ -21,12 +21,14 @@
 // System includes
 
 #include <QObject>
-#include <QTranslator>
+#include <QScopedPointer>
 #include <cpplugininterface.h>
 
 // User includes
 
 // Forward declarations
+
+class HbTranslator;
 
 // External data types
 
@@ -34,26 +36,41 @@
 
 // Class declaration
 
-class CpWlanSettingsPlugin 
-        : public QObject,
-          public CpPluginInterface
+class CpWlanSettingsPlugin : public QObject, public CpPluginInterface
 {
     Q_OBJECT
     Q_INTERFACES(CpPluginInterface)
+    
 public:
+
+    // Data types
+
     CpWlanSettingsPlugin();
+    
     virtual ~CpWlanSettingsPlugin();
-    virtual QList<CpSettingFormItemData*> createSettingFormItemData(CpItemDataHelper &itemDataHelper) const;
+
+    virtual QList<CpSettingFormItemData*> createSettingFormItemData(
+        CpItemDataHelper &itemDataHelper) const;
+
+signals:
+
+public slots:
+
+protected:
+
+protected slots:
 
 private:
     
     Q_DISABLE_COPY(CpWlanSettingsPlugin)
     
-private:    //data
+private slots:
 
-    QTranslator *translator;
-    
+private: // data
+
+    QScopedPointer<HbTranslator> mTranslator;   //!< Translator for localisation 
+
+    // Friend classes
 };
-
 
 #endif /* WLANSETTINGSPLUGIN_H_ */

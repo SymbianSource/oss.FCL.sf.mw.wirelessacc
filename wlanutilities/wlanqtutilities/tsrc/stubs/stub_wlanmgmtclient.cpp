@@ -20,14 +20,18 @@
 #include "wlanmgmtclient.h"
 
 #include "wlanqtutilstestcontext.h"
+#include "wlanqtutilsiap.h"
 
 extern WlanQtUtilsTestContext testContext;
 
-// Request status for canceling stubbed async request
-static TRequestStatus* iStubRequestStatus = 0;
+// Request status for canceling stubbed GetScanResults async request
+static TRequestStatus* iGetScanResultsStatus = 0;
+
+// Request status for canceling stubbed GetAvailableIaps async request
+static TRequestStatus* iGetAvailableIapsStatus = 0;
 
 // ---------------------------------------------------------
-// CWlanScanRequest::NewL
+// CWlanMgmtClient::NewL
 // ---------------------------------------------------------
 //
 CWlanMgmtClient* CWlanMgmtClient::NewL()
@@ -37,7 +41,7 @@ CWlanMgmtClient* CWlanMgmtClient::NewL()
     }
     
 // ---------------------------------------------------------
-// CWlanScanRequest::~CWlanMgmtClient
+// CWlanMgmtClient::~CWlanMgmtClient
 // ---------------------------------------------------------
 //
 CWlanMgmtClient::~CWlanMgmtClient()
@@ -45,7 +49,7 @@ CWlanMgmtClient::~CWlanMgmtClient()
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::CWlanMgmtClient
+// CWlanMgmtClient::CWlanMgmtClient
 // ---------------------------------------------------------
 //
 CWlanMgmtClient::CWlanMgmtClient()
@@ -53,29 +57,30 @@ CWlanMgmtClient::CWlanMgmtClient()
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::GetScanResults
+// CWlanMgmtClient::GetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::GetScanResults(
     TRequestStatus& aStatus,
     CWlanScanInfo& aResults )
     {
-    if (testContext.mScan.mCompleteWlanScan) {
+    (void)aResults;
+    
+    if (testContext.mScan.mCompleteWlanApScan) {
         // Complete the request immediately
         TRequestStatus *status = &aStatus;
         User::RequestComplete(
             status,
-            testContext.mScan.mScanRetValue);
+            testContext.mScan.mApScanRetValue);
     } else {
-        iStubRequestStatus = &aStatus;
+        iGetScanResultsStatus = &aStatus;
     }
     
     // Results are returned when asked per AP
-    (void)aResults;
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::GetScanResults
+// CWlanMgmtClient::GetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::GetScanResults(
@@ -83,27 +88,79 @@ void CWlanMgmtClient::GetScanResults(
     TRequestStatus& aStatus,
     CWlanScanInfo& aResults )
     {
-    if (testContext.mScan.mCompleteWlanScan) {
+    (void)aSsid;
+    (void)aResults;
+
+    if (testContext.mScan.mCompleteWlanApScan) {
         // Complete the request immediately
         TRequestStatus *status = &aStatus;
         User::RequestComplete(
             status,
-            testContext.mScan.mScanRetValue);
+            testContext.mScan.mApScanRetValue);
     } else {
-        iStubRequestStatus = &aStatus;
+        iGetScanResultsStatus = &aStatus;
     }
     
     // Results are returned when asked per AP
-    (void)aSsid;
-    (void)aResults;
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::CancelGetScanResults
+// CWlanMgmtClient::CancelGetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::CancelGetScanResults()
     {
-    User::RequestComplete(iStubRequestStatus, KErrCancel);
-    iStubRequestStatus = 0;
+    if (iGetScanResultsStatus) {
+        User::RequestComplete(iGetScanResultsStatus, KErrCancel);
+        iGetScanResultsStatus = NULL;
+    }
+    }
+
+// ---------------------------------------------------------
+// CWlanMgmtClient::GetAvailableIaps
+// ---------------------------------------------------------
+//
+void CWlanMgmtClient::GetAvailableIaps(
+    TInt& aCacheLifetime,
+    TUint& aMaxDelay,
+    TBool aFilteredResults,
+    TRequestStatus& aStatus,
+    RArray<TWlanIapAvailabilityData>& aAvailableIaps )
+    {
+    (void)aCacheLifetime;
+    (void)aMaxDelay;
+    (void)aFilteredResults;
+    (void)aAvailableIaps;
+
+    if (testContext.mScan.mCompleteWlanIapScan) {
+        // Form results as defined in context
+        aAvailableIaps.Reset();
+        for (int i=0; i < testContext.mScan.mWlanScanIapResultList.count(); i++) {
+            QSharedPointer<WlanQtUtilsIap> iap(testContext.mScan.mWlanScanIapResultList[i]);
+            TWlanIapAvailabilityData data;
+            data.iIapId = (TUint)iap->value(WlanQtUtilsIap::ConfIdIapId).toInt();
+            data.iRssi = (TUint)iap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt();
+            aAvailableIaps.AppendL(data);
+        }
+        
+        // Complete the request immediately
+        TRequestStatus *status = &aStatus;
+        User::RequestComplete(
+            status,
+            testContext.mScan.mIapScanRetValue);
+    } else {
+        iGetAvailableIapsStatus = &aStatus;
+    }
+    }
+
+// ---------------------------------------------------------
+// CWlanMgmtClient::CancelGetAvailableIaps
+// ---------------------------------------------------------
+//
+void CWlanMgmtClient::CancelGetAvailableIaps()
+    {
+    if (iGetAvailableIapsStatus) {
+        User::RequestComplete(iGetAvailableIapsStatus, KErrCancel);
+        iGetAvailableIapsStatus = 0;
+    }
     }

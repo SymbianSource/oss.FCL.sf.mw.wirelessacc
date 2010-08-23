@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard API
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard API
+*/
 
 #ifndef WLANWIZARD_H
 #define WLANWIZARD_H
@@ -47,15 +46,14 @@ class WLAN_WIZARD_EXPORT WlanWizard: public QObject
     Q_OBJECT
 
 public:
-    explicit WlanWizard(HbMainWindow *mainWindow );
-    virtual ~WlanWizard();
+    explicit WlanWizard(HbMainWindow *mainWindow);
+    ~WlanWizard();
 
     void setParameters(
         const QString &ssid,
         int networkMode,
         int securityMode,
         bool usePsk,
-        bool hidden,
         bool wps);
 
 signals:
@@ -85,4 +83,4 @@ private:
 
 /*! @} */
 
-#endif /* WLANWIZARD_H_ */
+#endif // WLANWIZARD_H

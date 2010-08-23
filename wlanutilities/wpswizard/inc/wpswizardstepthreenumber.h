@@ -67,7 +67,6 @@ private:
 signals:
 
 public slots:
-    void loadDocmlSection(Qt::Orientation orientation);
 
 protected:
 

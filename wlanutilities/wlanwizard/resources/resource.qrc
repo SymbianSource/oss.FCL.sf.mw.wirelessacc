@@ -1,11 +1,11 @@
 <RCC>
     <qresource prefix="/docml">
-        <file>occ_wlan_wizard_main.docml</file>
-        <file>occ_add_wlan_05.docml</file>
-        <file>occ_add_wlan_06.docml</file>
-        <file>occ_add_wlan_02_03.docml</file>
-        <file>occ_add_wlan_01_04.docml</file>
-        <file>occ_add_wlan_error.docml</file>
+        <file alias="occ_wlan_wizard_main.docml">occ_wlan_wizard_main.docml.bin</file>
+        <file alias="occ_add_wlan_05.docml">occ_add_wlan_05.docml.bin</file>
+        <file alias="occ_add_wlan_06.docml">occ_add_wlan_06.docml.bin</file>
+        <file alias="occ_add_wlan_02_03.docml">occ_add_wlan_02_03.docml.bin</file>
+        <file alias="occ_add_wlan_01_04.docml">occ_add_wlan_01_04.docml.bin</file>
+        <file alias="occ_add_wlan_error.docml">occ_add_wlan_error.docml.bin</file>
     </qresource>
     <qresource prefix="/css" >
     	<file>custom.css</file>

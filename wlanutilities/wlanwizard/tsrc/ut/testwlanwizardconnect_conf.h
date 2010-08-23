@@ -24,7 +24,6 @@
 
 
 #define tc_connect_to_open_success_enabled
-#define tc_connect_to_open_success_hidden_enabled;
 #define tc_connect_to_open_success_adhoc_enabled;
 #define tc_connect_to_wep_success_enabled;
 #define tc_connect_to_wpa_psk_success_enabled;

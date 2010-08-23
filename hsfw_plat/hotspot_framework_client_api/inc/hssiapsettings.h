@@ -81,7 +81,7 @@ class THssIapSettings
 
     {
     public:
-    THssIapSettings();
+    
     TBuf<KHssMaxMedTextLength>      Name;
     
     EHssConnectionMode              iConnectionMode;        
