@@ -23,10 +23,10 @@
 #include "am_debug.h"
 #include <es_enum.h>
 
-#include <cmconnectionmethodext.h>
+#include <cmconnectionmethod.h>
 #include <cmconnectionmethoddef.h>
-#include <cmdestinationext.h>
-#include <cmmanagerext.h>
+#include <cmdestination.h>
+#include <cmmanager.h>
 
 using namespace CMManager;
 
@@ -82,7 +82,7 @@ void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName,
     {
     DEBUG("CHssIapSettingsHandler::CreateClientIapL");
 
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL( cmManager );
     
@@ -91,7 +91,7 @@ void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName,
     CleanupClosePushL( destinations );
     
     cmManager.AllDestinationsL( destinations );
-    RCmDestinationExt destination;
+    RCmDestination destination;
     // Loop through each destination
     for( TInt i = 0; i < destinations.Count(); i++ )
         {
@@ -99,10 +99,9 @@ void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName,
         CleanupClosePushL(destination); 
         // Internet destination will always exist in the system.
         // Internet destination will have ESnapPurposeInternet set in its metadata.
-        if ( destination.MetadataL( CMManager::ESnapMetadataPurpose ) ==
-             CMManager::ESnapPurposeInternet )
+        if (destination.MetadataL(CMManager::ESnapMetadataPurpose) == CMManager::ESnapPurposeInternet)
             {
-            RCmConnectionMethodExt plugin = cmManager.CreateConnectionMethodL( KUidWlanBearerType );
+            RCmConnectionMethod plugin = cmManager.CreateConnectionMethodL( KUidWlanBearerType );
             CleanupClosePushL( plugin );
                 
             plugin.SetStringAttributeL( ECmName, aIapName );
@@ -126,111 +125,6 @@ void CHssIapSettingsHandler::CreateClientIapL( const TDesC& aIapName,
     }
 
 // -----------------------------------------------------------------------------
-// CreateIapL
-// -----------------------------------------------------------------------------
-//    
-TInt CHssIapSettingsHandler::CreateIapL( TBool aHotspot )
-    {
-    DEBUG("CHssIapSettingsHandler::CreateIapL");
-    TInt ret ( KErrNone );
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    // Read all destination(SNAP) settings into an array
-    RArray<TUint32> destinations;
-    CleanupClosePushL( destinations );
-    
-    cmManager.AllDestinationsL( destinations );
-    RCmDestinationExt destination;
-    // Loop through each destination
-    for( TInt i = 0; i < destinations.Count(); i++ )
-        {
-        destination = cmManager.DestinationL( destinations[i] );
-        CleanupClosePushL( destination ); 
-        // Internet destination will always exist in the system.
-        // Internet destination will have ESnapPurposeInternet 
-        // set in its metadata.
-        if ( destination.MetadataL( CMManager::ESnapMetadataPurpose ) == 
-                                        CMManager::ESnapPurposeInternet )
-            {
-            CWlanMgmtClient* wlanMgmtClient = CWlanMgmtClient::NewL();
-            CleanupStack::PushL( wlanMgmtClient );
-            
-            TWlanConnectionMode connMode;
-            User::LeaveIfError( 
-                    wlanMgmtClient->GetConnectionMode( connMode ) );
-            
-            TWlanConnectionSecurityMode secMode;
-            User::LeaveIfError( 
-                    wlanMgmtClient->GetConnectionSecurityMode( secMode ) );
-                          
-            HBufC* ssid( NULL );
-            TWlanSsid ssidConn;
-            
-            User::LeaveIfError( 
-                    wlanMgmtClient->GetConnectionSsid( ssidConn ) );
-            ssid = HBufC::NewLC( ssidConn.Length() );
-            ssid->Des().Copy( ssidConn ); 
-            
-            TUint32 serviceId(0);
-            TUint32 easyWlanIapId(0);
-            easyWlanIapId = cmManager.EasyWlanIdL();
-                       
-            RCmConnectionMethodExt easyWlanPlugin;
-            easyWlanPlugin = cmManager.ConnectionMethodL( easyWlanIapId );
-            CleanupClosePushL( easyWlanPlugin );
-            TBool scanSsid = easyWlanPlugin.GetBoolAttributeL( EWlanScanSSID );
-            TUint32 easyWlanServiceId = 
-                    easyWlanPlugin.GetIntAttributeL( EWlanServiceId );
-            CleanupStack::PopAndDestroy(); // easyWlanPlugin;
-            
-            RCmConnectionMethodExt plugin =
-                cmManager.CreateConnectionMethodL( KUidWlanBearerType );
-            CleanupClosePushL( plugin );        
-            plugin.SetStringAttributeL( ECmName, *ssid );
-            plugin.SetStringAttributeL( EWlanSSID, *ssid );
-            plugin.SetIntAttributeL( CMManager::EWlanSecurityMode,
-                    ConvertConnectionSecurityModeToSecModeL( secMode ));
-            plugin.SetIntAttributeL( EWlanConnectionMode, 
-                    ConvertConnectionModeToNetModeL( connMode ) );
-            plugin.SetBoolAttributeL( EWlanScanSSID, scanSsid );
-            
-            if ( aHotspot )
-                {
-				// A hotspot IAP. Mark it so it can be deleted after the use.
-                plugin.SetStringAttributeL( ECmConfigDaemonManagerName, 
-                                            KHotSpotPlugin );
-                }
-            
-            destination.AddConnectionMethodL( plugin );
-            destination.UpdateL();
-            serviceId = plugin.GetIntAttributeL( EWlanServiceId );                
-            ret = plugin.GetIntAttributeL( ECmIapId );  
-            CleanupStack::PopAndDestroy( &plugin ); 
-            if ( secMode == EWlanConnectionSecurityWep )
-                {
-                SaveWEPKeyL( easyWlanServiceId, serviceId );
-                }
-                    
-            if ( secMode == EWlanConnectionSecurityWpaPsk )
-                {
-                SaveWPAKeyL( easyWlanServiceId, serviceId );
-                }
-            
-            CleanupStack::PopAndDestroy( ssid ); 
-            CleanupStack::PopAndDestroy( wlanMgmtClient );
-            }
-        CleanupStack::PopAndDestroy( &destination ); 
-        }
-    CleanupStack::PopAndDestroy( &destinations ); 
-    CleanupStack::PopAndDestroy( &cmManager );
-
-    DEBUG1("CHssIapSettingsHandler::CreateIapL Done iapId: %d", ret);
-    return ret;
-    }
-
-// -----------------------------------------------------------------------------
 // DeleteIapL
 // -----------------------------------------------------------------------------
 //
@@ -238,11 +132,11 @@ void CHssIapSettingsHandler::DeleteIapL( const TUint aIapId )
     {
     DEBUG1("CHssIapSettingsHandler:::DeleteIapL aIapId=%d ", aIapId);
 
-    RCmManagerExt cmManager;
+    RCmManager cmManager;
     cmManager.OpenL();
     CleanupClosePushL( cmManager );
 
-    RCmConnectionMethodExt plugin = cmManager.ConnectionMethodL( aIapId );
+    RCmConnectionMethod plugin = cmManager.ConnectionMethodL( aIapId );
     CleanupClosePushL( plugin );
 
     cmManager.RemoveAllReferencesL( plugin );
@@ -251,50 +145,6 @@ void CHssIapSettingsHandler::DeleteIapL( const TUint aIapId )
     DEBUG1("CHssIapSettingsHandler:::DeleteIapL result = %d ", result);
     CleanupStack::PopAndDestroy( &plugin );
     CleanupStack::PopAndDestroy( &cmManager );
-    }
-
-// ---------------------------------------------------------
-// MoveIapL()
-// ---------------------------------------------------------
-//
-void  CHssIapSettingsHandler::MoveIapL( const TUint aIapId )
-    {
-    DEBUG1("CHssIapSettingsHandler::MoveIapL aIapId=%d ", aIapId);
-    // Now move to Internet SNAP
-    RCmManagerExt cmManager;
-    cmManager.OpenL();
-    CleanupClosePushL( cmManager );
-    
-    // Read all destination(SNAP) settings into an array
-    RArray<TUint32> destinations;
-    CleanupClosePushL( destinations );
-    
-    cmManager.AllDestinationsL( destinations );
-    RCmDestinationExt destination;
-    // Loop through each destination
-    for( TInt i = 0; i < destinations.Count(); i++ )
-        {
-        destination = cmManager.DestinationL( destinations[i] );
-        CleanupClosePushL( destination ); 
-        // Internet destination will always exist in the system.
-        // Internet destination will have ESnapPurposeInternet 
-        // set in its metadata.
-        if ( destination.MetadataL( CMManager::ESnapMetadataPurpose ) == 
-                                    CMManager::ESnapPurposeInternet )
-            {
-            RCmConnectionMethodExt iap = cmManager.ConnectionMethodL( aIapId );
-            CleanupClosePushL( iap );
-            iap.SetStringAttributeL( ECmConfigDaemonManagerName, KHotSpotPlugin );
-            destination.AddConnectionMethodL( iap );
-            CleanupStack::PopAndDestroy( &iap );
-            destination.UpdateL();
-            }
-        CleanupStack::PopAndDestroy( &destination ); 
-        }
-    CleanupStack::PopAndDestroy( &destinations ); 
-    CleanupStack::PopAndDestroy( &cmManager );
-   
-    DEBUG( "CHssIapSettingsHandler::MoveIapL Done" );
     }
 
 // ---------------------------------------------------------

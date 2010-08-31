@@ -25,22 +25,15 @@
 #include "hsslogouttimer.h"
 #include "hssclientinterface.h"
 #include "am_debug.h"
-#include <internetconnectivitycrkeys.h>
 #include <WlanCdbCols.h>
 #include <starterclient.h>
-#include <cmmanagerext.h>
 #include <e32std.h>
 #include <ecom.h>
 #include <f32file.h>
-#include <apgcli.h>
 
 // Forward declarations
 class CWlanMgmtClient;
 class MWlanMgmtNotifications;
-
-// Constants
-const TInt KSeparatorsLength = 4;    
-const TInt KBrowserUid = 0x2000AFCC; // WLAN Login UID
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -50,8 +43,7 @@ const TInt KBrowserUid = 0x2000AFCC; // WLAN Login UID
 //
 CHotSpotSession::CHotSpotSession( CHotSpotServer& aServer ) :
     iServer( aServer ), iClient( NULL ), iSrvNotifications ( NULL ), 
-    iNotificationHandle( NULL ), iAllowNotifications( ETrue ), 
-    iHotspotExtension( ETrue )
+    iNotificationHandle( NULL ), iAllowNotifications( ETrue ), iHotspotExtension( ETrue )
     {
     
     }
@@ -123,11 +115,7 @@ CHotSpotSession::~CHotSpotSession()
         iLogoutTimer->Cancel();
         delete iLogoutTimer;
         }
-    
-    if ( iIcts != NULL )
-        {
-        delete iIcts;
-        }
+
     DEBUG( "CHotSpotSession::~CHotSpotSession() Done" );
     }
     
@@ -161,6 +149,7 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
     switch ( aMessage.Function() )
         {
         case EHssActivateNotifications :
+            DEBUG( "CHotSpotSession::ActivateNotificationsL" );
             iAllowNotifications = EFalse;
             
             if ( iNotifications == NULL )
@@ -171,6 +160,7 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             HandleOrderNotifications( aMessage );
             break;
         case EHssCancelNotifications :
+            DEBUG( "CHotSpotSession::CancelNotifications" );
             iAllowNotifications = EFalse;
             iMgtClient->CancelNotifications( );
         
@@ -182,10 +172,10 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             HandleCancelNotifications( aMessage );
             break;
         case EHssRegister :
-            ProcessRegisterL( aMessage );
+            ProcessRegister( aMessage );
             break;
         case EHssUnRegister :
-            ProcessUnRegisterL( aMessage );
+            ProcessUnRegister( aMessage );
             break;
         case EHssJoin :
             iAllowNotifications = EFalse;
@@ -258,10 +248,12 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                 {
                 if ( value == KErrNone )
                     {
+                    DEBUG( "EHssLoginComplete1" );
                     iServer.CompleteMessage( indx, KErrNone );
                     }
                 else
                     {
+                    DEBUG( "EHssLoginComplete2" );
                     iServer.CompleteMessage( indx, KErrCancel );
                     iServer.SetLogoutFlag( ETrue );
                     }
@@ -295,12 +287,12 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
                 }
             else
                 {
-                err = ProcessStartLoginL( iIapId, iNetId );
+                err = ProcessStartLogin( iIapId, iNetId );
                 // If client not found, an error was returned. 
                 // Otherwise message completed elsewhere. 
                 if ( KErrNone != err )
                     {
-                    indx = iServer.FindMessage( iIapId, EHssStartLogin );
+                    indx = iServer.FindMessage(iIapId, EHssStartLogin );
                     if ( indx >= 0 )
                         {
                         iServer.CompleteMessage( indx , KErrNone );
@@ -463,23 +455,11 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             aMessage.Complete( KErrNone );
             break;
         case EHssUiState:
-            TRAP_IGNORE( ProcessUiStateL( aMessage ) );
-            // Just complete the message
-            aMessage.Complete( KErrNone );
+            aMessage.Complete( KErrNotSupported );
             break;
         case EHssStartBrowser:
             {
-            TInt len = aMessage.GetDesLength( 0 );
-            iIapId = ( TInt )aMessage.Int1();
-            iNetId = ( TInt )aMessage.Int2();
-            err = iServer.SaveMessage( iIapId, aMessage, EHssStartBrowser );
-            HBufC* buf = HBufC::NewLC( len ); 
-            TPtr ptr( buf->Des() );
-            User::LeaveIfError( aMessage.Read( 0, ptr ) );     
-            
-            AuthenticateL( ptr );
-            
-            CleanupStack::PopAndDestroy(buf);
+            aMessage.Complete( KErrNotSupported );
             break;
             }
         case EHssSetTimerValues:
@@ -600,69 +580,6 @@ void CHotSpotSession::HandleNotification()
     }
 
 // -----------------------------------------------------------------------------
-// TestInternetConnectivityL
-// -----------------------------------------------------------------------------
-//
-void CHotSpotSession::TestInternetConnectivityL()
-    {
-    DEBUG("CHotSpotSession::TestInternetConnectivityL");
-    if ( iIcts != NULL )
-        {
-        delete iIcts;
-        iIcts = NULL;
-        }
-   
-    iIcts = CIctsClientInterface::NewL( iIapId, iNetId, *this );
-    iIcts->StartL();
-    }
-
-// -----------------------------------------------------------------------------
-// ConnectivityObserver
-// -----------------------------------------------------------------------------
-//    
-void CHotSpotSession::ConnectivityObserver( TIctsTestResult aResult, 
-                                            const TDesC& aString )
-    {
-    DEBUG1("CHotSpotSession::ConnectivityObserver result: %d", aResult);
-    TInt indx( KErrNone );
-    switch ( aResult )
-        {
-        case EConnectionOk :
-            // Create IAP first, then complete the message to connection.
-            TRAP_IGNORE( iIapSettingsHandler->CreateIapL( EFalse ) );
-            indx = iServer.FindMessage( iIapId, EHssStartLogin );
-            if ( KErrNotFound != indx )
-                {
-                iServer.CompleteMessage( indx, KErrNone );    
-                }
-            break;
-        case EHttpAuthenticationNeeded :
-            // Start browser for authentication
-            TRAPD( browserStarted, AuthenticateL( aString ) );
-            if ( browserStarted != KErrNone )
-                {
-                // Starting of browser leaved. Complete the message.
-                indx = iServer.FindMessage( iIapId, EHssStartLogin );
-                if ( KErrNotFound != indx )
-                    {
-                    iServer.CompleteMessage( indx, KErrNone );    
-                    }
-                }
-            break;
-        case EConnectionNotOk :
-        case ETimeout :
-            indx = iServer.FindMessage( iIapId, EHssStartLogin );
-            if ( KErrNotFound != indx )
-                {
-                iServer.CompleteMessage( indx, KErrNone );    
-                }
-            break;
-        default:
-            break;
-        }
-    }
-
-// -----------------------------------------------------------------------------
 // LoginTimeout
 // -----------------------------------------------------------------------------
 //   
@@ -715,12 +632,12 @@ void CHotSpotSession::LogoutTimeout()
     }
 
 // ---------------------------------------------------------
-// ProcessRegisterL
+// ProcessRegister
 // ---------------------------------------------------------
 //
-void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
+void CHotSpotSession::ProcessRegister( const RMessage2& aMessage )
     {
-    DEBUG("CHotSpotSession::ProcessRegisterL");
+    DEBUG("CHotSpotSession::ProcessRegister");
     
     iAllowNotifications = EFalse;
     TBufC< KIapNameLength > iapName;
@@ -760,33 +677,25 @@ void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
     }
 
 // ---------------------------------------------------------
-// ProcessUnRegisterL
+// ProcessUnRegister
 // ---------------------------------------------------------
 //
-void CHotSpotSession::ProcessUnRegisterL( const RMessage2& aMessage )
+void CHotSpotSession::ProcessUnRegister( const RMessage2& aMessage )
     {
-    DEBUG("CHotSpotSession::ProcessUnRegisterL");
+    DEBUG("CHotSpotSession::ProcessUnRegister");
     iAllowNotifications = EFalse;
     TInt ret( KErrNone );
 
     // Read message
     TInt iapId = ( TInt )aMessage.Int0();
     iServer.RemoveClientIap( iapId );
-    // Check that this is not Easy WLAN
-    TInt easyWlan = iServer.GetEasyWlanId();
-    if ( easyWlan != iapId  )
+   
+    TRAPD( err, iIapSettingsHandler->DeleteIapL( iapId ) );
+    // return KErrGeneral if IAP removal is not successful
+    if ( err != KErrNone )
         {
-        TRAPD( err, iIapSettingsHandler->DeleteIapL( iapId ) );
-        // return KErrGeneral if IAP removal is not successful
-        if ( err != KErrNone )
-            {
-            ret = KErrGeneral;
-            }
+        ret = KErrGeneral;
         }
-    else
-        {
-        ret = KErrPermissionDenied;
-        }    
     aMessage.Complete( ret ); 
     DEBUG("CHotSpotSession::ProcessUnRegisterL DONE");
     }
@@ -795,23 +704,12 @@ void CHotSpotSession::ProcessUnRegisterL( const RMessage2& aMessage )
 // ProcessStartLogin
 // -----------------------------------------------------------------------------
 //   
-TInt CHotSpotSession::ProcessStartLoginL( const TUint aIapId, const TUint aNetId )
+TInt CHotSpotSession::ProcessStartLogin( const TUint aIapId, const TUint aNetId )
     {
     DEBUG("CHotSpotSession::ProcessStartLogin");
     TInt ret( KErrNotFound );
     TBuf8<KExtensionAPILength> extAPI;
     iIapId = aIapId;
-    
-    // Check if Easy WLAN.
-    TInt easyWlan = iServer.GetEasyWlanId();
-    if ( easyWlan == aIapId )
-        {
-         DEBUG("CHotSpotSession::ProcessStartLogin Easy WLAN detected");
-        // Just test internet connectivity and complete message later
-        TestInternetConnectivityL();
-        ret = KErrNone;
-        return ret;
-        }
     
     TBuf<KUidLength> clientUid;
     TInt err = iServer.GetClientUid( aIapId, clientUid );
@@ -841,7 +739,7 @@ TInt CHotSpotSession::ProcessStartLoginL( const TUint aIapId, const TUint aNetId
     }
 
 // -----------------------------------------------------------------------------
-// ProcessStart
+// ProcessStartL
 // -----------------------------------------------------------------------------
 //   
 TInt CHotSpotSession::ProcessStartL( const TUint aIapId )
@@ -1036,147 +934,6 @@ void CHotSpotSession::ProcessServerShutdown( const RMessage2& aMessage )
         }
     }
     
-// -----------------------------------------------------------------------------
-// ProcessUiStateL
-// -----------------------------------------------------------------------------
-//    
-void CHotSpotSession::ProcessUiStateL( const RMessage2& aMessage )
-    {
-    DEBUG( "CHotSpotSession::ProcessUiStateL()" );
-    TBool completeMsg = EFalse;
-    TInt indx( KErrNone );
-    TInt indxBrowser( KErrNone );
-    TInt ret( KErrNone );
-    iIapId = ( TInt )aMessage.Int0();
-
-    indx = iServer.FindMessage( iIapId, EHssStartLogin );
-    indxBrowser = iServer.FindMessage( iIapId, EHssStartBrowser );
-    THsBrowserUiStates uiState = ( THsBrowserUiStates ) aMessage.Int1(); // UI state
-    switch ( uiState )
-        {
-        case EHsBrowserUiRunning:
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiRunning" );
-            break;
-            }
-        case EHsBrowserUiAuthenticatedOk:
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedOk" );
-            // Check if Easy WLAN.
-            TInt easyWlan = iServer.GetEasyWlanId();
-            if ( easyWlan != iIapId )
-                {
-                iIapSettingsHandler->MoveIapL( iIapId );
-                // Activate notifications and mark as client IAP so that 
-                // IAP can be deleted after the use.
-                TBuf<KIapNameLength> clientUid;
-                iServer.SetClientIap( iIapId, clientUid );
-                iServer.ActivateWlanNotificationsL();
-                }
-            else
-                {
-                TInt iapId( 0 );
-                iapId = iIapSettingsHandler->CreateIapL( ETrue );
-                if ( iapId > 0 )
-                    {
-                    // Activate notifications and mark as client IAP so that 
-                    // IAP can be deleted after the use.
-                    TBuf<KIapNameLength> clientUid;
-                    iServer.SetClientIap( iapId, clientUid );
-                    iServer.ActivateWlanNotificationsL();
-                    }
-                }
-            
-            completeMsg = ETrue;
-            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedOk Done" );
-            break;
-               }
-        case EHsBrowserUiAuthenticatedNok:
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiAuthenticatedNok" );
-            
-            completeMsg = ETrue;
-            break;
-            }
-        case EHsBrowserUiClosed:
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() EHsBrowserUiClosed" );
-            completeMsg = ETrue;
-            break;
-            }
-        default:
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() default" );
-            completeMsg = ETrue;
-            }
-        }
-		
-    if ( completeMsg )
-        {
-        // complete messages EHssStartLogin/EHssStartBrowser
-        if ( indx >= 0 )
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() completing EHssStartLogin" );
-            iServer.CompleteMessage( indx , KErrNone );
-            }
-        
-        if ( indxBrowser >= 0 )
-            {
-            DEBUG( "CHotSpotSession::ProcessUiStateL() completing EHssStartBrowser" );
-            iServer.CompleteMessage( indxBrowser, ret );
-            }
-        }
-    }    
-    
-// -----------------------------------------------------------------------------
-// Authenticate()
-// -----------------------------------------------------------------------------
-//    
-void CHotSpotSession::AuthenticateL( const TDesC& aString )
-    {
-    DEBUG("CHotSpotSession::AuthenticateL()");
-    
-    // Count IAP Id length
-    TInt iapIdLength ( 1 );
-    TInt iapId = iIapId;
-    while ( iapId >= 10 )
-        {
-        iapId = iapId / 10;
-        iapIdLength++;
-        }
-    
-    // Count Network Id length
-    TInt netIdLength ( 1 );
-    TInt netId = iNetId;
-    while ( netId >= 10 )
-        {
-        netId = netId / 10;
-        netIdLength++;
-        }
-    
-    TInt length = aString.Length() + 
-                  iapIdLength + 
-                  netIdLength + 
-                  KSeparatorsLength;
-    HBufC* param = HBufC::NewLC( length );
-    _LIT(tmpString, "%d, %d, %S");
-    param->Des().Format( tmpString, iIapId, iNetId, &aString );
-    TUid uid( TUid::Uid( KBrowserUid ) );
-    RApaLsSession appArcSession;
-    User::LeaveIfError( appArcSession.Connect() ); // connect to AppArc server
-    CleanupClosePushL( appArcSession );
-    TThreadId id;
-    TInt err = appArcSession.StartDocument( *param, TUid::Uid( KBrowserUid ), id );
-    if ( err != KErrNone )
-        {
-        DEBUG1( "CHotSpotSession::AuthenticateL() StartDocument: %d", err );
-        }
-    CleanupStack::PopAndDestroy( &appArcSession );
-    CleanupStack::PopAndDestroy( param );
-
-    DEBUG("CHotSpotSession::AuthenticateLC() done");
-    }
-
 // -----------------------------------------------------------------------------
 // ModifyClientUid
 // -----------------------------------------------------------------------------

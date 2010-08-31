@@ -239,13 +239,6 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         void CheckIapsL();
         
         /**
-        * Activates WLAN notifications.
-        * @since Series 60 5.2
-        * @return None
-        */
-        void ActivateWlanNotificationsL();
-        
-        /**
         * Get login timer value for the specified client.
         * @since Series 60 5.2
         * @param aClientUid, clients user id
@@ -295,13 +288,6 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aIapId, IAP id
         */        
         void RemoveClientIap( TUint aIapId );
-
-        /**
-        * Returns Easy WLAN IAP id.
-        * @since Series 60 5.2
-        * @return Easy WLAN id
-        */        
-        TInt GetEasyWlanId();
         
     private:
         
@@ -400,11 +386,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * Array for storing client IAPs and their UIDs.
         */
         RArray<SClientIaps> iClientIaps;
-        
-        /**
-        * Easy WLAN IAP Id
-        */
-        TInt iEasyWlanId;
+
 	};
 
 #endif

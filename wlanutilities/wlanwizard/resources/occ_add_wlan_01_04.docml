@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hbdocument version="1.1">
+    <widget name="occ_add_wlan_01" type="HbWidget">
+        <widget name="container" type="HbWidget">
+            <widget name="dialog" type="HbLabel">
+                <enums name="textWrapping" value="TextWordWrap"/>
+                <enums name="alignment" value="AlignLeft|AlignTop|AlignLeading"/>
+                <sizepolicy horizontalPolicy="Preferred" horizontalStretch="0" verticalPolicy="Preferred" verticalStretch="0"/>
+                <fontspec name="fontSpec" role="Secondary" textheight="var(hb-param-text-height-secondary)"/>
+            </widget>
+            <widget name="lineEditKey" type="HbLineEdit">
+                <integer name="maxRows" value="3"/>
+            </widget>
+            <widget name="labelErrorNote" type="HbLabel">
+                <enums name="textWrapping" value="TextWordWrap"/>
+                <contentsmargins bottom="0un" left="0un" right="0un" top="var(hb-param-margin-gene-top)"/>
+                <fontspec name="fontSpec" role="Secondary" textheight="var(hb-param-text-height-secondary)"/>
+            </widget>
+            <layout type="grid"/>
+        </widget>
+        <layout orientation="Vertical" spacing="0un" type="linear">
+            <contentsmargins bottom="0un" left="var(hb-param-margin-gene-popup)" right="var(hb-param-margin-gene-popup)" top="var(hb-param-margin-gene-popup)"/>
+            <linearitem itemname="container"/>
+            <stretchitem stretchfactor="1"/>
+        </layout>
+    </widget>
+    <section name="portrait_section">
+        <widget name="occ_add_wlan_01" type="HbWidget">
+            <widget name="container" type="HbWidget">
+                <widget name="dialog" type="HbLabel">
+                    <sizepolicy horizontalPolicy="Preferred" horizontalStretch="0" verticalPolicy="Preferred" verticalStretch="0"/>
+                    <contentsmargins bottom="var(hb-param-margin-gene-middle-vertical)" left="0un" right="0un" top="0un"/>
+                </widget>
+                <layout spacing="0un" type="grid">
+                    <contentsmargins bottom="0un" left="0un" right="0un" top="0un"/>
+                    <griditem column="0" itemname="lineEditKey" row="1"/>
+                    <griditem column="0" itemname="labelErrorNote" row="2"/>
+                    <griditem column="0" itemname="dialog" row="0"/>
+                </layout>
+            </widget>
+        </widget>
+    </section>
+    <section name="landscape_section">
+        <widget name="occ_add_wlan_01" type="HbWidget">
+            <widget name="container" type="HbWidget">
+                <widget name="dialog" type="HbLabel">
+                    <sizepolicy horizontalPolicy="Fixed" horizontalStretch="0" verticalPolicy="Fixed" verticalStretch="0"/>
+                    <sizehint type="FIXED" width="expr((var(hb-param-screen-width) - var(hb-param-margin-gene-middle-horizontal))  / 2  - var(hb-param-margin-gene-screen) - var(hb-param-margin-gene-popup) +var(hb-param-margin-gene-middle-horizontal))"/>
+                    <contentsmargins bottom="0un" left="0un" right="var(hb-param-margin-gene-middle-horizontal)" top="0un"/>
+                </widget>
+                <layout spacing="0un" type="grid">
+                    <contentsmargins bottom="0un" left="0un" right="0un" top="0un"/>
+                    <griditem column="0" itemname="dialog" row="0"/>
+                    <griditem column="1" itemname="lineEditKey" row="0"/>
+                    <griditem column="0" column_span="2" itemname="labelErrorNote" row="1"/>
+                </layout>
+            </widget>
+        </widget>
+    </section>
+    <metadata activeUIState="landscape" display="NHD-3.2-inch_landscape" unit="un">
+        <uistate name="Common ui state" sections="#common"/>
+        <uistate name="portrait" sections="#common portrait_section"/>
+        <uistate name="landscape" sections="#common landscape_section"/>
+    </metadata>
+</hbdocument>
