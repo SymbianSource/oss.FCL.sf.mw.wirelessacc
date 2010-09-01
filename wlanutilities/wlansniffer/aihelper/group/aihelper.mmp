@@ -1,0 +1,85 @@
+/*
+* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Project definition file for project AiHelper
+*
+*/
+
+
+#include <data_caging_paths.hrh>
+#include <platform_paths.hrh>
+
+
+TARGET          wsfaihelper.exe
+TARGETTYPE      exe
+UID             0x100039CE 0x10281CEB
+
+EPOCSTACKSIZE   0x5000
+
+CAPABILITY ReadDeviceData NetworkServices NetworkControl ProtServ \
+           ReadUserData WriteDeviceData WriteUserData
+
+
+
+SOURCEPATH      ../src 
+SOURCE          wsfaihelper.cpp
+SOURCE          wsfaihelperapplication.cpp 
+SOURCE          wsfaihelperappui.cpp
+SOURCE          wsfaihelperdocument.cpp 
+SOURCE          wsfaihelperview.cpp
+SOURCE          wsfaihelpercontainer.cpp
+
+
+// own headers
+USERINCLUDE     ../inc
+
+// inner API
+USERINCLUDE     ../../inc
+
+// private API
+USERINCLUDE     ../../../inc
+
+
+//Macro to /epoc32 headers
+APP_LAYER_SYSTEMINCLUDE
+
+LIBRARY             ws32.lib
+LIBRARY             euser.lib
+LIBRARY             apparc.lib
+LIBRARY             cone.lib 
+LIBRARY             avkon.lib  
+LIBRARY             apgrfx.lib 
+LIBRARY             eikcore.lib 
+LIBRARY             wsfwlaninfo.lib
+LIBRARY             wsfmodel.lib
+LIBRARY             aknskins.lib
+LIBRARY             eikcoctl.lib 
+LIBRARY             fbscli.lib
+LIBRARY             egul.lib
+
+LIBRARY             cmmanager.lib
+LIBRARY             commonengine.lib
+LIBRARY             commonui.lib
+DEBUGLIBRARY        flogger.lib
+
+START RESOURCE    ../data/wsfaihelper.rss
+HEADER
+TARGETPATH    APP_RESOURCE_DIR
+LANGUAGE_IDS
+END
+
+START RESOURCE    ../data/wsfaihelper_reg.rss
+DEPENDS wsfaihelper.rsg
+TARGETPATH    /private/10003a3f/apps
+END
+

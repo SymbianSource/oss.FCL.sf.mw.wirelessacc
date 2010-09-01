@@ -1,0 +1,4 @@
+<?xml version="1.0" standalone="yes"?>
+<backup_registration version="1.0">
+    <dbms_backup policy="2000cf30"/>
+</backup_registration>

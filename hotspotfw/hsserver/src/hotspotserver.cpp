@@ -25,12 +25,12 @@
 #include <e32std.h>
 #include <commsdattypesv1_1.h>
 
-#include <cmconnectionmethod.h>
+#include <cmconnectionmethodext.h>
 #include <cmconnectionmethoddef.h>
 #include <cmpluginwlandef.h>
-#include <cmmanager.h>
+#include <cmmanagerext.h>
 #include <cmmanagerdef.h>
-#include <cmdestination.h>
+#include <cmdestinationext.h>
 
 #include "hotspotserver.h"
 #include "am_debug.h"
@@ -158,15 +158,14 @@ void CHotSpotServer::ConstructL()
     iLoginValue = ETrue;
     iAssociationValue = EFalse;
     iClientIapsChecked = KErrNone;
-    
+    iEasyWlanId = KEasyWlanServiceId; // Set to default value just in case
+
     TRAP( iClientIapsChecked, FindClientIapsL() );
  
     // Activate notifications for IAP check purposes. Done with every server startup.
     // When EWlanConnectionModeNotConnected is received we can cancel this.
     iMgtClient = CWlanMgmtClient::NewL();
-#ifndef __WINS__
-    iMgtClient->ActivateNotificationsL( *this );
-#endif 
+    ActivateWlanNotificationsL();
     }
 
 // -----------------------------------------------------------------------------
@@ -203,7 +202,7 @@ void CHotSpotServer::ConnectionStateChanged( TWlanConnectionMode  aNewState )
 void CHotSpotServer::FindClientIapsL()
     {
     DEBUG("CHotSpotServer::FindClientIapsL()");
-    RCmManager cmManager;
+    RCmManagerExt cmManager;
     cmManager.OpenL();
     CleanupClosePushL(cmManager);
            
@@ -212,12 +211,16 @@ void CHotSpotServer::FindClientIapsL()
     TBool supportedBearersOnly = ETrue;
     TBool legacyCmsOnly = EFalse;
     
+    // Read Easy WLAN IAP ID first
+    iEasyWlanId = cmManager.EasyWlanIdL();
+    DEBUG1("CHotSpotServer::FindClientIapsL() iEasyWlanId: % d", iEasyWlanId);
+    
     cmManager.ConnectionMethodL( cmArray, supportedBearersOnly, legacyCmsOnly );
     DEBUG1("CHotSpotServer::FindClientIapsL count: %d", cmArray.Count());  
     
     for( TInt i = 0; i < cmArray.Count(); i++ )
         {
-        RCmConnectionMethod cm = cmManager.ConnectionMethodL( cmArray[i] );
+        RCmConnectionMethodExt cm = cmManager.ConnectionMethodL( cmArray[i] );
         CleanupClosePushL( cm );
         HBufC* daemonName = cm.GetStringAttributeL( 
                                                 ECmConfigDaemonManagerName );
@@ -273,14 +276,14 @@ void CHotSpotServer::CheckIapsL()
         delete plugin;
 
         DEBUG1("CHotSpotServer::CheckIapsL find client error: %d", error );
-        if ( error == KErrNotFound )
+        if ( error != KErrNone )
             {
             // Remove from database
-            RCmManager cmManager;
+            RCmManagerExt cmManager;
             cmManager.OpenL();
             CleanupClosePushL(cmManager);
             
-            RCmConnectionMethod cm;
+            RCmConnectionMethodExt cm;
             cm = cmManager.ConnectionMethodL( iClientIaps[i].iIapId );
             CleanupClosePushL( cm );
             cmManager.RemoveAllReferencesL( cm );
@@ -296,6 +299,19 @@ void CHotSpotServer::CheckIapsL()
             }
         }
     DEBUG("CHotSpotServer::CheckIapsL Done");
+    }
+
+// -----------------------------------------------------------------------------
+// ActivateWlanNotificationsL
+// -----------------------------------------------------------------------------
+//
+void CHotSpotServer::ActivateWlanNotificationsL()
+    {
+    DEBUG("CHotSpotServer::ActivateWlanNotificationsL");
+#ifndef __WINS__
+    iMgtClient->CancelNotifications();
+    iMgtClient->ActivateNotificationsL( *this );
+#endif 
     }
 
 // -----------------------------------------------------------------------------
@@ -659,6 +675,16 @@ void CHotSpotServer::RemoveClientIap( TUint aIapId )
             }
         i++;
         }
+    }
+
+// -----------------------------------------------------------------------------
+// GetEasyWlanId
+// -----------------------------------------------------------------------------
+//
+TInt CHotSpotServer::GetEasyWlanId()
+    {
+    DEBUG("CHotspotServer::GetEasyWlanId()");
+    return iEasyWlanId;
     }
 
 // ========================== OTHER EXPORTED FUNCTIONS =========================

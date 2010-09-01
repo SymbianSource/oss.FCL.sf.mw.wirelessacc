@@ -1,0 +1,7 @@
+EXPORTS
+	??1CWsfWlanIapWizard@@UAE@XZ @ 1 NONAME ; CWsfWlanIapWizard::~CWsfWlanIapWizard(void)
+	?CreateAccessPointL@CWsfWlanIapWizard@@QAEHXZ @ 2 NONAME ; int CWsfWlanIapWizard::CreateAccessPointL(void)
+	?LaunchWizardL@CWsfWlanIapWizard@@QAEHAAVTWsfWlanInfo@@H@Z @ 3 NONAME ; int CWsfWlanIapWizard::LaunchWizardL(class TWsfWlanInfo &, int)
+	?NewL@CWsfWlanIapWizard@@SAPAV1@XZ @ 4 NONAME ; class CWsfWlanIapWizard * CWsfWlanIapWizard::NewL(void)
+	?NewLC@CWsfWlanIapWizard@@SAPAV1@XZ @ 5 NONAME ; class CWsfWlanIapWizard * CWsfWlanIapWizard::NewLC(void)
+

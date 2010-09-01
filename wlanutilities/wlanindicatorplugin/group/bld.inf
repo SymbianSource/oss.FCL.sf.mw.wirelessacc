@@ -22,7 +22,9 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
+../rom/wlanindicatorplugin.iby            CORE_MW_LAYER_IBY_EXPORT_PATH(wlanindicatorplugin.iby)
+../rom/wlanindicatorpluginresources.iby   LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(wlanindicatorpluginresources.iby)
+../loc/wlanindicatorplugin.loc            MW_LAYER_LOC_EXPORT_PATH(wlanindicatorplugin.loc)
 
 PRJ_MMPFILES
-
+wlanindicatorplugin.mmp

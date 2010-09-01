@@ -1,0 +1,82 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*     This is project specification file for the wlanplugin.
+*
+*
+*/
+
+#include <data_caging_paths.hrh>    //this is needed for RESOURCE_FILES_DIR
+#include <platform_paths.hrh>
+
+CAPABILITY          CAP_ECOM_PLUGIN
+TARGET              wlanplugin.dll
+TARGETTYPE          PLUGIN
+UID                 0x10009D8D 0x10281BCB
+VENDORID            VID_DEFAULT
+
+SOURCEPATH          ../src
+SOURCE              wlanplugin.cpp
+SOURCE              wlanpluginimplementationtable.cpp
+SOURCE              wlanpluginwlanstate.cpp
+SOURCE              wlanplugindbobserver.cpp
+SOURCE              wlanplugintimeshifter.cpp
+
+USERINCLUDE         ../data
+
+// Component specific internal headers 
+USERINCLUDE         ../inc
+SYSTEMINCLUDE       ../../inc
+
+//Macro to /epoc32 headers
+MW_LAYER_SYSTEMINCLUDE
+
+SOURCEPATH          ../data
+
+//ECOM resource definition
+START RESOURCE      10281BCB.rss
+TARGET              wlanplugin.rsc
+END // ECOM resource definition
+
+//WlanSettingsPlugin resources
+START RESOURCE      wlanpluginrsc.rss
+HEADER
+TARGETPATH          RESOURCE_FILES_DIR
+LANGUAGE_IDS
+END//WlanPlugin resources
+
+LIBRARY             euser.lib
+LIBRARY             efsrv.lib
+LIBRARY             avkon.lib
+LIBRARY             FeatMgr.lib
+LIBRARY             bafl.lib 
+LIBRARY             cone.lib 
+LIBRARY             eikcore.lib 
+LIBRARY             commonengine.lib   // RConeResourceLoader
+LIBRARY             aknskins.lib       // AknsUtils.h
+LIBRARY             egul.lib
+LIBRARY             GSEcomPlugin.lib
+LIBRARY             apgrfx.lib
+LIBRARY             apparc.lib
+LIBRARY             ws32.lib
+LIBRARY             wsfwlaninfo.lib
+LIBRARY             wsfmodel.lib
+LIBRARY             wsfwlaninfosorting.lib
+LIBRARY             commonui.lib
+LIBRARY             aknnotify.lib 
+LIBRARY             eiksrv.lib
+LIBRARY             COMMSDAT.lib
+LIBRARY             cmmanagerdatabase.lib
+DEBUGLIBRARY        flogger.lib
+

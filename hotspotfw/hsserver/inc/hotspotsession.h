@@ -27,6 +27,8 @@
 #include <wlanmgmtinterface.h>
 #include <wlanmgmtcommon.h>
 #include <commdb.h>
+#include <ictscommon.h>
+#include <ictsclientinterface.h>
 #include "hssnotif.h"
 #include "hssiapsettingshandler.h"
 #include "hssclientinterface.h"
@@ -49,7 +51,8 @@ class CHssLogoutTimer;
 * @lib HotSpotServer.exe
 * @since Series 60 3.0
 */
-NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
+NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2, 
+                                       public MIctsObserver,
                                        public MHssLoginTimerObserver,
                                        public MHssLogoutTimerObserver,
                                        public MWlanMgmtNotifications
@@ -92,6 +95,16 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         */
         void DispatchMessageL( const RMessage2& aMessage );
         
+        /**
+        * From MICTSObserver. Called when internet connectivity tests are
+        * being done.
+        * @param aResult Result of tests
+        * @param aString String containing possible HTML response
+        * @return None
+        */
+        void ConnectivityObserver( TIctsTestResult aResult, 
+                                   const TDesC& aString );
+               
         /**
         * From MHssLoginTimerObserver. Called when time used for Login(..)
         * has run out for client.
@@ -137,20 +150,30 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         */
 
         void ConstructL();	
-       
+         /**
+        * Initialize Scan to WlanEngine
+        * @return None
+        */
+
+         /**
+        * Launch Intenet Connectivity Test Service
+        * @return None
+        */
+        void TestInternetConnectivityL();
+        
         /**
         * Starts client register procedures
         * @param aMessage, RMessage from client side
         * @return None
         */
-        void ProcessRegister( const RMessage2& aMessage );
+        void ProcessRegisterL( const RMessage2& aMessage );
         
         /**
         * Starts client unregister procedures
         * @param aMessage, RMessage from client side
         * @return None
         */
-        void ProcessUnRegister( const RMessage2& aMessage );
+        void ProcessUnRegisterL( const RMessage2& aMessage );
         
         /**
         * Starts login procedures
@@ -158,7 +181,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aNetId, Network id
         * @return KErrNone, if successful, otherwice one of system wide errorcodes.
         */
-        TInt ProcessStartLogin( const TUint aIapId, const TUint aNetId );
+        TInt ProcessStartLoginL( const TUint aIapId, const TUint aNetId );
         
           /**
         * Starts Join procedures
@@ -201,6 +224,18 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aMessage, Message for completing request
         */
         void ProcessServerShutdown( const RMessage2& aMessage );
+        
+        /**
+        * Updates UI state of HotSpot browser logon application.
+        * @param aMessage, Message for completing request
+        */
+        void ProcessUiStateL( const RMessage2& aMessage );
+        
+        /**
+        * Start HotSpot browser logon application.
+        * @param aString, redirect URL
+        */        
+        void AuthenticateL( const TDesC& aString );
         
         /**
         * Removes brackets from the UID
@@ -282,6 +317,12 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * Own
         */
         CHssIapSettingsHandler* iIapSettingsHandler;
+        
+        /**
+        * Internet Connectivity testing instance
+        * Own
+        */
+        CIctsClientInterface* iIcts;
 
         /**
         * Timer used for client Login procedure

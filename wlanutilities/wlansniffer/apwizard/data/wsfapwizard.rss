@@ -1,0 +1,369 @@
+/*
+* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Resource definitions for project ApWizard
+*
+*/
+
+
+
+NAME WLWZ
+
+#include <eikon.rh>
+#include <eikon.rsg>
+#include <avkon.rh>
+#include <avkon.rsg>
+#include <avkon.hrh>
+#include <avkon.mbg>
+#include <AvkonIcons.hrh>
+
+
+#include <wsfapwizard.loc>
+#include <wsfmainapplication.loc>
+#include "wsfapwizard.hrh"
+
+
+RESOURCE RSS_SIGNATURE { }
+
+
+RESOURCE TBUF16 { buf=""; }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_enter_network_ssid
+// String for WLAN network name prompt
+// ---------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_enter_network_ssid         
+    { 
+    buf = qtn_wlan_prmpt_network_name; 
+    }
+    
+
+// ---------------------------------------------------------------------------
+// r_qtn_cmon_quest_create_wlan_iap
+// String for create AP query
+// ---------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_cmon_quest_create_wlan_iap 
+    { 
+    buf = qtn_cmon_quest_create_wlan_iap; 
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_netw_conset_info_eap_settings_default
+// String for default EAP settings infonote
+// ---------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_netw_conset_info_eap_settings_default 
+    { 
+    buf = qtn_netw_conset_info_eap_settings_default; 
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wlan_info_no_networks_found
+// String for no networks infonote
+// ---------------------------------------------------------------------------
+//
+RESOURCE TBUF r_qtn_wlan_info_no_networks_found 
+    {
+    buf = qtn_wlan_info_no_networks_found; 
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_query_general
+// Multi-purpose textfield + ok-cancel dialog
+// ---------------------------------------------------------------------------
+//
+RESOURCE DIALOG r_qtn_wizard_query_general
+    {
+    flags = EGeneralQueryFlags | EEikDialogFlagNotifyEsc;
+    buttons = R_AVKON_SOFTKEYS_OK_CANCEL__OK;
+    items = 
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_DATA_QUERY
+                {
+                layout = EDataLayout;
+                control = EDWIN
+                    {
+                    default_case = EAknEditorLowerCase;
+                    avkon_flags = EAknEditorFlagNoT9;
+                    };
+                };
+            }       
+        };
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_auth_modes
+// Security mode list
+// ---------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_wizard_auth_modes
+    {    
+    items =
+        {
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_open;        
+            },
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_wep;        
+            },
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_802_1x;
+            },
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_wpa;        
+            }
+        };
+    }
+
+    
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_auth_mode
+// Security mode query
+// ---------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_wizard_auth_mode
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_wizard_auth_modes;
+                    };
+                heading = qtn_netw_conset_prmpt_wlan_nw_security_mode;
+                };
+            }
+        };
+    }  
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_auth_modes_ad_hoc
+// Security mode list
+// ---------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_wizard_auth_modes_ad_hoc
+    {    
+    items =
+        {
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_open;        
+            },
+        LBUF
+            {
+            txt = qtn_netw_conset_wlan_security_mode_wep;        
+            }
+        };
+    }
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_auth_mode_ad_hoc
+// Security mode query
+// ---------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_wizard_auth_mode_ad_hoc
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_wizard_auth_modes_ad_hoc;
+                    };
+                heading = qtn_netw_conset_prmpt_wlan_nw_security_mode;
+                };
+            }
+        };
+    }   
+    
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_network_modes
+// Network mode list
+// ---------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_wizard_network_modes
+    {    
+    items =
+        {
+        LBUF
+            {
+            txt = qtn_wlan_network_mode_infra_public;        
+            },
+        LBUF
+            {
+            txt = qtn_wlan_network_mode_infra_hidden;        
+            },
+        LBUF
+            {
+            txt = qtn_wlan_network_mode_adhoc_public;        
+            }
+        };
+    }    
+
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_network_mode
+// Query of network modes
+// ---------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_wizard_network_mode
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_wizard_network_modes;
+                    };
+                heading = qtn_netw_conset_prmpt_wlan_nw_mode_and_status;
+                };
+            }
+        };
+    }
+    
+    
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_wpa_modes
+// WPA mode list
+// ---------------------------------------------------------------------------
+//
+RESOURCE ARRAY r_qtn_wizard_wpa_modes
+    {    
+    items =
+        {
+        LBUF
+            {
+            txt = qtn_netw_conset_prmpt_wpa_mode_eap;        
+            },
+        LBUF
+            {
+            txt = qtn_netw_conset_prmpt_wpa_mode_psk;        
+            }
+        };
+    }    
+    
+
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_wpa_mode
+// Query of WPA modes
+// ---------------------------------------------------------------------------
+//
+RESOURCE AVKON_LIST_QUERY r_qtn_wizard_wpa_mode
+    {
+    flags = EGeneralQueryFlags;
+    softkeys = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;
+    items =
+        {
+        AVKON_LIST_QUERY_DLG_LINE
+            {
+            control = AVKON_LIST_QUERY_CONTROL
+                {
+                listtype = EAknCtSinglePopupMenuListBox;                
+                listbox = AVKON_LIST_QUERY_LIST
+                    {
+                    array_id = r_qtn_wizard_wpa_modes;
+                    };
+                heading = qtn_netw_conset_prmpt_wlan_wpa_mode;
+                };
+            }
+        };
+    }    
+
+
+    
+// ---------------------------------------------------------------------------
+// r_qtn_wizard_confirmation_query
+// Multi-purpose yes-no query
+// ---------------------------------------------------------------------------
+//
+RESOURCE DIALOG r_qtn_wizard_confirmation_query
+    {
+    flags = EGeneralQueryFlags;
+    buttons = R_AVKON_SOFTKEYS_YES_NO__YES;
+    items = 
+        {
+        DLG_LINE
+            {
+            type = EAknCtQuery;
+            id = EGeneralQuery;
+            control = AVKON_CONFIRMATION_QUERY
+                {
+                layout = EConfirmationQueryLayout;
+                };
+            }       
+        };
+    }    
+    
+
+// ---------------------------------------------------------------------------
+// r_searching_wlan_wait_note
+// Wait note while searching for networks
+// ---------------------------------------------------------------------------
+//
+RESOURCE DIALOG r_searching_wlan_wait_note
+    {
+    flags = EAknWaitNoteFlags;
+    buttons = R_AVKON_SOFTKEYS_CANCEL;
+    items =
+        {
+        DLG_LINE
+            {
+            type = EAknCtNote;
+            id = EWaitNoteSearchingWlans;
+            control = AVKON_NOTE
+                {
+                layout = EWaitLayout;
+                singular_label = qtn_wlan_wait_searching_networks;
+                animation = R_QGN_GRAF_WAIT_BAR_ANIM;
+                };
+            }
+        };
+    }
+    

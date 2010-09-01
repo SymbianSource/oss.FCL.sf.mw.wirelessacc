@@ -1,0 +1,38 @@
+/*
+* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  Image description file for project WlanSniffer
+*
+*/
+
+
+#ifndef WLANSNIFFER_IBY
+#define WLANSNIFFER_IBY
+
+#ifdef __PROTOCOL_WLAN
+
+REM WlanSniffer
+
+#include <data_caging_paths_for_iby.hrh>
+#include <bldvariant.hrh>
+
+
+// appshell icon
+S60_APP_AIF_ICONS(wsficons)
+
+// all other bitmaps
+data=DATAZ_\APP_BITMAP_DIR\wsficons.mif    APP_BITMAP_DIR\wsficons.mif
+
+#endif // __PROTOCOL_WLAN
+
+#endif // WLANSNIFFER_IBY

@@ -100,7 +100,14 @@ class CHssIapHandler : public CBase
         void PackWepKeyCommsDatL( const SHssWep& aInputKey, 
                                   const  EHssWEPKeyFormat&  aFormat, 
                                     CMDBField<TDesC8>* aPackedKey );
- 
+
+         /**
+        * Converts Hotspot EAP settings to EAPOL EAP settings
+        * @param aHssEap, Hotspot EAP settings
+        * @param aEap, EAPOL EAP settings
+        */
+        void ConvertEApSettings( THssEapSettings& aHssEap, EAPSettings& aEap );
+        
         /**
         * Converts ascii to hecxadecimal 
         * @param aSource, ascii 
@@ -109,6 +116,14 @@ class CHssIapHandler : public CBase
         void ConvertAsciiToHex( const TDes8& aSource, 
                                                 HBufC8*& aDest );   
                                                                          
+        /**
+        * Writes eap type to descriptor
+        * @param aEapType, Eap type
+        * @param aEapString, Eap type descrpitor
+        * @param aEapCode, Eap id code
+        */                 
+        void GetEapTypeDesC( TUint aEapType, TDes8& aEapString, TChar& aEapCode );
+        
         /**
         * Removes brackets from UID
         * @param aUid, UID of the client

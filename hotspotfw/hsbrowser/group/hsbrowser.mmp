@@ -1,0 +1,73 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:     This is the project specification file for
+*                HotSpot Browser Application.
+*
+*/
+
+
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
+
+TARGET HsBrowser.exe
+TARGETTYPE exe
+UID 0x100039CE 0x2000AFCC
+VENDORID VID_DEFAULT
+CAPABILITY	CAP_APPLICATION NetworkControl
+
+EPOCSTACKSIZE   0x10000
+EPOCHEAPSIZE 0x2000 0x500000 
+
+SOURCEPATH ../src
+SOURCE  hsbrowserapp.cpp
+SOURCE  hsbrowserappui.cpp
+SOURCE  hsbrowserdocument.cpp
+SOURCE  hsbrowsermodel.cpp
+SOURCE  hsbrowsercontainer.cpp
+SOURCE  hsbrowserloadeventobserver.cpp
+SOURCE  hsbrowserspecialloadobserver.cpp
+SOURCE  hsbrowserictsobserver.cpp
+SOURCE  hsbrowserhssrvnotifs.cpp
+
+// UI resource file
+START RESOURCE ../data/hsbrowser.rss
+HEADER
+TARGETPATH APP_RESOURCE_DIR
+LANGUAGE_IDS
+END
+
+// registration file
+START RESOURCE ../data/hsbrowser_reg.rss
+DEPENDS hsbrowser.rsg
+TARGETPATH 	  /private/10003a3f/apps
+END
+
+USERINCLUDE .
+USERINCLUDE ../inc
+USERINCLUDE ../../inc
+
+APP_LAYER_SYSTEMINCLUDE
+
+LIBRARY euser.lib apparc.lib cone.lib eikcore.lib
+LIBRARY avkon.lib apmime.lib apgrfx.lib efsrv.lib eikcoctl.lib commonui.lib ecom.lib
+LIBRARY eikdlg.lib gdi.lib bitgdi.lib esock.lib insock.lib
+LIBRARY hotspotclient.lib
+LIBRARY ictsclientinterface.lib
+LIBRARY ws32.lib
+LIBRARY commonengine.lib
+LIBRARY browserengine.lib
+LIBRARY aknnotify.lib eiksrv.lib
+LIBRARY akncapserverclient.lib
+LIBRARY bafl.lib
+LIBRARY hlplch.lib      // for "Help" options menu
