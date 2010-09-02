@@ -12,7 +12,7 @@
 * Contributors:
 *
 * Description: 
-* Symbian platform specific implementation of WLAN scanning.
+* Symbian platform specific implementation of WLAN AP scanning.
 */
 
 // System includes
@@ -26,19 +26,19 @@
 #include "wlanqtutils.h"
 #include "wlanqtutilsap.h"
 #include "wlanqtutilsscan.h"
-#include "wlanqtutilsscan_symbian.h"
+#include "wlanqtutilsscanap_symbian.h"
 
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
-#include "wlanqtutilsscan_symbianTraces.h"
+#include "wlanqtutilsscanap_symbianTraces.h"
 #endif
 
 
 /*!
-    \class WlanQtUtilsScanPrivate
-    \brief Symbian platform specific implementation of WLAN scanning.
+    \class WlanQtUtilsScanApPrivate
+    \brief Symbian platform specific implementation of WLAN AP scanning.
 
-    Symbian platform specific implementation of WLAN scanning. 
+    Symbian platform specific implementation of WLAN AP scanning. 
 */
 
 
@@ -64,16 +64,16 @@ static const TUint8 KWlan802Dot11CapabilityEssMask = 0x0001;
     @return New instance of the class.
 */
 
-WlanQtUtilsScanPrivate *WlanQtUtilsScanPrivate::NewL(WlanQtUtilsScan *wrapper)
+WlanQtUtilsScanApPrivate *WlanQtUtilsScanApPrivate::NewL(WlanQtUtilsScan *wrapper)
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_NEWL_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_NEWL_ENTRY);
     
-    WlanQtUtilsScanPrivate *self = new (ELeave) WlanQtUtilsScanPrivate(wrapper);
+    WlanQtUtilsScanApPrivate *self = new (ELeave) WlanQtUtilsScanApPrivate(wrapper);
     CleanupStack::PushL(self);
     self->ConstructL();
     CleanupStack::Pop(self);
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_NEWL_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_NEWL_EXIT);
     return self;
 }
 
@@ -81,9 +81,9 @@ WlanQtUtilsScanPrivate *WlanQtUtilsScanPrivate::NewL(WlanQtUtilsScan *wrapper)
     Destructor.
 */
 
-WlanQtUtilsScanPrivate::~WlanQtUtilsScanPrivate()
+WlanQtUtilsScanApPrivate::~WlanQtUtilsScanApPrivate()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_WLANQTUTILSSCANPRIVATE_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_WLANQTUTILSSCANAPPRIVATE_ENTRY);
     
     Cancel();
     delete mWlanMgmtClient;
@@ -91,16 +91,16 @@ WlanQtUtilsScanPrivate::~WlanQtUtilsScanPrivate()
     delete mResults;
     mResults = NULL;
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_WLANQTUTILSSCANPRIVATE_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_WLANQTUTILSSCANAPPRIVATE_EXIT);
 }
 
 /*!
     Starts a broadcast scan of available access points.
 */
 
-void WlanQtUtilsScanPrivate::Scan()
+void WlanQtUtilsScanApPrivate::Scan()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_SCAN_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_SCAN_ENTRY);
     
     // Scanning while previous scan is not complete is not supported
     Q_ASSERT(!IsActive());
@@ -109,7 +109,7 @@ void WlanQtUtilsScanPrivate::Scan()
     mWlanMgmtClient->GetScanResults(iStatus, *mResults);
     SetActive();
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_SCAN_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_SCAN_EXIT);
 }
 
 /*!
@@ -118,9 +118,9 @@ void WlanQtUtilsScanPrivate::Scan()
     @param ssid SSID to scan.
 */
 
-void WlanQtUtilsScanPrivate::Scan(const QString &ssid)
+void WlanQtUtilsScanApPrivate::Scan(const QString &ssid)
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_SCAN_SSID_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_SCAN_SSID_ENTRY);
     
     // Scanning while previous scan is not complete is not supported
     Q_ASSERT(!IsActive());
@@ -132,42 +132,44 @@ void WlanQtUtilsScanPrivate::Scan(const QString &ssid)
 
     OstTraceExt1(
         TRACE_NORMAL,
-        WLANQTUTILSSCANPRIVATE_SCAN_SSID,
-        "WlanQtUtilsScanPrivate::Scan;mWlanSsid=%s",
+        WLANQTUTILSSCANAPPRIVATE_SCAN_SSID,
+        "WlanQtUtilsScanApPrivate::Scan;mWlanSsid=%s",
         mWlanSsid);
 
     // Make the scan
     mWlanMgmtClient->GetScanResults(mWlanSsid, iStatus, *mResults);
     SetActive();
 
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_SCAN_SSID_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_SCAN_SSID_EXIT);
 }
 
 /*!
     Stops an ongoing scan.
 */
 
-void WlanQtUtilsScanPrivate::StopScan()
+void WlanQtUtilsScanApPrivate::StopScan()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_STOPSCAN_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_STOPSCAN_ENTRY);
     
     Cancel();
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_STOPSCAN_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_STOPSCAN_EXIT);
 }
 
 /*!
     Scan results handler.
 */
 
-void WlanQtUtilsScanPrivate::RunL()
+void WlanQtUtilsScanApPrivate::RunL()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_RUNL_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_RUNL_ENTRY);
     
     QT_TRYCATCH_LEAVING(
         if (iStatus != KErrNone) {
+            // Scan failed
             emit q_ptr->scanFailed(WlanQtUtils::ScanStatusError);
         } else {
+            // Scan succeeded
             QList< QSharedPointer<WlanQtUtilsAp> > scanResults;
             ExtractScanResults(scanResults);
             
@@ -176,20 +178,20 @@ void WlanQtUtilsScanPrivate::RunL()
         }
     );
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_RUNL_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_RUNL_EXIT);
 }
 
 /*!
     Cancels an outstanding request.
 */
 
-void WlanQtUtilsScanPrivate::DoCancel()
+void WlanQtUtilsScanApPrivate::DoCancel()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_DOCANCEL_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_DOCANCEL_ENTRY);
     
     mWlanMgmtClient->CancelGetScanResults();
 
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_DOCANCEL_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_DOCANCEL_EXIT);
 }
 
 /*!
@@ -198,29 +200,29 @@ void WlanQtUtilsScanPrivate::DoCancel()
     @param [in,out] wrapper Public implementation class reference.
 */
 
-WlanQtUtilsScanPrivate::WlanQtUtilsScanPrivate(WlanQtUtilsScan *wrapper) :
+WlanQtUtilsScanApPrivate::WlanQtUtilsScanApPrivate(WlanQtUtilsScan *wrapper) :
     CActive(EPriorityStandard),
     q_ptr(wrapper),
     mWlanMgmtClient(NULL),
     mResults(NULL)
 {
-    OstTraceFunctionEntry0(DUP1_WLANQTUTILSSCANPRIVATE_WLANQTUTILSSCANPRIVATE_ENTRY);
-    OstTraceFunctionExit0(DUP1_WLANQTUTILSSCANPRIVATE_WLANQTUTILSSCANPRIVATE_EXIT);
+    OstTraceFunctionEntry0(DUP1_WLANQTUTILSSCANAPPRIVATE_WLANQTUTILSSCANAPPRIVATE_ENTRY);
+    OstTraceFunctionExit0(DUP1_WLANQTUTILSSCANAPPRIVATE_WLANQTUTILSSCANAPPRIVATE_EXIT);
 }
 
 /*!
     Second phase constructor.
 */
 
-void WlanQtUtilsScanPrivate::ConstructL()
+void WlanQtUtilsScanApPrivate::ConstructL()
 {
-    OstTraceFunctionEntry0(WLANQTUTILSSCANPRIVATE_CONSTRUCTL_ENTRY);
+    OstTraceFunctionEntry0(WLANQTUTILSSCANAPPRIVATE_CONSTRUCTL_ENTRY);
     
     CActiveScheduler::Add(this);
     mWlanMgmtClient = CWlanMgmtClient::NewL();
     mResults = CWlanScanInfo::NewL();
     
-    OstTraceFunctionExit0(WLANQTUTILSSCANPRIVATE_CONSTRUCTL_EXIT);
+    OstTraceFunctionExit0(WLANQTUTILSSCANAPPRIVATE_CONSTRUCTL_EXIT);
 }
 
 /*
@@ -229,7 +231,7 @@ void WlanQtUtilsScanPrivate::ConstructL()
     @param [out] scanResults Scan result list.
 */
 
-void WlanQtUtilsScanPrivate::ExtractScanResults(
+void WlanQtUtilsScanApPrivate::ExtractScanResults(
     QList< QSharedPointer<WlanQtUtilsAp> > &scanResults)
 {
     for (mResults->First(); !mResults->IsDone(); mResults->Next()) {
@@ -272,6 +274,7 @@ void WlanQtUtilsScanPrivate::ExtractScanResults(
         // Hidden attribute
         // These scan results do not tell if the AP is hidden or not
         ap->setValue(WlanQtUtilsAp::ConfIdHidden, false);
+        ap->setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, false);
         
         // WPS support
         TBool wpsSupported = mResults->IsProtectedSetupSupported();
@@ -290,7 +293,7 @@ void WlanQtUtilsScanPrivate::ExtractScanResults(
     @return SSID string.
 */
 
-QString WlanQtUtilsScanPrivate::ExtractSsid()
+QString WlanQtUtilsScanApPrivate::ExtractSsid()
 {
     // Get the SSID in raw data format
     TUint8 ieLen;
@@ -303,19 +306,26 @@ QString WlanQtUtilsScanPrivate::ExtractSsid()
         // Trace the buffer as data to ease low level debugging
         OstTraceData(
             TRACE_DUMP,
-            WLANQTUTILSSCANPRIVATE_EXTRACTSSID_DATA,
-            "WlanQtUtilsScanPrivate::ExtractSsid data 0x%{hex8[]}",
+            WLANQTUTILSSCANAPPRIVATE_EXTRACTSSID_DATA,
+            "WlanQtUtilsScanApPrivate::ExtractSsid data 0x%{hex8[]}",
             ieData,
             ieLen);
 
-        ssid = QString::fromUtf8((char *)ieData, ieLen);
+        // The IEEE 802.11-2007 section 7.3.2.1 only specifies that
+        // the SSID is 0-32 octets, leaving the format of the octets
+        // completely open.
+        // To support a bit wider character set than 7-bit ASCII, we
+        // treat the raw SSID bytes as the lowest octets of Unicode.
+        for (int i = 0; i < ieLen; i++) {
+            ssid.append(QChar((uint)ieData[i]));
+        }
 
 #ifdef OST_TRACE_COMPILER_IN_USE
         TPtrC16 string(ssid.utf16(), ssid.length());
         OstTraceExt1(
             TRACE_DUMP,
-            WLANQTUTILSSCANPRIVATE_EXTRACTSSID_STRING,
-            "WlanQtUtilsScanPrivate::ExtractSsid string;ssid=%S",
+            WLANQTUTILSSCANAPPRIVATE_EXTRACTSSID_STRING,
+            "WlanQtUtilsScanApPrivate::ExtractSsid string;ssid=%S",
             string);
 #endif
     }
@@ -332,7 +342,7 @@ QString WlanQtUtilsScanPrivate::ExtractSsid()
     @return BSSID array.
 */
 
-QByteArray WlanQtUtilsScanPrivate::ExtractBssid()
+QByteArray WlanQtUtilsScanApPrivate::ExtractBssid()
 {
     TWlanBssid wlanBssid;
     mResults->Bssid(wlanBssid);
@@ -347,8 +357,8 @@ QByteArray WlanQtUtilsScanPrivate::ExtractBssid()
 
     OstTraceExt1(
         TRACE_DUMP,
-        WLANQTUTILSSCANPRIVATE_EXTRACTBSSID,
-        "WlanQtUtilsScanPrivate::ExtractBssid;bssid=%S",
+        WLANQTUTILSSCANAPPRIVATE_EXTRACTBSSID,
+        "WlanQtUtilsScanApPrivate::ExtractBssid;bssid=%S",
         string);
 #endif
 
@@ -362,7 +372,7 @@ QByteArray WlanQtUtilsScanPrivate::ExtractBssid()
     @param [in] secMode Security mode to store.
 */
 
-void WlanQtUtilsScanPrivate::StoreSecMode(
+void WlanQtUtilsScanApPrivate::StoreSecMode(
     QSharedPointer<WlanQtUtilsAp> ap,
     TUint wlanSecMode)
 {

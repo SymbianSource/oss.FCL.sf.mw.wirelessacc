@@ -17,7 +17,7 @@
  */
 
 /*
- * %version: 3 %
+ * %version: 4 %
  */
 
 #include "eapqtconfig.h"
@@ -43,7 +43,7 @@ EapQtConfig::~EapQtConfig()
     // scoped pointer deleted automatically
 }
 
-QVariant EapQtConfig::value(SettingsId id)
+QVariant EapQtConfig::value(const SettingsId id) const
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id >= SettingsIdLast) {
@@ -53,7 +53,7 @@ QVariant EapQtConfig::value(SettingsId id)
     return mSettings[id];
 }
 
-void EapQtConfig::setValue(SettingsId id, QVariant newValue)
+void EapQtConfig::setValue(const SettingsId id, const QVariant &newValue)
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id < SettingsIdLast) {
@@ -67,13 +67,6 @@ void EapQtConfig::setValue(SettingsId id, QVariant newValue)
 void EapQtConfig::clear() {
     mSettings.clear();
     return;
-}
-
-QList<EapQtConfig::SettingsId> EapQtConfig::validate(
-    QList<EapQtConfig::SettingsId> ids)
-{
-    Q_UNUSED(ids);
-    return QList<EapQtConfig::SettingsId>();
 }
 
 bool EapQtConfig::operator==(const EapQtConfig & rhs ) const

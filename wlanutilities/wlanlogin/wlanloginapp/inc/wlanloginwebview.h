@@ -36,7 +36,7 @@ class WlanLoginWebView: public QGraphicsWebView
     Q_OBJECT
 
 public:
-    explicit WlanLoginWebView(QGraphicsWidget* parent = 0);
+    WlanLoginWebView();
     ~WlanLoginWebView();
 
 protected:

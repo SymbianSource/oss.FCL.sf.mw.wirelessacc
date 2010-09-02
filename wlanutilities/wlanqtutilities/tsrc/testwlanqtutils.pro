@@ -33,6 +33,11 @@ symbian: {
     MMP_RULES += "USERINCLUDE traces"
 }
 
+# Stub headers must be used instead of real ones
+symbian {
+	MMP_RULES += "USERINCLUDE stubs"
+}
+
 #BUILD_DLL macro is used to define export macro
 DEFINES += BUILD_WLANQTUTILITIES_DLL
 
@@ -77,7 +82,8 @@ symbian: {
         ../wrapper/inc/wlanqtutilsconmonwrapperdisconnect_symbian.h \
         ../wrapper/inc/wlanqtutilsconmonwrapperinfo_symbian.h \
         ../wrapper/inc/wlanqtutilsesockwrapper_symbian.h \
-        ../wrapper/inc/wlanqtutilsscan_symbian.h \
+        ../wrapper/inc/wlanqtutilsscanap_symbian.h \
+        ../wrapper/inc/wlanqtutilsscaniap_symbian.h \
         stubs/ictswlanlogininterface.h \
         stubs/wlanmgmtclient.h \
         stubs/wlanscaninfo.h
@@ -86,7 +92,8 @@ symbian: {
         ../wrapper/src/wlanqtutilsconmonwrapperdisconnect_symbian.cpp \
         ../wrapper/src/wlanqtutilsconmonwrapperinfo_symbian.cpp \
         ../wrapper/src/wlanqtutilsesockwrapper_symbian.cpp \
-        ../wrapper/src/wlanqtutilsscan_symbian.cpp \
+        ../wrapper/src/wlanqtutilsscanap_symbian.cpp \
+        ../wrapper/src/wlanqtutilsscaniap_symbian.cpp \
         stubs/stub_connmon.cpp \
         stubs/stub_esock.cpp \
         stubs/stub_ictswlanlogininterface.cpp \

@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:
+* WLAN Wizard UT.
+*/
 
 // System includes
 #include <HbApplication>
@@ -73,22 +74,11 @@ void TestWlanWizardConnect::tc_connect_to_open_success()
 /*!
  * Connect to open
  */
-void TestWlanWizardConnect::tc_connect_to_open_success_hidden()
-{
-#ifdef tc_connect_to_open_success_hidden_enabled
-    tc_connect_success("tc_connect_to_open_success_hidden", CMManagerShim::Infra,
-        CMManagerShim::WlanSecModeOpen, true, "");
-#endif 
-}
-
-/*!
- * Connect to open
- */
 void TestWlanWizardConnect::tc_connect_to_open_success_adhoc()
 {
 #ifdef tc_connect_to_open_success_adhoc_enabled
     tc_connect_success("tc_connect_to_open_success_adhoc", CMManagerShim::Adhoc,
-        CMManagerShim::WlanSecModeOpen, true, "");
+        CMManagerShim::WlanSecModeOpen, false, "");
 #endif 
 }
 
@@ -99,7 +89,7 @@ void TestWlanWizardConnect::tc_connect_to_wep_success()
 {
 #ifdef tc_connect_to_wep_success_enabled
     tc_connect_success("tc_connect_to_wep_success", CMManagerShim::Adhoc,
-        CMManagerShim::WlanSecModeWep, true, "abcde");
+        CMManagerShim::WlanSecModeWep, false, "abcde");
 #endif 
 }
 
@@ -139,9 +129,12 @@ void TestWlanWizardConnect::tc_connect_to_open_success_cancel()
     mWlanQtUtilsContext->setSignalWlanNetworkOpened(3);
     mWlanQtUtilsContext->setSignalIctResult(3, WlanQtUtils::IctPassed);
 
-    mView->mWizard->setParameters("tc_connect_to_open_success_cancel",
+    mView->mWizard->setParameters(
+        "tc_connect_to_open_success_cancel",
         CMManagerShim::Infra,
-        CMManagerShim::WlanSecModeOpen, false, false, false);
+        CMManagerShim::WlanSecModeOpen,
+        false,
+        false);
 
     mView->showWizard();
     QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageProcessSettings, "tc_connect_to_open_success_cancel"), true );
@@ -207,7 +200,7 @@ void TestWlanWizardConnect::tc_network_failure_WpaAuthFailed()
         "tc_network_failure_WpaAuthFailed", 
         CMManagerShim::Adhoc,
         CMManagerShim::WlanSecModeWpa, 
-        true, 
+        false, 
         "password",
         hbTrId("txt_occ_dialog_authentication_unsuccessful"), 
         KErrWlanWpaAuthFailed );
@@ -355,10 +348,11 @@ void TestWlanWizardConnect::tc_iap_creation_fails()
     mWlanQtUtilsContext->setCreateWlanIapResult(-1);
 
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeOpen, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -391,7 +385,8 @@ void TestWlanWizardConnect::tc_cancel_key_query()
         ssid,
         CMManagerShim::Adhoc, 
         CMManagerShim::WlanSecModeWep,
-        true, false, false);
+        true,
+        false);
     mView->showWizard();
 
     QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageKeyQuery, ssid), true );
@@ -424,14 +419,20 @@ void TestWlanWizardConnect::tc_connect_success(const QString &ssid, int networkM
     mWlanQtUtilsContext->setSignalWlanNetworkOpened(2);
     mWlanQtUtilsContext->setSignalIctResult(2, WlanQtUtils::IctPassed);
 
-    mView->mWizard->setParameters(ssid, networkMode, securityMode, true, hidden, false);
+    mView->mWizard->setParameters(
+        ssid,
+        networkMode,
+        securityMode,
+        true,
+        false);
 
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
-    ap.setValue(WlanQtUtilsAp::ConfIdHidden, hidden);
-
+    ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
+    ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, hidden);
+    
     // Default values
     ap.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
     ap.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true );
@@ -512,7 +513,7 @@ void TestWlanWizardConnect::tc_connect_success(const QString &ssid, int networkM
 }
 
 /*!
- * Helpper test case for testing success case with compinations of provided
+ * Helpper test case for testing success case with combinations of provided
  * parameters.
  */
 void TestWlanWizardConnect::tc_network_error_codes(
@@ -528,13 +529,19 @@ void TestWlanWizardConnect::tc_network_error_codes(
     mWlanQtUtilsContext->setConnectionSuccessed(false);
     mWlanQtUtilsContext->setSignalWlanNetworkClosed(2, errorCode);
     mWlanQtUtilsContext->setActiveWlanIapResult(1);
-    mView->mWizard->setParameters(ssid, networkMode, securityMode, true, hidden, false);
+    mView->mWizard->setParameters(
+        ssid,
+        networkMode,
+        securityMode,
+        true,
+        false);
 
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
-    ap.setValue(WlanQtUtilsAp::ConfIdHidden, hidden);
+    ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
+    ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, hidden);
 
     // Default values
     ap.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());

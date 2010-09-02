@@ -111,7 +111,7 @@ void WlanSettingsTest::test_CheckWlanScanIntervalAuto()
 {
     uint KDefaultScanInterval(5);
     
-    mScanIntervalAuto = KWlanSettingsScanNetworkAuto;
+    mScanIntervalAuto = WlanSettings::ScanNetworkAuto;
     
     //Set the Auto Interval
     int setError  = mSecuritySettings->setWlanScanInterval(mScanIntervalAuto);    
@@ -159,7 +159,7 @@ void WlanSettingsTest::test_CheckWlanPowerSavingMode()
     QVERIFY(setError == KErrNone);
     
     //Verify Power saving mode parameter
-    int powerSavingMode  = mSecuritySettings->isPowerSavingEnabled();
+    int powerSavingMode  = mSecuritySettings->isWlanPowerSavingEnabled();
     QVERIFY(powerSavingMode == wlanPowerSavingMode);
 }
 

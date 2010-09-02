@@ -1,7 +1,7 @@
 <!DOCTYPE RCC>
 <RCC version="1.0">
     <qresource prefix="/docml" >
-        <file>wlansnifferlistview.docml</file>
+        <file alias="wlansnifferlistview.docml">wlansnifferlistview.docml.bin</file>
     </qresource>
 
     <qresource prefix="/wlansnifferlayout" >

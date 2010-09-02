@@ -216,7 +216,11 @@ void WlanSnifferEngine::stopWlanScanning()
             SIGNAL(wlanScanReady(int)),
             this,
             SLOT(handleWlanScanReady(int)));
-        
+
+        // Stop the scan
+        mWlanQtUtils->stopWlanScan();
+
+        // Stop periodic scan timer
         if (mScanTimerId != 0) {
             killTimer(mScanTimerId);
             mScanTimerId = 0;

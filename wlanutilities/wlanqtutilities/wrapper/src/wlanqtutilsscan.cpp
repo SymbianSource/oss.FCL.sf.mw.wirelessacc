@@ -19,7 +19,8 @@
 
 // User includes
 
-#include "wlanqtutilsscan_symbian.h"
+#include "wlanqtutilsscaniap_symbian.h"
+#include "wlanqtutilsscanap_symbian.h"
 #include "wlanqtutilsscan.h"
 
 /*!
@@ -47,7 +48,9 @@
 WlanQtUtilsScan::WlanQtUtilsScan(QObject *parent) :
     QObject(parent)
 {
-    QT_TRAP_THROWING(d_ptr = WlanQtUtilsScanPrivate::NewL(this));
+    QT_TRAP_THROWING(
+        d_ptrIap = WlanQtUtilsScanIapPrivate::NewL(this);
+        d_ptrAp = WlanQtUtilsScanApPrivate::NewL(this));
 }
 
 /*!
@@ -56,7 +59,17 @@ WlanQtUtilsScan::WlanQtUtilsScan(QObject *parent) :
 
 WlanQtUtilsScan::~WlanQtUtilsScan()
 {
-    delete d_ptr;
+    delete d_ptrIap;
+    delete d_ptrAp;
+}
+
+/*!
+    Scans available WLAN IAP's, including hidden ones.
+*/
+
+void WlanQtUtilsScan::scanWlanIaps()
+{
+    d_ptrIap->ScanIaps();
 }
 
 /*!
@@ -65,7 +78,7 @@ WlanQtUtilsScan::~WlanQtUtilsScan()
 
 void WlanQtUtilsScan::scanWlanAps()
 {
-    d_ptr->Scan();
+    d_ptrAp->Scan();
 }
 
 /*!
@@ -76,7 +89,7 @@ void WlanQtUtilsScan::scanWlanAps()
 
 void WlanQtUtilsScan::scanWlanDirect(const QString &ssid)
 {
-    d_ptr->Scan(ssid);
+    d_ptrAp->Scan(ssid);
 }
 
 /*!
@@ -85,5 +98,6 @@ void WlanQtUtilsScan::scanWlanDirect(const QString &ssid)
 
 void WlanQtUtilsScan::stopScan()
 {
-    d_ptr->StopScan();
+    d_ptrIap->StopScan();
+    d_ptrAp->StopScan();
 }

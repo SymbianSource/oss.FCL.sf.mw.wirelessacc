@@ -17,8 +17,8 @@
 
 // System includes
 
-#include <QLocale>
-#include <QCoreApplication>
+#include <HbTranslator>
+#include <QScopedPointer>
 #include <cpitemdatahelper.h>
 #include <cpsettingformitemdata.h>
 
@@ -49,13 +49,11 @@
 */
 
 CpWlanSettingsPlugin::CpWlanSettingsPlugin() :
-    QObject()
+    QObject(),
+    mTranslator(new HbTranslator("cpwlansettingsplugin"))
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_ENTRY, this);
-    
-    translator = new QTranslator(this);
-    
-    OstTraceFunctionExit1(CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_EXIT, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_ENTRY );
+    OstTraceFunctionExit0( CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_EXIT );
 }
 
 /*!
@@ -64,9 +62,8 @@ CpWlanSettingsPlugin::CpWlanSettingsPlugin() :
 
 CpWlanSettingsPlugin::~CpWlanSettingsPlugin()
 {
-
-    OstTraceFunctionEntry1(DUP1_CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_ENTRY, this);
-    OstTraceFunctionExit1(DUP1_CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_EXIT, this);
+    OstTraceFunctionEntry0( DUP1_CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_ENTRY );
+    OstTraceFunctionExit0( DUP1_CPWLANSETTINGSPLUGIN_CPWLANSETTINGSPLUGIN_EXIT );
 }
 
 /*!
@@ -76,18 +73,12 @@ CpWlanSettingsPlugin::~CpWlanSettingsPlugin()
 QList<CpSettingFormItemData*> CpWlanSettingsPlugin::createSettingFormItemData(
         CpItemDataHelper &itemDataHelper) const
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSPLUGIN_CREATESETTINGFORMITEMDATA_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSPLUGIN_CREATESETTINGFORMITEMDATA_ENTRY );
     
-    // Locale
-    QString lang = QLocale::system().name(); 
-    QString path = "Z:/resource/qt/translations/"; 
-    translator->load("cpwlansettingsplugin_" + lang, path); 
-    qApp->installTranslator(translator);
-
     QList<CpSettingFormItemData*> settingFormData;
     settingFormData.append(new CpWlanSettingsGroupItemData(itemDataHelper));
     
-    OstTraceFunctionExit1(CPWLANSETTINGSPLUGIN_CREATESETTINGFORMITEMDATA_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSPLUGIN_CREATESETTINGFORMITEMDATA_EXIT );
     return settingFormData;
     
 }

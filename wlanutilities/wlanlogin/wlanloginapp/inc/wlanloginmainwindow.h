@@ -43,6 +43,7 @@ public:
     ~WlanLoginMainWindow();
 
     WlanLoginView* loginView() const;
+    WlanLoginApplication* application() const;
 
 private:
     void addLoginView();

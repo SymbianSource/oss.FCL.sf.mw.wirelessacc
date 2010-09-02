@@ -121,13 +121,6 @@ WlanLoginApplication::WlanLoginApplication(int argc, char* argv[]) :
     Q_ASSERT(connectStatus == true);
     
     connectStatus = connect(
-        mMainWindow->loginView(),
-        SIGNAL(continueTriggered()),
-        mEngine, 
-        SLOT(handleContinueTriggered()));    
-    Q_ASSERT(connectStatus == true);
-    
-    connectStatus = connect(
         mMainWindow.data(),
         SIGNAL(orientationChanged(Qt::Orientation)),
         mMainWindow->loginView(),

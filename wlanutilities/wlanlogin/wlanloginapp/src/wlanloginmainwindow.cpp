@@ -70,7 +70,7 @@ void WlanLoginMainWindow::addLoginView()
 {
     OstTraceFunctionEntry0(WLANLOGINMAINWINDOW_ADDLOGINVIEW_ENTRY);
 
-    mLoginView = new WlanLoginView(mAppRef);
+    mLoginView = new WlanLoginView(this);
     addView(mLoginView);
 
     OstTraceFunctionExit0(WLANLOGINMAINWINDOW_ADDLOGINVIEW_EXIT);
@@ -87,3 +87,15 @@ WlanLoginView* WlanLoginMainWindow::loginView() const
     
     return mLoginView;
 }
+
+/*!
+    This function returns pointer to application instance
+ */
+WlanLoginApplication* WlanLoginMainWindow::application() const
+{
+    OstTraceFunctionEntry0(WLANLOGINMAINWINDOW_APPLICATION_ENTRY); 
+    OstTraceFunctionExit0(WLANLOGINMAINWINDOW_APPLICATION_EXIT);
+    
+    return mAppRef;
+}
+

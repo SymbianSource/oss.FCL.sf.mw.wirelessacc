@@ -30,6 +30,7 @@
 #include "ictsqtwrapper.h"
 
 // Forward declarations
+class HbDocumentLoader;
 class HbProgressBar;
 class WlanLoginWebView;
 class QNetworkAccessManager;
@@ -45,7 +46,7 @@ class WlanLoginView : public HbView
     Q_OBJECT
     
 public:
-    WlanLoginView(WlanLoginApplication* appref);
+    WlanLoginView(WlanLoginMainWindow* mainWindow);
     virtual ~WlanLoginView();
     
     /*!
@@ -53,10 +54,11 @@ public:
     */ 
     enum ActionType {
         Cancel,     //!< "Cancel" button
-        Next,       //!< "Next" button
-        Continue    //!< "Continue" button
+        Next       //!< "Next" button
     };
-    void setActiveToolBarAction(ActionType newAction);
+    
+private:
+    void loadDocml();
     
 private slots:
 
@@ -68,38 +70,32 @@ private slots:
     void handleLoadStarted();
     void handleLoadProgress(int progressValue);
     void handleLoadFinished(bool status );
-
     void handleFormSubmitted();
     void handleCancelAction();
     void handleNextAction();
-    void handleContinueAction();
-    
     void handleIctsOk();
     
 signals:
     void cancelTriggered();
     void nextTriggered();
-    void continueTriggered();
+
     void startIcts();
     
 private: // Data
     
     // Not owned data
-    WlanLoginApplication* mAppRef;  //!< pointer to application instance 
+    WlanLoginMainWindow* mMainWindow;  //!< pointer to main window instance
 
     // Owned data
 
-    QGraphicsLinearLayout* mMainLayout; //!< pointer to main layout
-    QGraphicsLinearLayout* mContentLayout; //!< pointer to scroall area content layout
+    QScopedPointer<HbDocumentLoader> mDocLoader; //! Document loader for list view
     
     HbProgressBar* mProgressBar;    //!< pointer to HB progressbar  
-    HbScrollArea* mScrollArea;      //!< pointer to HB scroll area
-    HbWidget* mScrollAreaContent;
+    HbWidget* mScrollAreaContent;   //!< pointer to scroll are content
     WlanLoginWebView* mWebView;     //!< pointer to web view
-    HbToolBar* mToolBar;            //!< pointer to HB toolbar
     HbAction* mCancelAction;        //!< pointer to "cancel" action 
     HbAction* mNextAction;          //!< pointer to "next" action
-    HbAction* mContinueAction;      //!< pointer to "continue" action
+    bool mFirstIctsOkResult;         //!< Variable for controlling automatic background sending
 
     };
 

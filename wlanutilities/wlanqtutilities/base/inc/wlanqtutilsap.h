@@ -53,8 +53,6 @@ public:
     
     /*!
         Configuration IDs that can be read and set in this class.
-        Remember to update traces/trace.properties file when modifying
-        this enum (tracing is also the cause for fixing the enum values).
 
         ConfID's available for scan results:
         - ConfIdSsid
@@ -78,6 +76,7 @@ public:
         - ConfIdWpaPskUse
         - ConfIdWpaPsk      (Empty if not used)
         - ConfIdHidden
+        - ConfIdWlanScanSSID
     */
     enum ConfId {
         //! QString: WLAN Network Name (SSID)
@@ -113,10 +112,12 @@ public:
         ConfIdWepKey4 = 10,
         //! int: (CMManagerShim::WlanWepKeyIndex): Default WEP Key index
         ConfIdWepDefaultIndex = 11,
-        //! bool: Is WLAN hidden (CMManager::ECmHidden).
+        //! bool: Is WLAN hidden (CMManagerShim::CmHidden).
         ConfIdHidden = 12,
+        //! bool: Does WLAN AP need explicit scanning (CMManagerShim::WlanScanSSID)
+        ConfIdWlanScanSSID = 13,
         //! bool: true - Wifi Protected setup is supported, false - not
-        ConfIdWpsSupported = 13
+        ConfIdWpsSupported = 14
     };
 
     /*!

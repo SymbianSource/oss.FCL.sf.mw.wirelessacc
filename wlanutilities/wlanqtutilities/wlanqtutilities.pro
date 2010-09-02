@@ -68,12 +68,14 @@ symbian: {
         wrapper/inc/wlanqtutilsconmonwrapperdisconnect_symbian.h \
         wrapper/inc/wlanqtutilsconmonwrapperinfo_symbian.h \
         wrapper/inc/wlanqtutilsesockwrapper_symbian.h \
-        wrapper/inc/wlanqtutilsscan_symbian.h
+        wrapper/inc/wlanqtutilsscanap_symbian.h \
+        wrapper/inc/wlanqtutilsscaniap_symbian.h
     SOURCES += \
         wrapper/src/wlanqtutilsconmonwrapperdisconnect_symbian.cpp \
         wrapper/src/wlanqtutilsconmonwrapperinfo_symbian.cpp \
         wrapper/src/wlanqtutilsesockwrapper_symbian.cpp \
-        wrapper/src/wlanqtutilsscan_symbian.cpp
+        wrapper/src/wlanqtutilsscanap_symbian.cpp \
+        wrapper/src/wlanqtutilsscaniap_symbian.cpp
 
     TARGET.CAPABILITY = CAP_GENERAL_DLL
     TARGET.EPOCALLOWDLLDATA = 1

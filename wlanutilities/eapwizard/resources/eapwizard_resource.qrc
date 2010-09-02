@@ -1,9 +1,9 @@
 <RCC>
     <qresource prefix="/docml" >
-        <file>occ_eap_wizard_01_02_04.docml</file>
-        <file>occ_eap_wizard_03.docml</file>
-        <file>occ_eap_wizard_05_07.docml</file>
-        <file>occ_eap_wizard_06.docml</file>
-        <file>occ_eap_wizard_08.docml</file>
+        <file alias="occ_eap_wizard_01_02_04.docml">occ_eap_wizard_01_02_04.docml.bin</file>
+        <file alias="occ_eap_wizard_03.docml">occ_eap_wizard_03.docml.bin</file>
+        <file alias="occ_eap_wizard_05_07.docml">occ_eap_wizard_05_07.docml.bin</file>
+        <file alias="occ_eap_wizard_06.docml">occ_eap_wizard_06.docml.bin</file>
+        <file alias="occ_eap_wizard_08.docml">occ_eap_wizard_08.docml.bin</file>
     </qresource>
 </RCC>

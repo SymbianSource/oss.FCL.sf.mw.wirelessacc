@@ -20,7 +20,7 @@
 #include "wlanmgmtclient.h"
 
 // ---------------------------------------------------------
-// CWlanScanRequest::NewL
+// CWlanMgmtClient::NewL
 // ---------------------------------------------------------
 //
 CWlanMgmtClient* CWlanMgmtClient::NewL()
@@ -30,7 +30,7 @@ CWlanMgmtClient* CWlanMgmtClient::NewL()
     }
     
 // ---------------------------------------------------------
-// CWlanScanRequest::~CWlanMgmtClient
+// CWlanMgmtClient::~CWlanMgmtClient
 // ---------------------------------------------------------
 //
 CWlanMgmtClient::~CWlanMgmtClient()
@@ -38,7 +38,7 @@ CWlanMgmtClient::~CWlanMgmtClient()
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::CWlanMgmtClient
+// CWlanMgmtClient::CWlanMgmtClient
 // ---------------------------------------------------------
 //
 CWlanMgmtClient::CWlanMgmtClient()
@@ -46,7 +46,7 @@ CWlanMgmtClient::CWlanMgmtClient()
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::GetScanResults
+// CWlanMgmtClient::GetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::GetScanResults(
@@ -62,7 +62,7 @@ void CWlanMgmtClient::GetScanResults(
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::GetScanResults
+// CWlanMgmtClient::GetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::GetScanResults(
@@ -70,19 +70,49 @@ void CWlanMgmtClient::GetScanResults(
     TRequestStatus& aStatus,
     CWlanScanInfo& aResults )
     {
+    (void)aSsid;
+    (void)aResults;
+
     // Complete the request immediately
     TRequestStatus *status = &aStatus;
     User::RequestComplete(status, KErrNone);
     
     // Results are returned when asked per AP
-    (void)aSsid;
-    (void)aResults;
     }
 
 // ---------------------------------------------------------
-// CWlanScanRequest::CancelGetScanResults
+// CWlanMgmtClient::CancelGetScanResults
 // ---------------------------------------------------------
 //
 void CWlanMgmtClient::CancelGetScanResults()
+    {
+    }
+
+// ---------------------------------------------------------
+// CWlanMgmtClient::GetAvailableIaps
+// ---------------------------------------------------------
+//
+void CWlanMgmtClient::GetAvailableIaps(
+    TInt& aCacheLifetime,
+    TUint& aMaxDelay,
+    TBool aFilteredResults,
+    TRequestStatus& aStatus,
+    RArray<TWlanIapAvailabilityData>& aAvailableIaps )
+    {
+    (void)aCacheLifetime;
+    (void)aMaxDelay;
+    (void)aFilteredResults;
+    (void)aAvailableIaps;
+    
+    // Complete the request immediately
+    TRequestStatus *status = &aStatus;
+    User::RequestComplete(status, KErrNone);
+    }
+
+// ---------------------------------------------------------
+// CWlanMgmtClient::CancelGetAvailableIaps
+// ---------------------------------------------------------
+//
+void CWlanMgmtClient::CancelGetAvailableIaps()
     {
     }

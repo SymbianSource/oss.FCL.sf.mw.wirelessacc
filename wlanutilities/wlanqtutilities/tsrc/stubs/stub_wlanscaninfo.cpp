@@ -83,7 +83,7 @@ TBool CWlanScanInfo::IsDone() const
     
     // Iterating is complete when iterator is one past the last item
     if (testContext.mScan.mScanResultIterator >=
-        testContext.mScan.mWlanScanResultList.count()) {
+        testContext.mScan.mWlanScanApResultList.count()) {
         result = ETrue;
     }
     
@@ -159,11 +159,12 @@ TInt CWlanScanInfo::InformationElement(
     (void)aIE;
     
     // Cypy the SSID
+    ssidBuffer.SetLength(0);
     QString ssid = ap->value(WlanQtUtilsAp::ConfIdSsid).toString();
-    QByteArray ssidData(ssid.toUtf8());
-    ssidBuffer.Copy(
-        (TUint8*)ssidData.data(),
-        ssidData.length());
+    for (int i = 0; i < ssid.length(); i++) {
+        QChar character = ssid[i];
+        ssidBuffer.Append((TUint8)(character.unicode() & 0x000000FF));
+    }
 
     // Give reference to the buffer to the caller
     *aData = ssidBuffer.Ptr();
@@ -279,7 +280,7 @@ QSharedPointer<WlanQtUtilsAp> CWlanScanInfo::GetCurrentAp() const
     
     // Get the currently iterated AP
     QSharedPointer<WlanQtUtilsAp> ap(
-        testContext.mScan.mWlanScanResultList[
+        testContext.mScan.mWlanScanApResultList[
             testContext.mScan.mScanResultIterator]);
     
     return ap;

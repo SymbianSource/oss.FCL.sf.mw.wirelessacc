@@ -25,6 +25,7 @@
 #include <xqservicelog.h>
 #endif
 #include <xqappmgr.h>
+#include <xqaiwdecl.h>
 #include <xqaiwdeclplat.h>
 
 // This workaround can be removed when XQOP_WLAN_SNIFFER is correctly
@@ -77,7 +78,7 @@ CpWlanEntryItemData::CpWlanEntryItemData(CpItemDataHelper &itemDataHelper) :
         SIGNAL(statusUpdated()),
         this,
         SLOT(statusUpdate()));
-    Q_ASSERT(connectStatus == true);
+    Q_ASSERT(connectStatus);
     
     // Update to show initial WLAN status.
     statusUpdate();
@@ -124,8 +125,7 @@ CpBaseSettingView *CpWlanEntryItemData::createSettingView() const
     
     // Window title needs to be set to "Control Panel"
     XQRequestInfo reqInfo;
-    // TODO: Start using the official define when available
-    reqInfo.setInfo("WindowTitle", hbTrId("txt_cp_title_control_panel"));
+    reqInfo.setInfo(XQINFO_KEY_WINDOW_TITLE, hbTrId("txt_cp_title_control_panel"));
     request->setInfo(reqInfo);
     
     bool status = request->send();

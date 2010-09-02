@@ -12,26 +12,24 @@
 * Contributors:
 *
 * Description: 
-* Symbian platform specific implementation of WLAN scanning.
+* Symbian platform specific implementation of WLAN IAP scanning.
 */
 
-#ifndef WLANQTUTILSSCAN_SYMBIAN_H
-#define WLANQTUTILSSCAN_SYMBIAN_H
+#ifndef WLANQTUTILSSCANIAP_SYMBIAN_H
+#define WLANQTUTILSSCANIAP_SYMBIAN_H
 
 // System includes
 
 #include <wlanmgmtclient.h>
-#include <QString>
 #include <QSharedPointer>
 
 // User includes
 
-#include "wlanqtutilsap.h"
+#include "wlanqtutilsiap.h"
 
 // Forward declarations
 
 class CWlanMgmtClient;
-class CWlanScanInfo;
 class WlanQtUtilsScan;
 
 // External data types
@@ -40,21 +38,19 @@ class WlanQtUtilsScan;
 
 // Class declaration
 
-class WlanQtUtilsScanPrivate : public CActive
+class WlanQtUtilsScanIapPrivate : public CActive
 {
 
 public:
 
     // Data types
 
-    static WlanQtUtilsScanPrivate *NewL(WlanQtUtilsScan *q_ptr);
+    static WlanQtUtilsScanIapPrivate *NewL(WlanQtUtilsScan *wrapper);
     
-    ~WlanQtUtilsScanPrivate();
+    ~WlanQtUtilsScanIapPrivate();
 
-    void Scan();
-    
-    void Scan(const QString &ssid);
-    
+    void ScanIaps();
+
     void StopScan();
     
 protected:
@@ -65,20 +61,12 @@ protected:
 
 private:
 
-    explicit WlanQtUtilsScanPrivate(WlanQtUtilsScan *q_ptr);
+    explicit WlanQtUtilsScanIapPrivate(WlanQtUtilsScan *wrapper);
 
     void ConstructL();
 
     void ExtractScanResults(
-        QList< QSharedPointer<WlanQtUtilsAp> > &scanResults);
-    
-    QString ExtractSsid();
-    
-    QByteArray ExtractBssid();
-    
-    void StoreSecMode(
-        QSharedPointer<WlanQtUtilsAp> ap,
-        TUint wlanSecMode);
+        QList< QSharedPointer<WlanQtUtilsIap> > &scanResults);
 
 private: // data
     
@@ -90,15 +78,18 @@ private: // data
     //! WLAN Management Client
     CWlanMgmtClient *mWlanMgmtClient;
 
-    //! Scanned SSID
-    TWlanSsid mWlanSsid;
+    //! Accepted cache lifetime
+    TInt mCacheLifetime;
+    
+    //! Accepted maximum delay
+    TUint mMaxDelay;
     
     //! Scan results
-    CWlanScanInfo *mResults;
+    RArray<TWlanIapAvailabilityData> mAvailableIaps;
 
     // Not owned data
     
     // Friend classes
 };
 
-#endif // WLANQTUTILSSCAN_SYMBIAN_H
+#endif // WLANQTUTILSSCANIAP_SYMBIAN_H

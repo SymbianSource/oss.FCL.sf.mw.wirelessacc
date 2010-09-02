@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:
+* WLAN Wizard UT.
+*/
 
 // System includes
 #include <QTest>
@@ -20,6 +21,7 @@
 #include <QList>
 #include <cmmanagerdefines_shim.h>
 #include <wlanerrorcodes.h>
+#include <HbParameterLengthLimiter>
 
 // User includes
 #include "testwlanwizardeap.h"
@@ -61,7 +63,8 @@ void TestWlanWizardEap::tc_eap_outer_page_orientation_change()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -112,7 +115,8 @@ void TestWlanWizardEap::tc_eap_leap()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -190,7 +194,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanUserRejected()
 #ifdef tc_eap_aka_connect_KErrWlanUserRejected_enabled
     tc_eap_aka_connect_error(
         KErrWlanUserRejected,
-        hbTrId("txt_occ_dialog_1_auth_failed_user_cert_rej").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_auth_failed_user_cert_rej").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -200,7 +204,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanUserCertificateExpired()
 #ifdef tc_eap_aka_connect_KErrWlanUserCertificateExpired_enabled
     tc_eap_aka_connect_error(
         KErrWlanUserCertificateExpired,
-        hbTrId("txt_occ_dialog_1_auth_failed_user_cert_exp").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_auth_failed_user_cert_exp").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -210,7 +214,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanServerCertificateExpired()
 #ifdef tc_eap_aka_connect_KErrWlanServerCertificateExpired_enabled
     tc_eap_aka_connect_error(
         KErrWlanServerCertificateExpired,
-        hbTrId("txt_occ_dialog_1_authentication_failed_server_ce").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed_server_ce").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -220,7 +224,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanCerficateVerifyFailed()
 #ifdef tc_eap_aka_connect_KErrWlanCerficateVerifyFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanCerficateVerifyFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed_could_not").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed_could_not").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif    
 }
@@ -230,7 +234,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanNoCipherSuite()
 #ifdef tc_eap_aka_connect_KErrWlanNoCipherSuite_enabled
     tc_eap_aka_connect_error(
         KErrWlanNoCipherSuite,
-        hbTrId("txt_occ_dialog_1_authentication_failed_cipher_su").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed_cipher_su").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif     
 }
@@ -240,7 +244,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanSimNotInstalled()
 #ifdef tc_eap_aka_connect_KErrWlanSimNotInstalled_enabled
     tc_eap_aka_connect_error(
         KErrWlanSimNotInstalled,
-        hbTrId("txt_occ_dialog_1_authentication_failed_check_sim").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed_check_sim").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif      
 }
@@ -250,7 +254,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastPacStoreCorrupted()
 #ifdef tc_eap_aka_connect_KErrWlanEapFastPacStoreCorrupted_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastPacStoreCorrupted,
-        hbTrId("txt_occ_dialog_1_authentication_failed_reset_pac").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed_reset_pac").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapFast)));
 #endif      
 }
@@ -260,7 +264,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapSimFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapSimFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapSimFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif      
 }
@@ -270,7 +274,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanNotSubscribed()
 #ifdef tc_eap_aka_connect_KErrWlanNotSubscribed_enabled
     tc_eap_aka_connect_error(
         KErrWlanNotSubscribed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif      
 }
@@ -289,7 +293,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapTlsFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapTlsFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapTlsFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -298,7 +302,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapPeapFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapPeapFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapPeapFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -308,7 +312,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapAkaFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapAkaFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapAkaFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -318,7 +322,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapTtlsFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapTtlsFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapTtlsFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -328,7 +332,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanLeapFailed()
 #ifdef tc_eap_aka_connect_KErrWlanLeapFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanLeapFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -338,7 +342,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanNoUserCertificate()
 #ifdef tc_eap_aka_connect_KErrWlanNoUserCertificate_enabled 
     tc_eap_aka_connect_error(
         KErrWlanNoUserCertificate,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -348,7 +352,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastTunnelCompromiseError(
 #ifdef tc_eap_aka_connect_KErrWlanEapFastTunnelCompromiseError_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastTunnelCompromiseError,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -358,7 +362,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastUnexpextedTlvExhanged(
 #ifdef tc_eap_aka_connect_KErrWlanEapFastUnexpextedTlvExhanged_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastUnexpextedTlvExhanged,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -368,7 +372,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastNoPacNorCertsToAuthent
 #ifdef tc_eap_aka_connect_KErrWlanEapFastNoPacNorCertsToAuthenticateWithProvDisabled_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastNoPacNorCertsToAuthenticateWithProvDisabled,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -378,7 +382,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastNoMatchingPacForAid()
 #ifdef tc_eap_aka_connect_KErrWlanEapFastNoMatchingPacForAid_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastNoMatchingPacForAid,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -388,7 +392,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanEapFastAuthFailed()
 #ifdef tc_eap_aka_connect_KErrWlanEapFastAuthFailed_enabled
     tc_eap_aka_connect_error(
         KErrWlanEapFastAuthFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -398,7 +402,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanAccessBarred()
 #ifdef tc_eap_aka_connect_KErrWlanAccessBarred_enabled
     tc_eap_aka_connect_error(
         KErrWlanAccessBarred,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -408,7 +412,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanPasswordExpired()
 #ifdef tc_eap_aka_connect_KErrWlanPasswordExpired_enabled
     tc_eap_aka_connect_error(
         KErrWlanPasswordExpired,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -418,7 +422,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanNoDialinPermissions()
 #ifdef tc_eap_aka_connect_KErrWlanNoDialinPermissions_enabled
     tc_eap_aka_connect_error(
         KErrWlanNoDialinPermissions,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -428,7 +432,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanAccountDisabled()
 #ifdef tc_eap_aka_connect_KErrWlanAccountDisabled_enabled
     tc_eap_aka_connect_error(
         KErrWlanAccountDisabled,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));
 #endif
 }
@@ -438,7 +442,7 @@ void TestWlanWizardEap::tc_eap_aka_connect_KErrWlanRestrictedLogonHours()
 #ifdef tc_eap_aka_connect_KErrWlanRestrictedLogonHours_enabled
     tc_eap_aka_connect_error(
         KErrWlanRestrictedLogonHours,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapAka)));    
 #endif
 }
@@ -450,7 +454,7 @@ void TestWlanWizardEap::tc_eap_ttls_mschapv2_connect_KErrWlanEapGtcFailed()
         EapQtPluginHandle::PluginEapTtls, 
         EapQtPluginHandle::PluginPlainMschapv2,
         KErrWlanEapGtcFailed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginPlainMschapv2)));
 #endif
 }
@@ -462,7 +466,7 @@ void TestWlanWizardEap::tc_eap_ttls_mschapv2_connect_KErrWlanEapMsChapv2()
         EapQtPluginHandle::PluginEapTtls, 
         EapQtPluginHandle::PluginPlainMschapv2,
         KErrWlanEapMsChapv2,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginPlainMschapv2)));
 #endif
 }
@@ -474,7 +478,7 @@ void TestWlanWizardEap::tc_eap_ttls_mschapv2_connect_KErrWlanNotSubscribed()
         EapQtPluginHandle::PluginEapTtls, 
         EapQtPluginHandle::PluginPlainMschapv2,
         KErrWlanNotSubscribed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginPlainMschapv2)));
 #endif
 }
@@ -486,7 +490,7 @@ void TestWlanWizardEap::tc_eap_ttls_gtc_back_and_forward()
         EapQtPluginHandle::PluginEapTtls, 
         EapQtPluginHandle::PluginEapGtc,
         KErrWlanNotSubscribed,
-        hbTrId("txt_occ_dialog_1_authentication_failed").arg(
+        HbParameterLengthLimiter("txt_occ_dialog_1_authentication_failed").arg(
             eapTypeToString(EapQtPluginHandle::PluginEapGtc)));
     
     // Go back to outertype selection page
@@ -554,7 +558,8 @@ void TestWlanWizardEap::tc_eap_aka_set_outer_type_fails()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -588,7 +593,8 @@ void TestWlanWizardEap::tc_eap_aka_save_outer_configuration_fails()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -621,7 +627,8 @@ void TestWlanWizardEap::tc_eap_aka_set_configuration_reference_fails()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -686,7 +693,8 @@ void TestWlanWizardEap::tc_eap_peap_identity_validators()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -771,7 +779,8 @@ void TestWlanWizardEap::tc_eap_leap_user_password_validators()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -825,7 +834,8 @@ void TestWlanWizardEap::tc_eap_tls_no_user_certificate()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -868,7 +878,8 @@ void TestWlanWizardEap::tc_eap_tls_one_user_certificate_with_ca_selection()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -931,7 +942,8 @@ void TestWlanWizardEap::tc_eap_tls_two_user_certificates()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -996,7 +1008,8 @@ void TestWlanWizardEap::tc_eap_tls_back_and_forward_certs_with_cert_update()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     verify_outertype_select_first(ButtonDisabled);
@@ -1139,7 +1152,8 @@ void TestWlanWizardEap::tc_eap_fast_new_store_and_validators()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     EapQtValidatorStub *validator = (EapQtValidatorStub*)mEapQtUtilsContext->validatorPacStore(
@@ -1194,7 +1208,8 @@ void TestWlanWizardEap::tc_eap_fast_new_store_back_and_forwards()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -1261,7 +1276,8 @@ void TestWlanWizardEap::tc_eap_fast_confirm_store_and_validators()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     EapQtValidatorStub *validator = (EapQtValidatorStub*)mEapQtUtilsContext->validatorPacStore(
@@ -1291,6 +1307,7 @@ void TestWlanWizardEap::tc_eap_fast_confirm_store_and_validators()
     QCOMPARE( mouseClickObject("labelError"), true );
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonEnabled, ButtonHidden), true );
+    QTest::qWait(WaitTimeForUi);
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( verifyDialogText("labelError", hbTrId("txt_occ_info_incorrect_password")), false);
     
@@ -1324,7 +1341,8 @@ void TestWlanWizardEap::tc_eap_fast_confirm_store_back_and_forwards()
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -1596,7 +1614,8 @@ void TestWlanWizardEap::tc_eap_aka_sim(int type)
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecMode802_1x, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -1663,7 +1682,8 @@ void TestWlanWizardEap::tc_eap_peap_ttls(
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -1719,7 +1739,8 @@ void TestWlanWizardEap::tc_eap_aka_connect_error(
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     
@@ -1774,7 +1795,8 @@ void TestWlanWizardEap::tc_eap_fast(
         ssid, 
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
-        false, false, false);
+        false,
+        false);
 
     mView->showWizard();
     

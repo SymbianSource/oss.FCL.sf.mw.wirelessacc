@@ -29,6 +29,14 @@ RCC_DIR = build
 
 RESOURCES += resources/resource.qrc
 
+DOCML += \
+    resources/occ_wlan_wizard_main.docml \
+    resources/occ_add_wlan_05.docml \
+    resources/occ_add_wlan_06.docml \
+    resources/occ_add_wlan_02_03.docml \
+    resources/occ_add_wlan_01_04.docml \
+    resources/occ_add_wlan_error.docml
+
 TRANSLATIONS = wlanwizard.ts
 
 HEADERS += \

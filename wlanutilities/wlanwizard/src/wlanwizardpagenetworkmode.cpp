@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard Page: Network mode Selection.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard Page: Network mode Selection.
+*/
 
 // System includes
 #include <HbDocumentLoader>
@@ -141,13 +140,16 @@ int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
         setting.hidden = mIsHidden.at(index);
         setting.wpsSupported = mWpsSupported.at(index);
 
-        mWizard->setConfiguration(WlanWizardPrivate::ConfNetworkMode,
+        mWizard->setConfiguration(
+            WlanWizardPrivate::ConfNetworkMode,
             setting.mode);
 
-        mWizard->setConfiguration(WlanWizardPrivate::ConfHiddenWlan,
+        mWizard->setConfiguration(
+            WlanWizardPrivate::ConfWlanScanSSID,
             setting.hidden);
         
-        mWizard->setConfiguration(WlanWizardPrivate::ConfWpsSupported,
+        mWizard->setConfiguration(
+            WlanWizardPrivate::ConfWpsSupported,
             setting.wpsSupported);
 
         if (mWizard->configurationExists(WlanWizardPrivate::ConfAvailableNetworkOptions)) {
@@ -317,4 +319,3 @@ int WlanWizardPageNetworkMode::selectNextPage(const WlanNetworkSetting &setting)
     OstTraceFunctionExit0( DUP1_WLANWIZARDPAGENETWORKMODE_SELECTNEXTPAGE_EXIT );
     return nextPage;
 }
-

@@ -89,9 +89,6 @@ HbWidget* WpsPageStepThreeButton::initializePage()
         mLoader->load(":/docml/occ_wps_02_03.docml", &ok);
         Q_ASSERT(ok);
         
-        // Initialize orientation
-        loadDocmlSection(mWizard->mainWindow()->orientation());
-
         mWidget = qobject_cast<HbWidget*> (mLoader->findWidget("occ_wps_P2"));
         Q_ASSERT(mWidget);
 
@@ -99,13 +96,6 @@ HbWidget* WpsPageStepThreeButton::initializePage()
         Q_ASSERT(mHeading);
         
         mHeading->setPlainText(hbTrId("txt_occ_dialog_first_press_button_on_the_wireless"));
-        
-        bool connectOk = connect(
-            mWizard->mainWindow(), 
-            SIGNAL(orientationChanged(Qt::Orientation)),
-            this, 
-            SLOT(loadDocmlSection(Qt::Orientation)));
-       Q_ASSERT(connectOk);
     } 
     
     OstTraceFunctionExit1(WPSPAGESTEPTHREEBUTTON_INITIALIZEPAGE_EXIT, this);
@@ -142,24 +132,5 @@ int WpsPageStepThreeButton::previousTriggered()
     return (PageWpsWizardStep3_Button - PageWpsWizardStep2);
 }
 
-/*!
-   Loads docml at initialization phase and when HbMainWindow sends 
-   orientation() signal.
-   
-   @param [in] orientation orientation to be loaded.
- */
-void WpsPageStepThreeButton::loadDocmlSection(Qt::Orientation orientation)
-{
-    bool ok = false;
-    
-    // Load the orientation specific section
-    if (orientation == Qt::Horizontal) {
-        mLoader->load(":/docml/occ_wps_02_03.docml", "landscape", &ok);
-        Q_ASSERT(ok);
-    } else {
-        Q_ASSERT(orientation == Qt::Vertical);
-        mLoader->load(":/docml/occ_wps_02_03.docml", "portrait", &ok);
-        Q_ASSERT(ok);
-    }
-}
+
 

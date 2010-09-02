@@ -61,6 +61,8 @@ HEADERS += \
 
 RESOURCES = res/wlansniffer.qrc
 
+DOCML += res/wlansnifferlistview.docml
+
 SERVICE.FILE = res/service_conf.xml
 SERVICE.OPTIONS = embeddable
 

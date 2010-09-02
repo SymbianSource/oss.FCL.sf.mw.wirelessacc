@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WPS Wizard Page: Step 4 progress bar display
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WPS Wizard Page: Step 4 progress bar display
+*/
 
 //System Includes
 
@@ -53,13 +52,14 @@ WpsPageStepFourPrivate::WpsPageStepFourPrivate(WpsPageStepFour* pageStepFour) :
     mWpsActiveRunner(NULL), 
     q_ptr(pageStepFour)
 {
-    OstTraceFunctionEntry1( WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_ENTRY, this );
+    OstTraceFunctionEntry1(WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_ENTRY, this);
+    
     // start the framework.
     CWpsActiveRunner* runner = NULL;
     QT_TRAP_THROWING(runner = CWpsActiveRunner::NewL(*this));
     mWpsActiveRunner.reset(runner);
     
-    OstTraceFunctionExit1( WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_EXIT, this );
+    OstTraceFunctionExit1(WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_EXIT, this);
 }
 
 /*!
@@ -67,8 +67,8 @@ WpsPageStepFourPrivate::WpsPageStepFourPrivate(WpsPageStepFour* pageStepFour) :
  */
 WpsPageStepFourPrivate::~WpsPageStepFourPrivate()
 {
-    OstTraceFunctionEntry1( DUP1_WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_ENTRY, this );
-    OstTraceFunctionExit1( DUP1_WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_EXIT, this );
+    OstTraceFunctionEntry1(DUP1_WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_ENTRY, this);
+    OstTraceFunctionExit1(DUP1_WPSPAGESTEPFOURPRIVATE_WPSPAGESTEPFOURPRIVATE_EXIT, this);
 }
 
 /*!
@@ -79,16 +79,18 @@ WpsPageStepFourPrivate::~WpsPageStepFourPrivate()
  */
 void WpsPageStepFourPrivate::StartSetup(QString ssid, int pin)
 {
-    OstTraceFunctionEntry1( WPSPAGESTEPFOURPRIVATE_STARTSETUP_ENTRY, this );
+    OstTraceFunctionEntry1(WPSPAGESTEPFOURPRIVATE_STARTSETUP_ENTRY, this);
+    
     TPtrC ptrName(reinterpret_cast<const TText*> (ssid.constData()));
 
     RBuf8 ssidName;
-    ssidName.Create(ptrName.Length());
+    QT_TRAP_THROWING(ssidName.CreateL(ptrName.Length()));
     ssidName.Copy(ptrName);
 
     mWpsActiveRunner->StartSetup(ssidName, pin);
     ssidName.Close();
-    OstTraceFunctionExit1( WPSPAGESTEPFOURPRIVATE_STARTSETUP_EXIT, this );
+    
+    OstTraceFunctionExit1(WPSPAGESTEPFOURPRIVATE_STARTSETUP_EXIT, this);
 }
 
 /*!
@@ -101,26 +103,24 @@ void WpsPageStepFourPrivate::WpsActiveRunnerStopped(
     QList<TWlanProtectedSetupCredentialAttribute>& aCredentials, 
     TInt aError)
 {
-    OstTraceFunctionEntry1( WPSPAGESTEPFOURPRIVATE_WPSACTIVERUNNERSTOPPED_ENTRY, this );
+    OstTraceFunctionEntry1(WPSPAGESTEPFOURPRIVATE_WPSACTIVERUNNERSTOPPED_ENTRY, this);
 
     // mWpsErrorCode = aError;
     if (aError == KErrNone) {
         q_ptr->setCredentials(aCredentials, aCredentials.count());
-    }
-    else if (aError == KErrCancel) {
+    } else if (aError == KErrCancel) {
         // operation was cancelled 
-
-    }
-    else {
+    } else {
         OstTrace1( 
             TRACE_ERROR, 
             WPSPAGESTEPFOURPRIVATE_WPSACTIVERUNNERSTOPPED_ERROR, 
             "WpsPageStepFourPrivate::WpsActiveRunnerStopped;Error=%d", 
-            aError );
+            aError);
         
         q_ptr->handleError(aError);
-    } 
-    OstTraceFunctionExit1( WPSPAGESTEPFOURPRIVATE_WPSACTIVERUNNERSTOPPED_EXIT, this );
+    }
+    
+    OstTraceFunctionExit1(WPSPAGESTEPFOURPRIVATE_WPSACTIVERUNNERSTOPPED_EXIT, this);
 }
 
 /*!
@@ -128,8 +128,10 @@ void WpsPageStepFourPrivate::WpsActiveRunnerStopped(
  */
 void WpsPageStepFourPrivate::Cancel()
 {
-    OstTraceFunctionEntry1( WPSPAGESTEPFOURPRIVATE_CANCEL_ENTRY, this );
+    OstTraceFunctionEntry1(WPSPAGESTEPFOURPRIVATE_CANCEL_ENTRY, this);
+    
     mWpsActiveRunner->DoCancel();
-    OstTraceFunctionExit1( WPSPAGESTEPFOURPRIVATE_CANCEL_EXIT, this );
+    
+    OstTraceFunctionExit1(WPSPAGESTEPFOURPRIVATE_CANCEL_EXIT, this);
 }
 

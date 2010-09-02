@@ -1,18 +1,19 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:
+* WLAN Wizard UT.
+*/
 
 // System includes
 #include <QTest>
@@ -62,6 +63,7 @@ void TestWlanWizardWps::tcConfigureManualOpen()
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
     ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
+    ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, false);
 
     // Default values
     ap.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
@@ -76,7 +78,8 @@ void TestWlanWizardWps::tcConfigureManualOpen()
         ssid,
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeOpen,
-        false, false, true);
+        false,
+        true);
         
     mView->showWizard();
     verifyModeSelection();
@@ -385,6 +388,7 @@ void TestWlanWizardWps::tcPushButton(
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, secModeCmm);
     ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
+    ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, false);
 
     // Default values
     ap.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
@@ -422,7 +426,8 @@ void TestWlanWizardWps::tcPushButton(
         ssid,
         CMManagerShim::Adhoc,
         CMManagerShim::WlanSecModeWep,
-        false, false, true);
+        false,
+        true);
         
     mView->showWizard();
     verifyModeSelection();
@@ -464,7 +469,8 @@ void TestWlanWizardWps::tcPinCode_failure(
         ssid,
         CMManagerShim::Adhoc,
         CMManagerShim::WlanSecModeWep,
-        false, false, true);
+        false,
+        true);
         
     mView->showWizard();
     verifyModeSelection();

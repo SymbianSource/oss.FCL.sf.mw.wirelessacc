@@ -18,11 +18,6 @@
 
 // System includes
 
-#include <HbGlobal>
-#include <HbDataFormModelItem>
-#include <HbLineEdit>
-#include <HbValidator>
-#include <HbMessageBox>
 #include <QStringList>
 #include <cpsettingformitemdata.h>
 
@@ -45,16 +40,16 @@
 // External function prototypes
 
 // Local constants
-/**  Maximum Value for Scan Interval. */
-const int KMaximumScanInterval = 30;
-/**  Minimum Value for Scan Interval. */
-const int KMinimumScanInterval = 0;
-/**  To Enable the setting of a widget propery. */
-const int KEnableOption = 1;
-/**  Maximum widgets allowed for this Item Data. */
-const int KMaxWidgets = 4;
-/**  Index of Slider widget for Scan Interval. */
-const int KSliderIndex = 2;
+
+//! To Enable the setting of a widget propery. */
+static const int KEnableOption = 1;
+//! Maximum widgets allowed for this Item Data. */
+static const int KMaxWidgets = 4;
+//! Index of Slider widget for Scan Interval. */
+static const int KSliderIndex = 2;
+//! Default value for user defined scan interval
+static const int KDefaultUserDefinedScanInterval = 5;
+
 
 // ======== MEMBER FUNCTIONS ========
 
@@ -68,13 +63,12 @@ CpWlanSettingsGroupItemData::CpWlanSettingsGroupItemData(
             "txt_occ_subhead_wlan_settings")),
             mItemDataHelper(itemDataHelper)
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_ENTRY, this);
-    
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_ENTRY );
+
     initialise();
-    
     createWlanSettingItems();
-    
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_EXIT, this);
+
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_EXIT );
 }
 
 /*!
@@ -83,8 +77,8 @@ CpWlanSettingsGroupItemData::CpWlanSettingsGroupItemData(
 
 CpWlanSettingsGroupItemData::~CpWlanSettingsGroupItemData()
 {
-    OstTraceFunctionEntry1(DUP1_CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_ENTRY, this);
-    OstTraceFunctionExit1(DUP1_CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_EXIT, this);
+    OstTraceFunctionEntry0( DUP1_CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_ENTRY );
+    OstTraceFunctionExit0( DUP1_CPWLANSETTINGSGROUPITEMDATA_CPWLANSETTINGSGROUPITEMDATA_EXIT );
 }
 
 /*!
@@ -93,19 +87,27 @@ CpWlanSettingsGroupItemData::~CpWlanSettingsGroupItemData()
 
 void CpWlanSettingsGroupItemData::initialise()
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_INITIALISE_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_INITIALISE_ENTRY );
     
     mWlanSettings.reset(new WlanSettings);
     
+    bool connectStatus = connect(
+        mWlanSettings.data(),
+        SIGNAL(devicePowerSavingUpdated()),
+        this,
+        SLOT(devicePowerSavingChanged()));
+    Q_ASSERT(connectStatus);
+
     //Error needs to be handled.
     int error = mWlanSettings->init();
     
     //Error needs to be handled.
     error = mWlanSettings->loadSettings();
-    
+
+    mUserDefinedScanInterval = KDefaultUserDefinedScanInterval;
     mUserDefinedItem = NULL;
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_INITIALISE_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_INITIALISE_EXIT );
 }
 
 /*!
@@ -114,7 +116,7 @@ void CpWlanSettingsGroupItemData::initialise()
 
 void CpWlanSettingsGroupItemData::createWlanSettingItems()
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_CREATEWLANSETTINITEMS_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_CREATEWLANSETTINGITEMS_ENTRY );
     
     mJoinWlanItem = new CpSettingFormItemData(
         HbDataFormModelItem::ComboBoxItem,
@@ -172,11 +174,17 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
 
     mScanNetworkItem->setContentWidgetData("currentIndex", scanType);
 
-    if (scanType == WlanSettings::EScanNetworkUserDefined) {
+    //In case of PSM mode for device user-defined value is not 
+    //allowed,make it automatic forcefully.
+    if (mWlanSettings->isDevicePowerSavingEnabled()) {
+        mScanNetworkItem->setContentWidgetData(
+            "currentIndex",
+            WlanSettings::EScanNetworkAuto);
+        mScanNetworkItem->setContentWidgetData("enabled", false);
+    } else if (scanType == WlanSettings::EScanNetworkUserDefined) {
         createScanIntervalItem();
-        this->appendChild(mUserDefinedItem);
     }
-
+    
     mPowerSavingItem = new CpSettingFormItemData(
         HbDataFormModelItem::ComboBoxItem,
         hbTrId("txt_occ_setlabel_power_saving"));
@@ -195,7 +203,7 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
 
     mPowerSavingItem->setContentWidgetData(
         "currentIndex",
-        mWlanSettings->isPowerSavingEnabled());
+        mWlanSettings->isWlanPowerSavingEnabled());
 
     mItemDataHelper.addConnection(
         mPowerSavingItem,
@@ -205,7 +213,7 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
 
     this->appendChild(mPowerSavingItem);
 
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_CREATEWLANSETTINITEMS_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_CREATEWLANSETTINGITEMS_EXIT );
 }
 
 /*!
@@ -214,143 +222,204 @@ void CpWlanSettingsGroupItemData::createWlanSettingItems()
 
 void CpWlanSettingsGroupItemData::createScanIntervalItem()
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_CREATESCANINTERVALITEM_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_CREATESCANINTERVALITEM_ENTRY );
     
-    mUserDefinedItem = new CpSettingFormItemData(
-        HbDataFormModelItem::SliderItem,
-        hbTrId("txt_occ_setlabel_scan_interval_minutes"));
-
-    mUserDefinedItem->setContentWidgetData("maximum", KMaximumScanInterval);
-    mUserDefinedItem->setContentWidgetData("minimum", KMinimumScanInterval);
-    mUserDefinedItem->setContentWidgetData("toolTipVisible", KEnableOption);
-    mUserDefinedItem->setContentWidgetData("tracking", KEnableOption);
-
-    mItemDataHelper.addConnection(
-        mUserDefinedItem,
-        SIGNAL(valueChanged (int)),
-        this,
-        SLOT(scanValueChanged (int)));
+    //Add Scan Interval Slider, if it doesn't already exist.
+    if (this->childCount() < KMaxWidgets) {
+        mUserDefinedItem = new CpSettingFormItemData(
+            HbDataFormModelItem::SliderItem,
+            hbTrId("txt_occ_setlabel_scan_interval_minutes"));
     
-    mItemDataHelper.addConnection(
-        mUserDefinedItem,
-        SIGNAL(sliderReleased ()),
-        this,
-        SLOT(scanSliderReleased ()));
+        mUserDefinedItem->setContentWidgetData("maximum", WlanSettings::ScanNetworkMax);
+        mUserDefinedItem->setContentWidgetData("minimum", WlanSettings::ScanNetworkMin);
+        mUserDefinedItem->setContentWidgetData("toolTipVisible", KEnableOption);
+        mUserDefinedItem->setContentWidgetData("tracking", KEnableOption);
     
-    mItemDataHelper.addConnection(
-        mUserDefinedItem,
-        SIGNAL(sliderPressed ()),
-        this,
-        SLOT(scanSliderPressed ()));
+        mItemDataHelper.addConnection(
+            mUserDefinedItem,
+            SIGNAL(valueChanged (int)),
+            this,
+            SLOT(scanValueChanged (int)));
+        
+        mItemDataHelper.addConnection(
+            mUserDefinedItem,
+            SIGNAL(sliderReleased ()),
+            this,
+            SLOT(scanSliderReleased ()));
+        
+        mItemDataHelper.addConnection(
+            mUserDefinedItem,
+            SIGNAL(sliderPressed ()),
+            this,
+            SLOT(scanSliderPressed ()));
 
-    mScanInterval = mWlanSettings->scanInterval();
-
-    mUserDefinedItem->setContentWidgetData("value", mScanInterval);
+        int interval = mWlanSettings->scanInterval();
+        if (interval == WlanSettings::ScanNetworkAuto) {
+            interval = mUserDefinedScanInterval;
+        }
+        mUserDefinedItem->setContentWidgetData("value", interval);
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_CREATESCANINTERVALITEM_EXIT, this);
+        this->insertChild(KSliderIndex, mUserDefinedItem);
+    }
+
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_CREATESCANINTERVALITEM_EXIT );
 }
 
 /*!
-    Slot for handling pressed singal of scan interval slider widget.
+    Removes the slider widget, if it exists.
+*/
+
+void CpWlanSettingsGroupItemData::removeScanIntervalItem()
+{
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_REMOVESCANINTERVALITEM_ENTRY );
+    
+    if (KMaxWidgets == this->childCount()) {
+        this->removeChild(KSliderIndex);
+        mUserDefinedItem = NULL;    //removeChild() will delete the item.
+    }
+
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_REMOVESCANINTERVALITEM_EXIT );
+}
+
+/*!
+    Slot for handling pressed signal of scan interval slider widget.
 */
 
 void CpWlanSettingsGroupItemData::scanSliderPressed()
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERPRESSED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERPRESSED_ENTRY );
+
+    int interval = mWlanSettings->scanInterval();
+    if (interval == WlanSettings::ScanNetworkAuto) {
+        interval = mUserDefinedScanInterval;
+    }
+    mUserDefinedItem->setContentWidgetData(
+        "text",
+        QString("%1").arg(interval));
     
-    mUserDefinedItem->setContentWidgetData("text",QString("%1").arg(mScanInterval));
-    
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERPRESSED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERPRESSED_EXIT );
 }
 
 /*!
-    Slot for handling value changed singal of scan interval slider widget.
+    Slot for handling value changed signal of scan interval slider widget.
 */
 
 void CpWlanSettingsGroupItemData::scanValueChanged(int value)
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_SCANVALUECHANGED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_SCANVALUECHANGED_ENTRY );
     
     mUserDefinedItem->setContentWidgetData("text",QString("%1").arg(value));
-    mScanInterval = value;
+    mUserDefinedScanInterval = value;
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_SCANVALUECHANGED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_SCANVALUECHANGED_EXIT );
 }
 
 /*!
-    Slot for handling Released singal of scan interval slider widget.
+    Slot for handling Released signal of scan interval slider widget.
     Current value will be commited to database.
 */
 
 void CpWlanSettingsGroupItemData::scanSliderReleased()
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERRELEASED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERRELEASED_ENTRY );
     
-    mWlanSettings->setWlanScanInterval(mScanInterval);
+    mWlanSettings->setWlanScanInterval(mUserDefinedScanInterval);
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERRELEASED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_SCANSLIDERRELEASED_EXIT );
 }
 
 /*!
-    Slot for handling item changed singal of Scan for network combo box widget.
+    Slot for handling item changed signal of Scan for network combo box widget.
 */
 
 void CpWlanSettingsGroupItemData::scanItemChanged(const QString &text)
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_SCANITEMCHANGED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_SCANITEMCHANGED_ENTRY );
     
     if (hbTrId("txt_occ_setlabel_scan_for_networks_val_userdefine") == text) {
-        //In case of PSM mode for device user-defined value is not 
-        //allowed,make it automatic forcefully.
-        if (mWlanSettings->isPsmEnabled()) {
-            //Need to check for dimming of the combobox option.
-            mScanNetworkItem->setContentWidgetData("currentIndex",
-                    WlanSettings::EScanNetworkAuto);
-        }
-        else {
-            //Add Scan Interval Slider, if it was not added.
-            if (this->childCount() < KMaxWidgets) {
-                createScanIntervalItem();
-                this->insertChild(KSliderIndex,mUserDefinedItem);
-                mWlanSettings->setWlanScanInterval(mWlanSettings->scanInterval());
-            }
-        }
-    }
-    else {
-        //Remove Scan Interval slider, if user selects automatic option
-        //for Scan network setting and if slider was added earlier.
-        if (KMaxWidgets == this->childCount()) {
-            this->removeChild(KSliderIndex);
-            mUserDefinedItem = NULL;    //removeChild() will delete the item.
-            mWlanSettings->setWlanScanInterval(KWlanSettingsScanNetworkAuto);
-        }
+        // User defined mode
+        mWlanSettings->setWlanScanInterval(mUserDefinedScanInterval);
+        createScanIntervalItem();
+    } else {
+        // Automatic mode
+        removeScanIntervalItem();
+        mWlanSettings->setWlanScanInterval(WlanSettings::ScanNetworkAuto);
     }
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_SCANITEMCHANGED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_SCANITEMCHANGED_EXIT );
 }
 
 /*!
-    Slot for handling item changed singal of Power saving combo box widget.
+    Slot for handling item changed signal of Power saving combo box widget.
 */
 
 void CpWlanSettingsGroupItemData::powerSavingItemChanged(int index)
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_POWERSAVINGITEMCHANGED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_POWERSAVINGITEMCHANGED_ENTRY );
     
     mWlanSettings->setWlanPowerSaving(index);
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_POWERSAVINGITEMCHANGED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_POWERSAVINGITEMCHANGED_EXIT );
 }
 
 /*!
-    Slot for handling item changed singal of Join WLAN networks combo box widget.
+    Slot for handling item changed signal of Join WLAN networks combo box widget.
 */
 
 void CpWlanSettingsGroupItemData::joinWlanItemChanged(int index)
 {
-    OstTraceFunctionEntry1(CPWLANSETTINGSGROUPITEMDATA_JOINWLANITEMCHANGED_ENTRY, this);
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_JOINWLANITEMCHANGED_ENTRY );
     
     mWlanSettings->setJoinWlanMode(index);
     
-    OstTraceFunctionExit1(CPWLANSETTINGSGROUPITEMDATA_JOINWLANITEMCHANGED_EXIT, this);
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_JOINWLANITEMCHANGED_EXIT );
+}
+
+/*!
+    Slot for handling device power saving mode update signal.
+*/
+
+void CpWlanSettingsGroupItemData::devicePowerSavingChanged()
+{
+    OstTraceFunctionEntry0( CPWLANSETTINGSGROUPITEMDATA_DEVICEPOWERSAVINGCHANGED_ENTRY );
+    
+    // Disconnect the handling of currentIndexChanged, because
+    // we will programmatically update the index in this function.
+    mItemDataHelper.removeConnection(
+        mScanNetworkItem,
+        SIGNAL(currentIndexChanged (const QString &)),
+        this,
+        SLOT(scanItemChanged (const QString &)));
+    
+    if (mWlanSettings->isDevicePowerSavingEnabled()) {
+        // If device power saving mode is activated, force the scan
+        // setting to automatic, and disable the setting combo box
+        mScanNetworkItem->setContentWidgetData(
+            "currentIndex",
+            WlanSettings::EScanNetworkAuto);
+        mScanNetworkItem->setContentWidgetData("enabled", false);
+        removeScanIntervalItem();
+    } else {
+        // If device power saving mode is deactivated, enable the
+        // setting combo box, and make sure the setting is in the
+        // same mode it was before power saving mode was activated
+        mScanNetworkItem->setContentWidgetData("enabled", true);
+        if (mWlanSettings->scanNetworkType() ==
+            WlanSettings::EScanNetworkUserDefined) {
+            mScanNetworkItem->setContentWidgetData(
+                "currentIndex",
+                WlanSettings::EScanNetworkUserDefined);
+            createScanIntervalItem();
+        }
+    }
+
+    // Reconnect the handling of currentIndexChanged since we are
+    // done with the updates.
+    mItemDataHelper.addConnection(
+        mScanNetworkItem,
+        SIGNAL(currentIndexChanged (const QString &)),
+        this,
+        SLOT(scanItemChanged (const QString &)));
+
+    OstTraceFunctionExit0( CPWLANSETTINGSGROUPITEMDATA_DEVICEPOWERSAVINGCHANGED_EXIT );
 }

@@ -76,8 +76,8 @@ public:
         ConfIapId = 10,
         //! bool: true if connection was established successfully
         ConfConnected = 11,
-        //! bool: if true hidden WLAN
-        ConfHiddenWlan = 12,
+        //! bool: WLAN AP explicit scanning need
+        ConfWlanScanSSID = 12,
         //! bool: if true use psk, if false use EAP 
         ConfUsePsk = 13,
         //! bool: if true processing connection page is required.

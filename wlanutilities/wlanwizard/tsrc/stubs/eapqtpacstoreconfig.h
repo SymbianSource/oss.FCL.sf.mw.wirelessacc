@@ -12,18 +12,25 @@
  * Contributors:
  *
  * Description:
- *   EAP-FAST PAC store configuration data
+ *   EAP-FAST PAC store configuration data: For EAP Wizard testing
  *
- */
-
-/*
- * %version: 2 %
  */
 
 #ifndef EAPQTPACSTORECONFIG_H
 #define EAPQTPACSTORECONFIG_H
 
+// System includes
 #include <QVariant>
+
+// User includes
+
+// Forward declarations
+
+// External data types
+
+// Constants
+
+// Class declaration
 
 class EapQtPacStoreConfig
 {
@@ -31,9 +38,13 @@ public:
 
     // PAC store is global, i.e. only a single PAC store exists in a device
 
-    enum PacStoreState
+    // Data types
+
+    enum PacStoreStatus
     {
         // PAC store does not exist and needs to be created
+        // (status also reverts to PacStoreStateStoreNotExists if the PAC store is
+        // corrupted, i.e. it gets deleted automatically)
         PacStoreStateStoreNotExists = 0,
         // PAC store exists but the password has not been stored and
         // is needed to access the PAC store
@@ -41,9 +52,6 @@ public:
         // PAC store password has been stored to settings database
         // and is not needed to use the PAC store
         PacStoreStatePasswordStored,
-        // TODO: remove? delete automatically if corrupted
-        // Existing PAC store is corrupted and should be reset
-        PacStoreStateCorrupted,
         // marker for the last item
         PacStoreStateLast
     };
@@ -64,10 +72,10 @@ public:
         PacStoreSavePassword,
         /*! write-only: bool
          *      true: deletes PAC store, i.e. clears everything related to the
-         *        existing PAC store inlcuding saved password
+         *        existing PAC store including saved password
          *      false/QVariant::Invalid: no actions */
         PacStoreReset,
-        /*! read-only: int (PacStoreState) */
+        /*! read-only: int (PacStoreStatus) */
         PacStoreState,
         /*! no write nor read operation, for validator usage only
          *  - uses the validator to check if the given password
@@ -81,8 +89,16 @@ public:
     EapQtPacStoreConfig();
     ~EapQtPacStoreConfig();
 
-    QVariant value(PacStoreSettings id);
-    void setValue(PacStoreSettings id, QVariant newValue);
+    // gets the configuration field referred to by an id from PacStoreSettings
+    // returns QVariant::Invalid is the field has not been set
+    QVariant value(const PacStoreSettings id) const;
+    
+    // sets the configuration field referred to by an id from PacStoreSettings
+    // does nothing if newValue >= PacStoreLast
+    void setValue(const PacStoreSettings id, const QVariant &newValue);
+    
+    // resets the object i.e. any successive call to
+    // value() returns QVariant::Invalid
     void clear();
 
 public: // FOR TESTING PURPOSE

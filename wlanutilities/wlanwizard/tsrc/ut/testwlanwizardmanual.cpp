@@ -362,9 +362,12 @@ void TestWlanWizardManual::tc_manual_selection_with_press_previous()
     QCOMPARE( mouseClickObject("dialog"), true );
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( mouseClickNext(), true );
-
+    QTest::qWait(WaitTimeForUi);
+    QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageScanning, "huuhaa3421"), true );
+    QTest::qWait(WaitTimeForUi);
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageNetworkMode), true );
-    QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonDisabled, ButtonHidden), true ); 
+    QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonDisabled, ButtonHidden), true );
+    QTest::qWait(WaitTimeForUi);
     QCOMPARE( mouseClickPrevious(), true );
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageSsid), true );
     QCOMPARE( mouseClickNext(), true );

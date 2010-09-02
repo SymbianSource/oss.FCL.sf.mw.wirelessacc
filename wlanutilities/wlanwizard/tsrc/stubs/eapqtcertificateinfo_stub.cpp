@@ -17,7 +17,7 @@
  */
 
 /*
- * %version: 2 %
+ * %version: 3 %
  */
 
 #include "eapqtcertificateinfo.h"
@@ -76,7 +76,7 @@ EapQtCertificateInfo& EapQtCertificateInfo::operator=(const EapQtCertificateInfo
     return *this;
 }
 
-QVariant EapQtCertificateInfo::value(ItemId id) const
+QVariant EapQtCertificateInfo::value(const ItemId id) const
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id >= ItemIdLast) {
@@ -86,7 +86,7 @@ QVariant EapQtCertificateInfo::value(ItemId id) const
     return d_ptr->mCerts[id];
 }
 
-void EapQtCertificateInfo::setValue(ItemId id, QVariant newValue)
+void EapQtCertificateInfo::setValue(const ItemId id, const QVariant &newValue)
 {
     // check for valid range, otherwise memory is consumed for no reason
     if(id < ItemIdLast) {

@@ -1,7 +1,7 @@
 EXPORTS
 	_ZN10WlanWizard11qt_metacallEN11QMetaObject4CallEiPPv @ 1 NONAME
 	_ZN10WlanWizard11qt_metacastEPKc @ 2 NONAME
-	_ZN10WlanWizard13setParametersERK7QStringiibbb @ 3 NONAME
+	_ZN10WlanWizard13setParametersERK7QStringiibb @ 3 NONAME
 	_ZN10WlanWizard16staticMetaObjectE @ 4 NONAME DATA 16
 	_ZN10WlanWizard19getStaticMetaObjectEv @ 5 NONAME
 	_ZN10WlanWizard4showEv @ 6 NONAME

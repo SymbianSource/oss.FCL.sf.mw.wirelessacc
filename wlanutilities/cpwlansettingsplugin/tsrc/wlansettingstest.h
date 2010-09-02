@@ -21,7 +21,7 @@
 
 #include <QtTest/QtTest>
 #include <QScopedPointer>
-#include "WlanSettings.h"
+#include "wlansettings.h"
 
 class WlanSettingsTest: public QObject
 {

@@ -16,21 +16,28 @@
  *
  */
 
-/*
- * %version: 2 %
- */
-
 #ifndef EAPQTVALIDATOR_STUB_H
 #define EAPQTVALIDATOR_STUB_H
 
+// System includes
 #include <eapqtvalidator.h>
+
+// User includes
+
+// Forward declarations
+
+class HbLineEdit;
+
+// External data types
+
+// Constants
+
+// Class declaration
 
 /*!
  * @addtogroup group_eap_config_api
  * @{
  */
-
-class HbLineEdit;
 
 class EapQtValidatorStub : public EapQtValidator 
 {
@@ -39,8 +46,8 @@ public:
 
     EapQtValidatorStub(EapQtValidator::Status status);
     ~EapQtValidatorStub();
-    virtual EapQtValidator::Status validate(QVariant value);
-    void updateEditor(HbLineEdit* edit );
+    virtual EapQtValidator::Status validate(const QVariant & value);
+    void updateEditor(HbLineEdit* const edit );
     void setReturnValue(EapQtValidator::Status status);
     
 private:

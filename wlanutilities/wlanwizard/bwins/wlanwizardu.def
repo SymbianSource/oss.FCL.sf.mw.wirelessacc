@@ -1,6 +1,6 @@
 EXPORTS
 	?qt_metacall@WlanWizard@@UAEHW4Call@QMetaObject@@HPAPAX@Z @ 1 NONAME ; int WlanWizard::qt_metacall(enum QMetaObject::Call, int, void * *)
-	?setParameters@WlanWizard@@QAEXABVQString@@HH_N11@Z @ 2 NONAME ; void WlanWizard::setParameters(class QString const &, int, int, bool, bool, bool)
+	?setParameters@WlanWizard@@QAEXABVQString@@HH_N1@Z @ 2 NONAME ; void WlanWizard::setParameters(class QString const &, int, int, bool, bool)
 	?metaObject@WlanWizard@@UBEPBUQMetaObject@@XZ @ 3 NONAME ; struct QMetaObject const * WlanWizard::metaObject(void) const
 	?trUtf8@WlanWizard@@SA?AVQString@@PBD0@Z @ 4 NONAME ; class QString WlanWizard::trUtf8(char const *, char const *)
 	?tr@WlanWizard@@SA?AVQString@@PBD0H@Z @ 5 NONAME ; class QString WlanWizard::tr(char const *, char const *, int)

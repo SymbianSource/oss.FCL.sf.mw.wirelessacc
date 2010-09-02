@@ -53,6 +53,7 @@ private slots:
     void testAvailableWlanApsScanEmpty();
     void testStopWlanApScan();
     void testWlanApScanError();
+    void testAvailableWlanApsSpecialChars();
     
     // scanWlanDirect()
     void testDirectScanBasic();

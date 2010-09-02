@@ -26,7 +26,7 @@ INCLUDEPATH += \
                  
 LIBS += -lxqservice -lxqserviceutil -lictsqtwrapper -lqtsysteminfo 
 
-CONFIG += hb service mobility
+CONFIG += hb service mobility no_icon
 MOBILITY += bearer
 
 QT += \
@@ -42,6 +42,7 @@ SOURCES += \
     src/main.cpp \
     src/wlanloginapplication.cpp \
     src/wlanloginengine.cpp \
+    src/wlanlogindocumentloader.cpp \
     src/wlanloginmainwindow.cpp \
     src/wlanloginnetworkaccessmanager.cpp \
     src/wlanloginservice.cpp \
@@ -52,6 +53,7 @@ SOURCES += \
 HEADERS += \
     inc/wlanloginapplication.h \
     inc/wlanloginengine.h \
+    inc/wlanlogindocumentloader.h \
     inc/wlanloginmainwindow.h \
     inc/wlanloginnetworkaccessmanager.h \
     inc/wlanloginservice.h \
@@ -59,6 +61,10 @@ HEADERS += \
     inc/wlanloginwebpage.h \
     inc/wlanloginwebview.h \
     traces/OstTraceDefinitions.h
+
+DOCML += res/wlanloginview.docml
+
+RESOURCES = res/wlanlogin.qrc
           
 TRANSLATIONS = wlanlogin.ts
 

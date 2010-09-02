@@ -1,22 +1,22 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   Wlan Wizard Page: Summary
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* Wlan Wizard Page: Summary
+*/
 
 // System includes
+
 #include <HbMainWindow>
 #include <HbDocumentLoader>
 #include <HbWidget>
@@ -25,11 +25,13 @@
 #include <HbStyleLoader>
 
 // User includes
+
 #include "wlanqtutils.h"
 #include "wlanwizard_p.h"
 #include "wlanwizardplugin.h"
 #include "wlanwizardsummaryviewitem.h"
 #include "wlanwizardpagesummary.h"
+
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpagesummaryTraces.h"
@@ -61,8 +63,8 @@ WlanWizardPageSummary::WlanWizardPageSummary(WlanWizardPrivate* parent) :
     WlanWizardPageInternal(parent), 
     mListWidget(NULL) 
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_EXIT);
 }
 
 /*!
@@ -70,11 +72,13 @@ WlanWizardPageSummary::WlanWizardPageSummary(WlanWizardPrivate* parent) :
  */
 WlanWizardPageSummary::~WlanWizardPageSummary()
 {
-    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_ENTRY );
+    OstTraceFunctionEntry0(DUP1_WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_ENTRY);
+    
     HbStyleLoader::unregisterFilePath(WlanWizardPageSummaryLayout);
     
     // Wizard framework deletes the visualization (owns mListWidget).
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_EXIT );
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGESUMMARY_WLANWIZARDPAGESUMMARY_EXIT);
 }
 
 /*!
@@ -82,7 +86,8 @@ WlanWizardPageSummary::~WlanWizardPageSummary()
  */
 HbWidget* WlanWizardPageSummary::initializePage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_INITIALIZEPAGE_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_INITIALIZEPAGE_ENTRY);
+    
     // Note that from summary page it is not possible to step back
     // this means that it is not possible that this method is called twice.
     Q_ASSERT(!mListWidget);
@@ -103,7 +108,7 @@ HbWidget* WlanWizardPageSummary::initializePage()
 
     addDynamicItems(row);
         
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_INITIALIZEPAGE_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_INITIALIZEPAGE_EXIT);
     return qobject_cast<HbWidget*>(mListWidget);
 }
 
@@ -112,7 +117,8 @@ HbWidget* WlanWizardPageSummary::initializePage()
  */
 void WlanWizardPageSummary::loadDocml()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_LOADDOCML_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_LOADDOCML_ENTRY);
+    
     bool ok;    
     HbDocumentLoader docLoader(mWizard->mainWindow());
     
@@ -132,7 +138,8 @@ void WlanWizardPageSummary::loadDocml()
     // Register the location of hblistviewitem.css and hblistviewitem.widgetml  
     ok = HbStyleLoader::registerFilePath(WlanWizardPageSummaryLayout);
     Q_ASSERT(ok);
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_LOADDOCML_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_LOADDOCML_EXIT);
 }
 
 /*!
@@ -143,7 +150,8 @@ void WlanWizardPageSummary::loadDocml()
  */
 QString WlanWizardPageSummary::networkModeText() const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_NETWORKMODETEXT_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_NETWORKMODETEXT_ENTRY);
+    
     QString ret;
     int mode = mWizard->configuration(
         WlanWizardPrivate::ConfNetworkMode).toInt();
@@ -155,14 +163,15 @@ QString WlanWizardPageSummary::networkModeText() const
 
      default:
          Q_ASSERT(mode == CMManagerShim::Infra); 
-         if (mWizard->configuration(WlanWizardPrivate::ConfHiddenWlan).toBool()) {
+         if (mWizard->configuration(WlanWizardPrivate::ConfWlanScanSSID).toBool()) {
              ret = hbTrId("txt_occ_dblist_network_mode_val_infrastructure_hi");
          } else {
              ret = hbTrId("txt_occ_dblist_network_mode_val_infrastructure_pu");
          }
          break;
-     }
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_NETWORKMODETEXT_EXIT );
+    }
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_NETWORKMODETEXT_EXIT);
     return ret;
 }
 
@@ -174,7 +183,8 @@ QString WlanWizardPageSummary::networkModeText() const
  */
 QString WlanWizardPageSummary::securityModeText() const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_SECURITYMODETEXT_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_SECURITYMODETEXT_ENTRY);
+    
     QString ret;
     int mode = mWizard->configuration(WlanWizardPrivate::ConfSecurityMode).toInt();
     switch (mode) {
@@ -207,7 +217,8 @@ QString WlanWizardPageSummary::securityModeText() const
         ret = hbTrId("txt_occ_dblist_security_mode_val_open");
         break;
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_SECURITYMODETEXT_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_SECURITYMODETEXT_EXIT);
     return ret;
 }
 
@@ -218,7 +229,8 @@ QString WlanWizardPageSummary::securityModeText() const
  */
 void WlanWizardPageSummary::addDynamicItems(int &row)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_ADDDYNAMICITEMS_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_ADDDYNAMICITEMS_ENTRY);
+    
     if (mWizard->isEapEnabled()) {
         appendToListPluginInfo(WlanWizardPlugin::SummaryEapOuterType, row);
         appendToListPluginInfo(WlanWizardPlugin::SummaryEapInnerType, row);
@@ -244,7 +256,8 @@ void WlanWizardPageSummary::addDynamicItems(int &row)
         // Add nothing to list.
         break;
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_ADDDYNAMICITEMS_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_ADDDYNAMICITEMS_EXIT);
 }
 
 /*!
@@ -259,12 +272,14 @@ void WlanWizardPageSummary::appendToList(
     const QString title, 
     const QString value)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_APPENDTOLIST_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_APPENDTOLIST_ENTRY);
+    
     HbListWidgetItem *item = new HbListWidgetItem();
     item->setText(title);
     item->setSecondaryText(value);
     mListWidget->insertItem(row++, item);
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_APPENDTOLIST_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_APPENDTOLIST_EXIT);
 }
 
 /*!
@@ -274,9 +289,11 @@ void WlanWizardPageSummary::appendToList(
    @param [in,out] row number to where the item is inserted
  */
 void WlanWizardPageSummary::appendToListPluginInfo( 
-    WlanWizardPlugin::Summary id, int &row )
+    WlanWizardPlugin::Summary id,
+    int &row)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESUMMARY_APPENDTOLISTPLUGININFO_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESUMMARY_APPENDTOLISTPLUGININFO_ENTRY);
+    
     QString title;
     QString value;
     WlanWizardPlugin *plugin = mWizard->wlanWizardPlugin();
@@ -284,5 +301,6 @@ void WlanWizardPageSummary::appendToListPluginInfo(
     if (plugin->summary(id, title, value)) {
         appendToList(row, title, value );
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGESUMMARY_APPENDTOLISTPLUGININFO_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESUMMARY_APPENDTOLISTPLUGININFO_EXIT);
 }

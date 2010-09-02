@@ -17,7 +17,7 @@
  */
 
 /*
- * %version: 5 %
+ * %version: 6 %
  */
 
 #include <QList>
@@ -41,6 +41,30 @@ EapQtConfigInterface::EapQtConfigInterface(
 EapQtConfigInterface::~EapQtConfigInterface()
 {
     mCalledMethods.append("~EapQtConfigInterface");
+}
+
+
+EapQtValidator *EapQtConfigInterface::validatorEap(
+    const EapQtExpandedEapType &type,
+    const EapQtConfig::SettingsId id)
+{
+    mCalledMethods.append("validatorEap");
+    
+    QCOMPARE(mValidator[type.type()][id] != NULL, true);
+    EapQtValidator *validator = mValidator[type.type()][id];
+    mValidator[type.type()].remove(id);
+    return validator;
+}
+
+EapQtValidator *EapQtConfigInterface::validatorPacStore(
+    const EapQtPacStoreConfig::PacStoreSettings id)
+{
+    mCalledMethods.append("validatorPacStore");
+    
+    QCOMPARE(mValidatorPacStore.contains(id), true);
+    EapQtValidator *validator = mValidatorPacStore[id];
+    mValidatorPacStore.remove(id);
+    return validator;
 }
 
 bool EapQtConfigInterface::setConfigurationReference(const int iapId)
@@ -95,7 +119,7 @@ bool EapQtConfigInterface::setSelectedOuterTypes(
 
 bool EapQtConfigInterface::saveConfiguration(
     const EapQtPluginHandle& pluginInfo,
-    EapQtConfig &config)
+    const EapQtConfig &config)
 {
     mCalledMethods.append("saveConfiguration");
     
@@ -115,18 +139,6 @@ bool EapQtConfigInterface::deleteConfiguration()
     return true;
 }
 
-EapQtValidator *EapQtConfigInterface::validatorEap(
-    EapQtExpandedEapType type,
-    EapQtConfig::SettingsId id)
-{
-    mCalledMethods.append("validatorEap");
-    
-    QCOMPARE(mValidator[type.type()][id] != NULL, true);
-    EapQtValidator *validator = mValidator[type.type()][id];
-    mValidator[type.type()].remove(id);
-    return validator;
-}
-
 
 bool EapQtConfigInterface::readPacStoreConfiguration(EapQtPacStoreConfig &config)
 {
@@ -140,13 +152,4 @@ bool EapQtConfigInterface::savePacStoreConfiguration(EapQtPacStoreConfig &config
     return mSavePacStoreConfigurationReturn;
 }
 
-EapQtValidator *EapQtConfigInterface::validatorPacStore(
-    EapQtPacStoreConfig::PacStoreSettings id)
-{
-    mCalledMethods.append("validatorPacStore");
-    
-    QCOMPARE(mValidatorPacStore.contains(id), true);
-    EapQtValidator *validator = mValidatorPacStore[id];
-    mValidatorPacStore.remove(id);
-    return validator;
-}
+

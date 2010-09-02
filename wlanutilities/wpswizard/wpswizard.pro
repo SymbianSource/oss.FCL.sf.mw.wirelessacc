@@ -25,6 +25,11 @@ RCC_DIR = build
 RESOURCES += resources/wpswizard_resource.qrc
 TRANSLATIONS += wpswizardplugin.ts
 
+DOCML += \
+    resources/occ_wps_01_05.docml \
+    resources/occ_wps_02_03.docml \
+    resources/occ_wps_P4.docml
+
 INCLUDEPATH += inc \
         ../inc
 

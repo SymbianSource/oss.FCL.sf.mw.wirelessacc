@@ -20,6 +20,7 @@
 // User includes
 
 #include "wlansnifferservice.h"
+#include <xqaiwdecl.h>
 
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
@@ -117,8 +118,7 @@ QString WlanSnifferService::title() const
     Q_ASSERT(info.isValid());
 
     // Extract the title
-    // TODO: Start using the official define when available
-    QVariant titleInfo = info.info("WindowTitle");
+    QVariant titleInfo = info.info(XQINFO_KEY_WINDOW_TITLE);
     QString title = titleInfo.toString();
     
     OstTraceFunctionExit0(WLANSNIFFERSERVICE_TITLE_EXIT);
