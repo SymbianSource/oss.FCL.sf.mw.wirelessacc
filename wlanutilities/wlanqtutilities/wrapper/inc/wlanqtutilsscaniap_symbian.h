@@ -25,7 +25,7 @@
 
 // User includes
 
-#include "wlanqtutilsiap.h"
+#include "wlanqtutilsap.h"
 
 // Forward declarations
 
@@ -66,7 +66,7 @@ private:
     void ConstructL();
 
     void ExtractScanResults(
-        QList< QSharedPointer<WlanQtUtilsIap> > &scanResults);
+        QList< QSharedPointer<WlanQtUtilsAp> > &scanResults);
 
 private: // data
     

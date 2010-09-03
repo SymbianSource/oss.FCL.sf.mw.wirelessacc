@@ -28,11 +28,6 @@
 #include <xqaiwdecl.h>
 #include <xqaiwdeclplat.h>
 
-// This workaround can be removed when XQOP_WLAN_SNIFFER is correctly
-// defined without the "void" parameter restriction:
-#undef XQOP_WLAN_SNIFFER
-#define XQOP_WLAN_SNIFFER  QLatin1String("listView()")
-
 #include <cpitemdatahelper.h>
 #include <cpbasesettingview.h>
 

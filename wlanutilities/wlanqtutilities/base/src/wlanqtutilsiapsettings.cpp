@@ -29,7 +29,6 @@
 
 #include "wlanqtutils.h"
 #include "wlanqtutilsap.h"
-#include "wlanqtutilsiap.h"
 #include "wlanqtutilsiapsettings.h"
 
 #include "OstTraceDefinitions.h"
@@ -101,7 +100,7 @@ WlanQtUtilsIapSettings::~WlanQtUtilsIapSettings()
 */
 
 void WlanQtUtilsIapSettings::fetchIaps(
-    QList< QSharedPointer<WlanQtUtilsIap> > &iapList) const
+    QList< QSharedPointer<WlanQtUtilsAp> > &iapList) const
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_FETCHIAPS_ENTRY);
     
@@ -130,7 +129,7 @@ void WlanQtUtilsIapSettings::fetchIaps(
 #endif
 
     foreach (uint iapId, iapIds) {
-        QSharedPointer<WlanQtUtilsIap> wlanIap = fetchIap(iapId);
+        QSharedPointer<WlanQtUtilsAp> wlanIap = fetchIap(iapId);
         if (wlanIap) {
             iapList.append(wlanIap);
         }
@@ -147,11 +146,11 @@ void WlanQtUtilsIapSettings::fetchIaps(
     @return Found IAP, NULL if not found.
 */
 
-QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(uint iapId) const
+QSharedPointer<WlanQtUtilsAp> WlanQtUtilsIapSettings::fetchIap(uint iapId) const
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_FETCHIAP_ENTRY);
 
-    QSharedPointer<WlanQtUtilsIap> wlanIap;
+    QSharedPointer<WlanQtUtilsAp> wlanIap;
     try {
         QScopedPointer<CmConnectionMethodShim> iap(
             mCmManager->connectionMethod(iapId));
@@ -169,10 +168,10 @@ QSharedPointer<WlanQtUtilsIap> WlanQtUtilsIapSettings::fetchIap(uint iapId) cons
                 CMManagerShim::WlanEnableWpaPsk);
     
             // Create a WLAN Qt Utils IAP
-            wlanIap = QSharedPointer<WlanQtUtilsIap>(new WlanQtUtilsIap());
-            wlanIap->setValue(WlanQtUtilsIap::ConfIdIapId, iapId);
-            wlanIap->setValue(WlanQtUtilsIap::ConfIdNetworkId, netId);
-            wlanIap->setValue(WlanQtUtilsIap::ConfIdName, name);
+            wlanIap = QSharedPointer<WlanQtUtilsAp>(new WlanQtUtilsAp());
+            wlanIap->setValue(WlanQtUtilsAp::ConfIdIapId, iapId);
+            wlanIap->setValue(WlanQtUtilsAp::ConfIdNetworkId, netId);
+            wlanIap->setValue(WlanQtUtilsAp::ConfIdName, name);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, connMode);
             wlanIap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, secMode);
@@ -394,13 +393,16 @@ void WlanQtUtilsIapSettings::storeSettings(
 {
     OstTraceFunctionEntry0(WLANQTUTILSIAPSETTINGS_STORESETTINGS_ENTRY);
 
-    int secMode = wlanAp->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt();
-    QString ssid = wlanAp->value(WlanQtUtilsAp::ConfIdSsid).toString();
-
     // Store general settings
-    iap->setStringAttribute(CMManagerShim::CmName, ssid);
-    iap->setStringAttribute(CMManagerShim::WlanSSID, ssid);
-    iap->setIntAttribute(CMManagerShim::WlanSecurityMode, secMode);
+    iap->setStringAttribute(
+        CMManagerShim::CmName,
+        wlanAp->value(WlanQtUtilsAp::ConfIdName).toString());
+    iap->setStringAttribute(
+        CMManagerShim::WlanSSID,
+        wlanAp->value(WlanQtUtilsAp::ConfIdSsid).toString());
+    iap->setIntAttribute(
+        CMManagerShim::WlanSecurityMode,
+        wlanAp->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt());
     iap->setIntAttribute(
         CMManagerShim::WlanConnectionMode, 
         wlanAp->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt());

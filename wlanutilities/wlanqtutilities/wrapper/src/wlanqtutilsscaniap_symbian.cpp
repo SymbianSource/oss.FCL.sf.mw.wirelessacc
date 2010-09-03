@@ -23,7 +23,7 @@
 // User includes
 
 #include "wlanqtutils.h"
-#include "wlanqtutilsiap.h"
+#include "wlanqtutilsap.h"
 #include "wlanqtutilsscan.h"
 #include "wlanqtutilsscaniap_symbian.h"
 
@@ -137,7 +137,7 @@ void WlanQtUtilsScanIapPrivate::RunL()
             emit q_ptr->scanFailed(WlanQtUtils::ScanStatusError);
         } else {
             // Scan succeeded
-            QList< QSharedPointer<WlanQtUtilsIap> > scanResults;
+            QList< QSharedPointer<WlanQtUtilsAp> > scanResults;
             ExtractScanResults(scanResults);
             
             // Inform about the results 
@@ -200,22 +200,22 @@ void WlanQtUtilsScanIapPrivate::ConstructL()
 */
 
 void WlanQtUtilsScanIapPrivate::ExtractScanResults(
-    QList< QSharedPointer<WlanQtUtilsIap> > &scanResults)
+    QList< QSharedPointer<WlanQtUtilsAp> > &scanResults)
 {
     OstTraceFunctionEntry0(WLANQTUTILSSCANIAPPRIVATE_EXTRACTSCANRESULTS_ENTRY);
 
     for (int i=0; i < mAvailableIaps.Count(); i++) {
         // Create an IAP for each result
-        QSharedPointer<WlanQtUtilsIap> iap(new WlanQtUtilsIap());
+        QSharedPointer<WlanQtUtilsAp> iap(new WlanQtUtilsAp());
 
         // IAP ID
         iap->setValue(
-            WlanQtUtilsIap::ConfIdIapId,
+            WlanQtUtilsAp::ConfIdIapId,
             (int)mAvailableIaps[i].iIapId);
 
         // Signal strength
         iap->setValue(
-            WlanQtUtilsIap::ConfIdSignalStrength,
+            WlanQtUtilsAp::ConfIdSignalStrength,
             (int)mAvailableIaps[i].iRssi);
 
         // Append the IAP to scan result list

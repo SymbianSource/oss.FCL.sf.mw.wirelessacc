@@ -12,18 +12,22 @@
 * Contributors:
 *
 * Description: 
-* WLAN Wizard API
+* WLAN Wizard API.
 */
 
 #ifndef WLANWIZARD_H
 #define WLANWIZARD_H
 
 // System includes
+
 #include <QObject>
+#include <QString>
+#include <QByteArray>
 
 // User includes
 
 // Forward declarations
+
 class HbMainWindow;
 class WlanWizardPrivate;
 class TestWlanWizardContext;
@@ -31,6 +35,7 @@ class TestWlanWizardContext;
 // External data types
 
 // Constants
+
 #ifdef BUILD_WLAN_WIZARD_DLL
 #define WLAN_WIZARD_EXPORT Q_DECL_EXPORT
 #else
@@ -50,7 +55,8 @@ public:
     ~WlanWizard();
 
     void setParameters(
-        const QString &ssid,
+        const QString &name, 
+        const QByteArray &ssid, 
         int networkMode,
         int securityMode,
         bool usePsk,

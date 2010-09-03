@@ -72,7 +72,7 @@ private:
     void ExtractScanResults(
         QList< QSharedPointer<WlanQtUtilsAp> > &scanResults);
     
-    QString ExtractSsid();
+    void ExtractSsid(QByteArray &ssid, QString &name);
     
     QByteArray ExtractBssid();
     

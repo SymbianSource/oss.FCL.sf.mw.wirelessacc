@@ -16,14 +16,18 @@
 */
 
 // System includes
+
+#include <HbParameterLengthLimiter>
+
 #include <QTest>
 #include <QDebug>
 #include <QList>
+
 #include <cmmanagerdefines_shim.h>
 #include <wlanerrorcodes.h>
-#include <HbParameterLengthLimiter>
 
 // User includes
+
 #include "testwlanwizardeap.h"
 #include "testwlanwizardeap_conf.h"
 #include "hbautotest.h"
@@ -60,7 +64,8 @@ void TestWlanWizardEap::tc_eap_outer_page_orientation_change()
     mEapQtUtilsContext->createEapAkaSim(EapQtPluginHandle::PluginEapAka);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -112,7 +117,8 @@ void TestWlanWizardEap::tc_eap_leap()
     const QString ssid("tc_eap_leap");
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -555,7 +561,8 @@ void TestWlanWizardEap::tc_eap_aka_set_outer_type_fails()
     mEapQtUtilsContext->setSelectectedOuterTypesReturn(false);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -590,7 +597,8 @@ void TestWlanWizardEap::tc_eap_aka_save_outer_configuration_fails()
     mEapQtUtilsContext->setOuterConfigReturn(false);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -624,7 +632,8 @@ void TestWlanWizardEap::tc_eap_aka_set_configuration_reference_fails()
     mEapQtUtilsContext->createEapAkaSim(EapQtPluginHandle::PluginEapAka);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -690,7 +699,8 @@ void TestWlanWizardEap::tc_eap_peap_identity_validators()
         EapQtExpandedEapType::TypePeap,EapQtConfig::Realm);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -776,7 +786,8 @@ void TestWlanWizardEap::tc_eap_leap_user_password_validators()
     validatorPassword->setReturnValue(EapQtValidator::StatusInvalid);
 
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -831,7 +842,8 @@ void TestWlanWizardEap::tc_eap_tls_no_user_certificate()
         -1);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -875,7 +887,8 @@ void TestWlanWizardEap::tc_eap_tls_one_user_certificate_with_ca_selection()
         0);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -939,7 +952,8 @@ void TestWlanWizardEap::tc_eap_tls_two_user_certificates()
         1);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -1005,7 +1019,8 @@ void TestWlanWizardEap::tc_eap_tls_back_and_forward_certs_with_cert_update()
         0);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -1149,7 +1164,8 @@ void TestWlanWizardEap::tc_eap_fast_new_store_and_validators()
         "p");
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -1205,7 +1221,8 @@ void TestWlanWizardEap::tc_eap_fast_new_store_back_and_forwards()
         password);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -1273,7 +1290,8 @@ void TestWlanWizardEap::tc_eap_fast_confirm_store_and_validators()
         "p");
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -1338,7 +1356,8 @@ void TestWlanWizardEap::tc_eap_fast_confirm_store_back_and_forwards()
         password);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -1611,7 +1630,8 @@ void TestWlanWizardEap::tc_eap_aka_sim(int type)
     const QString ssid("tc_eap_aka_sim");
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecMode802_1x, 
         false,
@@ -1679,7 +1699,8 @@ void TestWlanWizardEap::tc_eap_peap_ttls(
     mEapQtUtilsContext->setInnerConfigReturn(saveInnerConfReturn);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,
@@ -1736,7 +1757,8 @@ void TestWlanWizardEap::tc_eap_aka_connect_error(
     mEapQtUtilsContext->createEapAkaSim(EapQtPluginHandle::PluginEapAka);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa2, 
         false,
@@ -1792,7 +1814,8 @@ void TestWlanWizardEap::tc_eap_fast(
         password);
     
     mView->mWizard->setParameters(
-        ssid, 
+        ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeWpa, 
         false,

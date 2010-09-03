@@ -32,7 +32,6 @@
 // Forward declarations
 
 class WlanQtUtils;
-class WlanQtUtilsIap;
 class WlanQtUtilsAp;
 class WlanQtUtilsConnection;
 class WlanQtUtilsIapSettings;
@@ -67,7 +66,7 @@ public:
     void stopWlanScan();
 
     void availableWlans(
-        QList< QSharedPointer<WlanQtUtilsIap> > &wlanIapList,
+        QList< QSharedPointer<WlanQtUtilsAp> > &wlanIapList,
         QList< QSharedPointer<WlanQtUtilsAp> > &wlanApList) const;
 
     void availableWlanAps(
@@ -82,6 +81,8 @@ public:
     void connectIap(int iapId, bool runIct);
 
     void disconnectIap(int iapId);
+    
+    void moveIapToInternetSnap(int iapId);
 
     WlanQtUtils::ConnStatus connectionStatus() const;
 
@@ -102,22 +103,24 @@ private:
     Q_DISABLE_COPY(WlanQtUtilsPrivate)
 
     bool wlanIapExists(
-        const QList< QSharedPointer<WlanQtUtilsIap> > list,
+        const QList< QSharedPointer<WlanQtUtilsAp> > list,
         const WlanQtUtilsAp *ap) const;
     
+    void reportScanResult(int status, int mode);
+    
     void traceIapsAndAps(
-        const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        const QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
         const QList< QSharedPointer<WlanQtUtilsAp> > &aps) const;
 
 private slots:
 
     void updateAvailableWlanIaps(
-        QList< QSharedPointer<WlanQtUtilsIap> > &availableIaps);
+        QList< QSharedPointer<WlanQtUtilsAp> > &availableIaps);
 
     void updateAvailableWlanAps(
         QList< QSharedPointer<WlanQtUtilsAp> > &availableWlans);
-    
-    void reportScanResult(int status);
+
+    void updateScanFailed(int status);
     
     void updateConnectionStatus(bool isOpened);
     
@@ -169,7 +172,7 @@ private: // data
     ScanMode mScanMode;
 
     //! List of available WLAN IAPs according to the latest scan.
-    QList< QSharedPointer<WlanQtUtilsIap> > mIapScanList;
+    QList< QSharedPointer<WlanQtUtilsAp> > mIapScanList;
     
     //! List of available WLAN APs according to the latest scan.
     QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanList;

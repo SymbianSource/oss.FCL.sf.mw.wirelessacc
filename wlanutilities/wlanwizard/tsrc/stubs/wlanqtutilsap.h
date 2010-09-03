@@ -39,6 +39,7 @@ public:
         Configuration IDs that can be read and set in this class.
 
         ConfID's available for scan results:
+        - ConfIdName
         - ConfIdSsid
         - ConfIdBssid
         - ConfIdSignalStrength
@@ -49,6 +50,7 @@ public:
 
         ConfID's for IAP creation and updates, these are
         mandatory for all security modes: 
+        - ConfIdName
         - ConfIdSsid
         - ConfIdConnectionMode
         - ConfIdSecurityMode
@@ -61,24 +63,39 @@ public:
         - ConfIdWpaPsk      (Empty if not used)
         - ConfIdHidden
         - ConfIdWlanScanSSID
+        
+        Values available for IAPs when reading:
+        - ConfIdIapId
+        - ConfIdName
+        - ConfIdSsid
+        - ConfIdNetworkId
+        - ConfIdConnectionMode
+        - ConfIdSecurityMode
+        - ConfIdWpaPskUse
     */
     enum ConfId {
-        //! QString: WLAN Network Name (SSID)
-        ConfIdSsid = 0,
+        //! QString: Name
+        ConfIdName = 1,
+        //! QByteArray: WLAN Network Name (SSID)
+        ConfIdSsid = 2,
         //! QByteArray: Basic Service Set Identifier
-        ConfIdBssid = 1,
+        ConfIdBssid = 3,
         //! int: signal strength in RSSI (dBm)
-        ConfIdSignalStrength = 2,
+        ConfIdSignalStrength = 4,
         //! int: (CMManagerShim::WlanNetMode)
-        ConfIdConnectionMode = 3,
+        ConfIdConnectionMode = 5,
+        //! int: IAP ID
+        ConfIdIapId = 6,
+        //! int: Network ID
+        ConfIdNetworkId = 7,
         //! int: (CMManagerShim::WlanSecMode)
-        ConfIdSecurityMode = 4,
+        ConfIdSecurityMode = 8,
         //! bool: true - WPA PSK, false - WPA EAP
-        ConfIdWpaPskUse = 5,
+        ConfIdWpaPskUse = 9,
         //! QString: Pre-Shared Key for WPA
         //! Length: 8-63 - Ascii key
         //! Length: 64 - Hex key
-        ConfIdWpaPsk = 6,
+        ConfIdWpaPsk = 10,
         //! QString: WEP Key for index 1:
         //! HEX: 
         //! - 64 bit: allowed key length = 10
@@ -87,21 +104,21 @@ public:
         //! ASCII:
         //! - 64 bit: allowed key length = 5   
         //! - 128 bit: allowed key length = 13
-        ConfIdWepKey1 = 7,
+        ConfIdWepKey1 = 11,
         //! QString: WEP Key for index 2
-        ConfIdWepKey2 = 8,
+        ConfIdWepKey2 = 12,
         //! QString: WEP Key for index 3
-        ConfIdWepKey3 = 9,
+        ConfIdWepKey3 = 13,
         //! QString: WEP Key for index 4
-        ConfIdWepKey4 = 10,
+        ConfIdWepKey4 = 14,
         //! int: (CMManagerShim::WlanWepKeyIndex): Default WEP Key index
-        ConfIdWepDefaultIndex = 11,
+        ConfIdWepDefaultIndex = 15,
         //! bool: Is WLAN hidden (CMManagerShim::CmHidden).
-        ConfIdHidden = 12,
+        ConfIdHidden = 16,
         //! bool: Does WLAN AP need explicit scanning (CMManagerShim::WlanScanSSID)
-        ConfIdWlanScanSSID = 13,
+        ConfIdWlanScanSSID = 17,
         //! bool: true - Wifi Protected setup is supported, false - not
-        ConfIdWpsSupported = 14
+        ConfIdWpsSupported = 18,
     };
     
 public:
@@ -123,4 +140,4 @@ private:
 
 Q_DECLARE_METATYPE(WlanQtUtilsAp)
 
-#endif /* WLANQTUTILSWLANIAP_H */
+#endif // STUB_WLANQTUTILSWLANAP_H

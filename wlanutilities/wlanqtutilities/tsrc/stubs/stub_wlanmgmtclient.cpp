@@ -20,7 +20,7 @@
 #include "wlanmgmtclient.h"
 
 #include "wlanqtutilstestcontext.h"
-#include "wlanqtutilsiap.h"
+#include "wlanqtutilsap.h"
 
 extern WlanQtUtilsTestContext testContext;
 
@@ -136,9 +136,9 @@ void CWlanMgmtClient::GetAvailableIaps(
         // Form results as defined in context
         aAvailableIaps.Reset();
         for (int i=0; i < testContext.mScan.mWlanScanIapResultList.count(); i++) {
-            QSharedPointer<WlanQtUtilsIap> iap(testContext.mScan.mWlanScanIapResultList[i]);
+            QSharedPointer<WlanQtUtilsAp> iap(testContext.mScan.mWlanScanIapResultList[i]);
             TWlanIapAvailabilityData data;
-            data.iIapId = (TUint)iap->value(WlanQtUtilsIap::ConfIdIapId).toInt();
+            data.iIapId = (TUint)iap->value(WlanQtUtilsAp::ConfIdIapId).toInt();
             data.iRssi = (TUint)iap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt();
             aAvailableIaps.AppendL(data);
         }

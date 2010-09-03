@@ -31,7 +31,6 @@
 
 class CmManagerShim;
 class CmConnectionMethodShim;
-class WlanQtUtilsIap;
 class WlanQtUtilsAp;
 
 // External data types
@@ -52,9 +51,9 @@ public:
     
     virtual ~WlanQtUtilsIapSettings();
 
-    void fetchIaps(QList< QSharedPointer<WlanQtUtilsIap> > &iapList) const;
+    void fetchIaps(QList< QSharedPointer<WlanQtUtilsAp> > &iapList) const;
 
-    QSharedPointer<WlanQtUtilsIap> fetchIap(uint iapId) const;
+    QSharedPointer<WlanQtUtilsAp> fetchIap(uint iapId) const;
     
     int createIap(const WlanQtUtilsAp *wlanAp);
     

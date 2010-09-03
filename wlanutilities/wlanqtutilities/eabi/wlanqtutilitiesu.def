@@ -32,22 +32,16 @@ EXPORTS
 	_ZN13WlanQtUtilsApD0Ev @ 31 NONAME
 	_ZN13WlanQtUtilsApD1Ev @ 32 NONAME
 	_ZN13WlanQtUtilsApD2Ev @ 33 NONAME
-	_ZN14WlanQtUtilsIapC1Ev @ 34 NONAME
-	_ZN14WlanQtUtilsIapC2Ev @ 35 NONAME
-	_ZN14WlanQtUtilsIapD0Ev @ 36 NONAME
-	_ZN14WlanQtUtilsIapD1Ev @ 37 NONAME
-	_ZN14WlanQtUtilsIapD2Ev @ 38 NONAME
-	_ZNK11WlanQtUtils10metaObjectEv @ 39 NONAME
-	_ZNK11WlanQtUtils14availableWlansER5QListI14QSharedPointerI14WlanQtUtilsIapEERS0_IS1_I13WlanQtUtilsApEE @ 40 NONAME
-	_ZNK11WlanQtUtils16availableWlanApsER5QListI14QSharedPointerI13WlanQtUtilsApEE @ 41 NONAME
-	_ZNK11WlanQtUtils16connectionStatusEv @ 42 NONAME
-	_ZNK11WlanQtUtils7iapNameEi @ 43 NONAME
-	_ZNK11WlanQtUtils9activeIapEv @ 44 NONAME
-	_ZNK13WlanQtUtilsAp5valueEi @ 45 NONAME
-	_ZTI11WlanQtUtils @ 46 NONAME
-	_ZTI13WlanQtUtilsAp @ 47 NONAME
-	_ZTI14WlanQtUtilsIap @ 48 NONAME
-	_ZTV11WlanQtUtils @ 49 NONAME
-	_ZTV13WlanQtUtilsAp @ 50 NONAME
-	_ZTV14WlanQtUtilsIap @ 51 NONAME
+	_ZNK11WlanQtUtils10metaObjectEv @ 34 NONAME
+	_ZNK11WlanQtUtils14availableWlansER5QListI14QSharedPointerI13WlanQtUtilsApEES5_ @ 35 NONAME
+	_ZNK11WlanQtUtils16availableWlanApsER5QListI14QSharedPointerI13WlanQtUtilsApEE @ 36 NONAME
+	_ZNK11WlanQtUtils16connectionStatusEv @ 37 NONAME
+	_ZNK11WlanQtUtils7iapNameEi @ 38 NONAME
+	_ZNK11WlanQtUtils9activeIapEv @ 39 NONAME
+	_ZNK13WlanQtUtilsAp5valueEi @ 40 NONAME
+	_ZTI11WlanQtUtils @ 41 NONAME
+	_ZTI13WlanQtUtilsAp @ 42 NONAME
+	_ZTV11WlanQtUtils @ 43 NONAME
+	_ZTV13WlanQtUtilsAp @ 44 NONAME
+	_ZN11WlanQtUtils21moveIapToInternetSnapEi @ 45 NONAME
 

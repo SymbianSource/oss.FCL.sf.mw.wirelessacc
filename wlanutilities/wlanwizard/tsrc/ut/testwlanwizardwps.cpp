@@ -16,13 +16,16 @@
 */
 
 // System includes
+
 #include <QTest>
 #include <QDebug>
 #include <QList>
+
 #include <cmmanagerdefines_shim.h>
 #include <wlanerrorcodes.h>
 
 // User includes
+
 #include "testwlanwizardwps.h"
 #include "testwlanwizardwps_conf.h"
 #include "wlanwizard.h"
@@ -61,7 +64,8 @@ void TestWlanWizardWps::tcConfigureManualOpen()
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
-    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdName, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid.toUtf8());
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
     ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, false);
 
@@ -76,6 +80,7 @@ void TestWlanWizardWps::tcConfigureManualOpen()
     
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeOpen,
         false,
@@ -386,7 +391,8 @@ void TestWlanWizardWps::tcPushButton(
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, operModeCmm);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, secModeCmm);
-    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdName, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid.toUtf8());
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
     ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, false);
 
@@ -424,6 +430,7 @@ void TestWlanWizardWps::tcPushButton(
         
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         CMManagerShim::Adhoc,
         CMManagerShim::WlanSecModeWep,
         false,
@@ -467,6 +474,7 @@ void TestWlanWizardWps::tcPinCode_failure(
         
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         CMManagerShim::Adhoc,
         CMManagerShim::WlanSecModeWep,
         false,

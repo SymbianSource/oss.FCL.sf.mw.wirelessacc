@@ -25,7 +25,6 @@
 #include "wlanqtutils.h"
 #include "wlanqtutilstestcontext.h"
 #include "wlanqtutilsap.h"
-#include "wlanqtutilsiap.h"
 #include "wlanqtutilsconnection.h"
 
 // ---------------------------------------------------------
@@ -169,11 +168,12 @@ void WlanQtUtilsWlanScan::createDefaultWlanScanIapResultList(int numberOfWlanIap
     clearWlanScanIapResultList();
     
     for (int i = 0; i < numberOfWlanIaps; i++) {
-        QSharedPointer<WlanQtUtilsIap> iap(new WlanQtUtilsIap());
-        iap->setValue(WlanQtUtilsIap::ConfIdIapId, i);
-        iap->setValue(WlanQtUtilsIap::ConfIdName, "TestWlanAp" + QString::number(i + 1));
+        QSharedPointer<WlanQtUtilsAp> iap(new WlanQtUtilsAp());
+        iap->setValue(WlanQtUtilsAp::ConfIdIapId, i);
+        QString ssid("TestWlanAp" + QString::number(i + 1));
+        iap->setValue(WlanQtUtilsAp::ConfIdName, ssid);
         // ConfIdNetworkId?
-        iap->setValue(WlanQtUtilsAp::ConfIdSsid, "TestWlanAp" + QString::number(i + 1));
+        iap->setValue(WlanQtUtilsAp::ConfIdSsid, ssid.toUtf8());
         iap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 20);
         iap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
         iap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeOpen);
@@ -188,14 +188,14 @@ void WlanQtUtilsWlanScan::clearWlanScanIapResultList()
 }
 
 void WlanQtUtilsWlanScan::verifyWlanScanIapResultList(
-    QList< QSharedPointer<WlanQtUtilsIap> > wlanIapList)
+    QList< QSharedPointer<WlanQtUtilsAp> > wlanIapList)
 {
     QCOMPARE(wlanIapList.count(), mWlanScanIapResultList.count());
     
     for (int i = 0; i < mWlanScanIapResultList.count(); i++) {
         QCOMPARE(
-            wlanIapList[i]->value(WlanQtUtilsIap::ConfIdIapId),
-            mWlanScanIapResultList[i]->value(WlanQtUtilsIap::ConfIdIapId));
+            wlanIapList[i]->value(WlanQtUtilsAp::ConfIdIapId),
+            mWlanScanIapResultList[i]->value(WlanQtUtilsAp::ConfIdIapId));
         QCOMPARE(
             wlanIapList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength),
             mWlanScanIapResultList[i]->value(WlanQtUtilsAp::ConfIdSignalStrength));

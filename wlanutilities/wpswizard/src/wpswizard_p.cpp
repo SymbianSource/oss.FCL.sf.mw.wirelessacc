@@ -1,40 +1,37 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of the "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WPS Wizard: Private implementation.
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WPS Wizard: Private implementation.
+*/
 
 // System includes
+
+#include <QGraphicsWidget>
+#include <QApplication>
+
 #include <HbTranslator>
 #include <HbDocumentLoader>
-#include <QGraphicsWidget>
 #include <HbMainWindow>
 #include <HbView>
 #include <HbStackedWidget>
 #include <HbLabel>
 #include <HbAction>
-#include <QApplication>
+
 #include <cmmanagerdefines_shim.h>
 
-// Trace includes
-#include "OstTraceDefinitions.h"
-#ifdef OST_TRACE_COMPILER_IN_USE
-#include "wpswizard_pTraces.h"
-#endif
-
 // User includes
+
 #include "wlanwizardhelper.h"
 // WPS Wizard 
 #include "wpswizard.h"
@@ -45,6 +42,13 @@
 #include "wpswizardstepthreenumber.h"
 #include "wpswizardstepfour.h"
 #include "wpswizardstepfive.h"
+
+// Trace includes
+
+#include "OstTraceDefinitions.h"
+#ifdef OST_TRACE_COMPILER_IN_USE
+#include "wpswizard_pTraces.h"
+#endif
 
 //Forward Decalrations
 
@@ -70,7 +74,8 @@
    
    @return WpsWizardPrivate 
  */
-WpsWizardPrivate::WpsWizardPrivate(WpsWizard* wizard,
+WpsWizardPrivate::WpsWizardPrivate(
+    WpsWizard* wizard,
     WlanWizardHelper *wizardHelper) :
     q_ptr(wizard), 
     mWizardHelper(wizardHelper),
@@ -142,7 +147,8 @@ void WpsWizardPrivate::storeSettings(int index)
         // SSID
         QString ssid = QString::fromUtf8(reinterpret_cast<const char*> (mWpsAttr.iSsid.Ptr()),
                 mWpsAttr.iSsid.Length());    
-        mWizardHelper->setConfiguration(WlanWizardHelper::ConfSsid, ssid);
+        mWizardHelper->setConfiguration(WlanWizardHelper::ConfName, ssid);
+        mWizardHelper->setConfiguration(WlanWizardHelper::ConfSsid, ssid.toUtf8());
         // WEP Key1
         QString str = QString::fromUtf8(reinterpret_cast<const char*>(mWpsAttr.iWepKey1.Ptr()),
                 mWpsAttr.iWepKey1.Length());

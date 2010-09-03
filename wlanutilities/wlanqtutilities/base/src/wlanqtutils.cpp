@@ -20,7 +20,6 @@
 // User includes
 
 #include "wlanqtutilsap.h"
-#include "wlanqtutilsiap.h"
 #include "wlanqtutils_p.h"
 #include "wlanqtutils.h"
 
@@ -124,7 +123,7 @@ void WlanQtUtils::stopWlanScan()
 */
 
 void WlanQtUtils::availableWlans(
-    QList< QSharedPointer<WlanQtUtilsIap> > &wlanIapList,
+    QList< QSharedPointer<WlanQtUtilsAp> > &wlanIapList,
     QList< QSharedPointer<WlanQtUtilsAp> > &wlanApList) const
 {
     d_ptr->availableWlans(wlanIapList, wlanApList);
@@ -215,6 +214,17 @@ void WlanQtUtils::connectIap(int iapId, bool runIct)
 void WlanQtUtils::disconnectIap(int iapId)
 {
     d_ptr->disconnectIap(iapId);
+}
+
+/*
+    Moves the given IAP into the Internet SNAP.
+
+    @param [in] iapId ID of the IAP to be moved.
+*/
+
+void WlanQtUtils::moveIapToInternetSnap(int iapId)
+{
+    d_ptr->moveIapToInternetSnap(iapId);
 }
 
 /*!

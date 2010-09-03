@@ -160,7 +160,7 @@ public:
      * @param[in] wlanIapList WLAN IAPs that are verified against the context.
      */
     void verifyWlanScanIapResultList(
-        QList< QSharedPointer<WlanQtUtilsIap> > wlanIapList);
+        QList< QSharedPointer<WlanQtUtilsAp> > wlanIapList);
 
     /**
      * Creates a list of WLAN APs for scan results.
@@ -183,7 +183,7 @@ public:
     
     // List of WLAN IAPs that WLAN Management API stub will return when
     // requesting for wlan IAP scan results.
-    QList< QSharedPointer<WlanQtUtilsIap> > mWlanScanIapResultList;
+    QList< QSharedPointer<WlanQtUtilsAp> > mWlanScanIapResultList;
     
     // List of WLAN access points that WLAN Management API stub will return when
     // requesting for wlan scan results.

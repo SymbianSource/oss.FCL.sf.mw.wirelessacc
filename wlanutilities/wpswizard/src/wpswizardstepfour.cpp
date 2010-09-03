@@ -97,13 +97,13 @@ HbWidget* WpsPageStepFour::initializePage()
 
         mLoader = new HbDocumentLoader(mWizard->mainWindow());
         
-        mLoader->load(":/docml/occ_wps_P4.docml", &ok);
+        mLoader->load(":/docml/occ_wps_04.docml", &ok);
         Q_ASSERT(ok);
         
         // Initialize orientation
         loadDocmlSection(mWizard->mainWindow()->orientation());
 
-        mWidget = qobject_cast<HbWidget*> (mLoader->findWidget("occ_wps_P4"));
+        mWidget = qobject_cast<HbWidget*> (mLoader->findWidget("occ_wps_04"));
         Q_ASSERT(mWidget);
 
         bool connectOk = connect(
@@ -318,12 +318,12 @@ void WpsPageStepFour::loadDocmlSection(Qt::Orientation orientation)
     
     // Load the orientation specific section
     if (orientation == Qt::Horizontal) {
-    mLoader->load(":/docml/occ_wps_P4.docml", "landscape", &ok);
+    mLoader->load(":/docml/occ_wps_04.docml", "landscape", &ok);
         Q_ASSERT(ok);
     } 
     else {
         Q_ASSERT(orientation == Qt::Vertical);
-        mLoader->load(":/docml/occ_wps_P4.docml", "portrait", &ok);
+        mLoader->load(":/docml/occ_wps_04.docml", "portrait", &ok);
         Q_ASSERT(ok);
     }
 }

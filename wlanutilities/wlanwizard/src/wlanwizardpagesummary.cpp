@@ -98,7 +98,7 @@ HbWidget* WlanWizardPageSummary::initializePage()
     appendToList(
         row, 
         hbTrId("txt_occ_dblist_network_name"),
-        mWizard->configuration(WlanWizardPrivate::ConfSsid).toString());
+        mWizard->configuration(WlanWizardPrivate::ConfName).toString());
 
     appendToList( 
         row, hbTrId("txt_occ_dblist_network_mode"), networkModeText());

@@ -18,6 +18,7 @@
         <integer name="timeout" value="0"/>
         <enums name="frameType" value="Strong"/>
         <enums name="dismissPolicy" value="NoDismiss"/>
+        <!-- layout id: qtl_fullscreen_dialog_heading_pri -->
         <widget name="title" role="HbDialog:headingWidget" type="HbLabel"/>
         <widget name="stackedWidget" role="HbDialog:contentWidget" type="HbStackedWidget"/>
     </widget>

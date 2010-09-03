@@ -1,20 +1,29 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:
+* WLAN Wizard manual IAP addition cases.
+*/
 
 // System includes
+
+#include <QGraphicsWidget>
+#include <QObjectList>
+#include <QtCore>
+#include <QTest>
+#include <QDebug>
+#include <QList>
+
 #include <HbApplication>
 #include <HbDocumentLoader>
 #include <HbStackedWidget>
@@ -22,15 +31,11 @@
 #include <HbAction>
 #include <HbLineEdit>
 #include <HbLabel>
-#include <QGraphicsWidget>
-#include <QObjectList>
-#include <QtCore>
-#include <QTest>
-#include <QDebug>
-#include <QList>
+
 #include <cmmanagerdefines_shim.h>
 
 // User includes
+
 #include "testwlanwizardmanual.h"
 #include "testwlanwizardmanual_conf.h"
 #include "hbautotest.h"

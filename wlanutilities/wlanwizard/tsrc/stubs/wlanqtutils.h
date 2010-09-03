@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -12,6 +12,7 @@
 * Contributors:
 *
 * Description:
+* WLAN Qt Utilities library test stub.
 */
 
 #ifndef STUB_WLANQTUTILS_H
@@ -86,7 +87,9 @@ public:
     int connectedWlanId();
 
     void disconnectIap(int iapId);
-    
+
+    void moveIapToInternetSnap(int iapId);
+
     int activeIap();
     
     void scanWlanAps();
@@ -140,6 +143,4 @@ private: // Return values for all methods.
     int mScanDirectStatus;
 };
 
-#endif /* WLANQTUTILS_H */
-
-// End of File
+#endif // WLANQTUTILS_H

@@ -42,7 +42,6 @@ HEADERS += \
     base/inc/wlanqtutils_p.h \
     base/inc/wlanqtutilsap.h \
     base/inc/wlanqtutilsconnection.h \
-    base/inc/wlanqtutilsiap.h \
     base/inc/wlanqtutilsiapsettings.h \
     wrapper/inc/wlanqtutilsconmonwrapper.h \
     wrapper/inc/wlanqtutilsesockwrapper.h \
@@ -54,7 +53,6 @@ SOURCES += \
     base/src/wlanqtutils_p.cpp \
     base/src/wlanqtutilsap.cpp \
     base/src/wlanqtutilsconnection.cpp \
-    base/src/wlanqtutilsiap.cpp \
     base/src/wlanqtutilsiapsettings.cpp \
     wrapper/src/wlanqtutilsconmonwrapper.cpp \
     wrapper/src/wlanqtutilsesockwrapper.cpp \
@@ -85,8 +83,7 @@ symbian: {
     BLD_INF_RULES.prj_exports += "rom/wlanqtutilities.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlanqtutilities.iby)"
     BLD_INF_RULES.prj_exports += \
         "base/inc/wlanqtutils.h |../inc/wlanqtutils.h" \
-        "base/inc/wlanqtutilsap.h |../inc/wlanqtutilsap.h" \
-        "base/inc/wlanqtutilsiap.h |../inc/wlanqtutilsiap.h"
+        "base/inc/wlanqtutilsap.h |../inc/wlanqtutilsap.h"
 
     # S60 libraries                                 
     LIBS += -lconnmon -lecom -lesock -lextendedconnpref -lnetmeta -lictswlanlogininterface -lcharconv

@@ -239,17 +239,20 @@ void WlanQtUtilsScanApPrivate::ExtractScanResults(
         QSharedPointer<WlanQtUtilsAp> ap(new WlanQtUtilsAp());
         
         // SSID
-        QString ssid = ExtractSsid();
+        QByteArray ssid;
+        QString name;
+        ExtractSsid(ssid, name);
 
         // Skip over hidden networks. There is no spec for what
         // their names will contain, but at least names with only
         // null characters and whitespace characters are seen
         // in real life.
-        if (ssid.trimmed().isEmpty()) {
+        if (name.trimmed().isEmpty()) {
             continue;
         }
         ap->setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
-        
+        ap->setValue(WlanQtUtilsAp::ConfIdName, name);
+
         // BSSID
         QByteArray bssid = ExtractBssid();
         ap->setValue(WlanQtUtilsAp::ConfIdBssid, bssid);
@@ -290,38 +293,79 @@ void WlanQtUtilsScanApPrivate::ExtractScanResults(
 /*!
     Extracts and cleans up the WLAN SSID from current scan result element.
     
-    @return SSID string.
+    @param [out] ssid SSID in raw byte form (to be used in connect).
+    @param [out] name SSID in decoded form (to be used in UI).
 */
 
-QString WlanQtUtilsScanApPrivate::ExtractSsid()
+void WlanQtUtilsScanApPrivate::ExtractSsid(QByteArray &ssid, QString &name)
 {
     // Get the SSID in raw data format
     TUint8 ieLen;
-    const TUint8* ieData;
+    const TUint8 *ieData;
     TInt ret = mResults->InformationElement(KWlan802Dot11SsidIE, ieLen, &ieData);
-    
-    // Convert into QString
-    QString ssid;
+
+    // Default to empty
+    name.clear();
+    ssid.clear();
+
     if (ret == KErrNone && ieLen > 0) {
+        // Store the SSID exactly like we get it from the scanning.
+        // This is to make sure the connecting works even if our character
+        // conversion changes how the SSID looks like in UI.
+        ssid = QByteArray((char *)ieData, (int)ieLen);
+
         // Trace the buffer as data to ease low level debugging
         OstTraceData(
             TRACE_DUMP,
             WLANQTUTILSSCANAPPRIVATE_EXTRACTSSID_DATA,
             "WlanQtUtilsScanApPrivate::ExtractSsid data 0x%{hex8[]}",
-            ieData,
-            ieLen);
+            ssid.data(),
+            ssid.length());
+
+#ifdef OST_TRACE_COMPILER_IN_USE
+        // Additional trace since one byte hex string tracing has problems
+        // TODO: To be removed when the hex above tracing works OK
+        QString ssidHex(ssid.toHex());
+        TPtrC16 hexString(ssidHex.utf16(), ssidHex.length());
+    
+        OstTraceExt1(
+            TRACE_DUMP,
+            WLANQTUTILSSCANAPPRIVATE_EXTRACTSSID_HEX,
+            "WlanQtUtilsScanApPrivate::ExtractSsid;ssid hex=%S",
+            hexString);
+#endif
 
         // The IEEE 802.11-2007 section 7.3.2.1 only specifies that
         // the SSID is 0-32 octets, leaving the format of the octets
-        // completely open.
+        // completely open. This means that there are bound to be WLAN
+        // SSID data handling implementations that can not be supported 
+        // all at the same time. 
+
         // To support a bit wider character set than 7-bit ASCII, we
-        // treat the raw SSID bytes as the lowest octets of Unicode.
-        for (int i = 0; i < ieLen; i++) {
-            ssid.append(QChar((uint)ieData[i]));
+        // first try to treat the raw SSID bytes as UTF-8.
+        TPtrC8 ssid_data(ieData, (TInt)ieLen);
+        TBuf16<CMManagerShim::WlanSSIDLength> ssid_utf8;
+        TInt err = CnvUtfConverter::ConvertToUnicodeFromUtf8(
+            ssid_utf8,
+            ssid_data);
+        if (err == KErrNone) {
+            // UTF-8 conversion succeeded, using it.
+            name = QString(
+                reinterpret_cast<const QChar *>(ssid_utf8.Ptr()),
+                ssid_utf8.Length());
+        } else {
+            // If UTF-8 conversion fails, we fall back to treating each SSID
+            // data byte as the lowest octet of Unicode (UCS-2).
+            for (int i = 0; i < ieLen; i++) {
+                name.append(QChar((uint)ieData[i]));
+            }
         }
 
+        // Remove nul characters
+        name.remove(QChar());
+
 #ifdef OST_TRACE_COMPILER_IN_USE
-        TPtrC16 string(ssid.utf16(), ssid.length());
+        TPtrC16 string(name.utf16(), name.length());
         OstTraceExt1(
             TRACE_DUMP,
             WLANQTUTILSSCANAPPRIVATE_EXTRACTSSID_STRING,
@@ -329,11 +373,6 @@ QString WlanQtUtilsScanApPrivate::ExtractSsid()
             string);
 #endif
     }
-    
-    // Remove nul characters
-    ssid.remove(QChar());
-    
-    return ssid;
 }
 
 /*!
@@ -346,21 +385,16 @@ QByteArray WlanQtUtilsScanApPrivate::ExtractBssid()
 {
     TWlanBssid wlanBssid;
     mResults->Bssid(wlanBssid);
-    QByteArray bssid;
-    for (int i = 0; i < (int)wlanBssid.Length(); i++) {
-        bssid[i] = (char)wlanBssid[i];
-    }
+    QByteArray bssid(
+        reinterpret_cast<const char *>(wlanBssid.Ptr()),
+        wlanBssid.Length());
 
-#ifdef OST_TRACE_COMPILER_IN_USE
-    QString bssidHex(bssid.toHex());
-    TPtrC16 string(bssidHex.utf16(), bssidHex.length());
-
-    OstTraceExt1(
+    OstTraceData(
         TRACE_DUMP,
-        WLANQTUTILSSCANAPPRIVATE_EXTRACTBSSID,
-        "WlanQtUtilsScanApPrivate::ExtractBssid;bssid=%S",
-        string);
-#endif
+        WLANQTUTILSSCANAPPRIVATE_EXTRACTBSSID_DATA,
+        "WlanQtUtilsScanApPrivate::ExtractBssid data 0x%{hex8[]}",
+        bssid.data(),
+        bssid.length());
 
     return bssid;
 }

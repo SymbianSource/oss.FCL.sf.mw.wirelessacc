@@ -55,7 +55,6 @@ HEADERS += \
     context/wlanqtutilstestcontext.h \
     ../base/inc/wlanqtutils.h \
     ../base/inc/wlanqtutils_p.h \
-    ../base/inc/wlanqtutilsiap.h \
     ../base/inc/wlanqtutilsiapsettings.h \
     ../base/inc/wlanqtutilsap.h \
     ../base/inc/wlanqtutilsconnection.h \
@@ -69,7 +68,6 @@ SOURCES += \
     context/wlanqtutilstestcontext.cpp \
     ../base/src/wlanqtutils.cpp \
     ../base/src/wlanqtutils_p.cpp \
-    ../base/src/wlanqtutilsiap.cpp \
     ../base/src/wlanqtutilsap.cpp \
     ../base/src/wlanqtutilsconnection.cpp \
     ../base/src/wlanqtutilsiapsettings.cpp \

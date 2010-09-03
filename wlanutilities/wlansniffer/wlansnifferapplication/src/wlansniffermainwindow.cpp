@@ -161,7 +161,8 @@ void WlanSnifferMainWindow::startWlanWizard(const WlanQtUtilsAp *ap)
     // Create an IAP for a specific AP
     if (ap) {
         mWizard->setParameters(
-            ap->value(WlanQtUtilsAp::ConfIdSsid).toString(),
+            ap->value(WlanQtUtilsAp::ConfIdName).toString(),
+            ap->value(WlanQtUtilsAp::ConfIdSsid).toByteArray(),
             ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
             ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
             ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),

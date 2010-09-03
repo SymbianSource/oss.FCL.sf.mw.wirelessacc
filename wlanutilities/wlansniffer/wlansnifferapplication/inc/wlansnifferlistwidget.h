@@ -31,7 +31,6 @@
 class HbListWidget;
 class HbListWidgetItem;
 class WlanSnifferListItem;
-class WlanQtUtilsIap;
 class WlanQtUtilsAp;
 
 // External data types
@@ -62,7 +61,7 @@ public:
     virtual ~WlanSnifferListWidget();
 
     void updateContent(
-        QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
         QList< QSharedPointer<WlanQtUtilsAp> > &aps,
         int connectedIapId);
     
@@ -81,26 +80,26 @@ private:
     Q_DISABLE_COPY(WlanSnifferListWidget)
 
     void sortIaps(
-        QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
         int connectedIapId);
 
     void sortAps(
         QList< QSharedPointer<WlanQtUtilsAp> > &aps);
 
     static bool iapLessThan(
-        const QSharedPointer<WlanQtUtilsIap> iap1,
-        const QSharedPointer<WlanQtUtilsIap> iap2);
+        const QSharedPointer<WlanQtUtilsAp> iap1,
+        const QSharedPointer<WlanQtUtilsAp> iap2);
 
     static bool apLessThan(
         const QSharedPointer<WlanQtUtilsAp> ap1,
         const QSharedPointer<WlanQtUtilsAp> ap2);
 
-    WlanSnifferListItem *findFromOldList(QSharedPointer<WlanQtUtilsIap> iap);
+    WlanSnifferListItem *findFromOldIapList(QSharedPointer<WlanQtUtilsAp> iap);
 
-    WlanSnifferListItem *findFromOldList(QSharedPointer<WlanQtUtilsAp> ap);
+    WlanSnifferListItem *findFromOldApList(QSharedPointer<WlanQtUtilsAp> ap);
 
     HbListWidgetItem *listItemCreate(
-        QSharedPointer<WlanQtUtilsIap> iap,
+        QSharedPointer<WlanQtUtilsAp> iap,
         int connectedIapId);
     
     HbListWidgetItem *listItemCreate(QSharedPointer<WlanQtUtilsAp> ap);
@@ -110,11 +109,11 @@ private:
     QString leftIconChoose(int iapId, int connectedIapId);
     
     void removeLostItems(
-        const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        const QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
         const QList< QSharedPointer<WlanQtUtilsAp> > &aps);
     
     void addDiscoveredItemsAndUpdateRest(
-        const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+        const QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
         const QList< QSharedPointer<WlanQtUtilsAp> > &aps,
         int connectedIapId);
     

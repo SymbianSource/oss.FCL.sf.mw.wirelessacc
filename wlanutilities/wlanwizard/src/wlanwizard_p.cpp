@@ -182,7 +182,6 @@ WlanWizardPrivate::~WlanWizardPrivate()
     
     // timer is cancelled/deleted automatically when the parent (this) is deleted 
     
-    // TODO: See TSW Error: MTAA-854DK8 and loadDocml()
     HbStyleLoader::unregisterFilePath(":/css/custom.css");
     
     mDialog->setAttribute( Qt::WA_DeleteOnClose, true );
@@ -203,7 +202,8 @@ WlanWizardPrivate::~WlanWizardPrivate()
    See WlanWizard::setParameters().
  */
 void WlanWizardPrivate::setParameters(
-    const QString &ssid,
+    const QString &name, 
+    const QByteArray &ssid, 
     int networkMode,
     int securityMode, 
     bool usePsk,
@@ -218,6 +218,7 @@ void WlanWizardPrivate::setParameters(
         this);
     
     mFirstPageId = getNextPageId(
+        name,
         ssid,
         networkMode,
         securityMode,
@@ -269,21 +270,23 @@ void WlanWizardPrivate::show()
    @return next page id based on provided configurations.
  */
 int WlanWizardPrivate::getNextPageId(
-    const QString &ssid, 
+    const QString &name,
+    const QByteArray &ssid,
     int networkMode, 
     int securityMode, 
     bool usePsk,
-    bool hidden, 
+    bool hidden,
     bool wps)
 {
     OstTraceFunctionEntry0(WLANWIZARDPRIVATE_GETNEXTPAGEID_ENTRY);
     
-    setConfiguration(ConfProcessSettings, true);
+    setConfiguration(ConfName, name);
     setConfiguration(ConfSsid, ssid);
     setConfiguration(ConfNetworkMode, networkMode);
     setConfiguration(ConfSecurityMode, securityMode);
     setConfiguration(ConfUsePsk, usePsk);
     setConfiguration(ConfWlanScanSSID, hidden);
+    setConfiguration(ConfProcessSettings, true);
 
     OstTrace1(
         TRACE_NORMAL,
@@ -374,17 +377,17 @@ bool WlanWizardPrivate::isEapEnabled() const
 bool WlanWizardPrivate::handleIap()
 {
     OstTraceFunctionEntry0(WLANWIZARDPRIVATE_HANDLEIAP_ENTRY);
-    
+
     OstTrace0(
         TRACE_FLOW,
         WLANWIZARDPRIVATE_HANDLEIAP,
         "WlanWizardPrivate::handleIap");
-    
+
     bool ret = true;
     bool usePsk = true;
     int securityMode = configuration(ConfSecurityMode).toInt();
     WlanQtUtilsAp wlanAp;
-   
+
     // Set default values
     wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPsk, QString());
     wlanAp.setValue(WlanQtUtilsAp::ConfIdWpaPskUse, true );
@@ -393,8 +396,9 @@ bool WlanWizardPrivate::handleIap()
     wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey2, QString());
     wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey3, QString());
     wlanAp.setValue(WlanQtUtilsAp::ConfIdWepKey4, QString());
-    
+
     // Set configuration
+    wlanAp.setValue(WlanQtUtilsAp::ConfIdName, configuration(ConfName));
     wlanAp.setValue(WlanQtUtilsAp::ConfIdSsid, configuration(ConfSsid));
     wlanAp.setValue(
         WlanQtUtilsAp::ConfIdConnectionMode, 
@@ -430,7 +434,7 @@ bool WlanWizardPrivate::handleIap()
         break;
     }
     
-    // Create IAP if does not exists or update the existing IAP
+    // Create an IAP if it does not exist or update the existing IAP
     int referenceId = configuration(ConfIapId).toInt();
     if (referenceId == WlanQtUtils::IapIdNone) {
         OstTrace0(
@@ -998,7 +1002,10 @@ void WlanWizardPrivate::showPage(int pageId, bool removeFromStack)
     // 2/ scanning page has found match with given SSID
     if (pageId == WlanWizardPage::PageProcessSettings) {
         if (configuration(ConfProcessSettings).toBool() == false) {
-            if (handleIap()){
+            if (handleIap()) {
+                // Manually added IAP is by default an Internet IAP if
+                // we can not run the internet connectivity test.
+                mWlanQtUtils->moveIapToInternetSnap(configuration(ConfIapId).toInt());
                 pageId = WlanWizardPageInternal::PageSummary;
             } else {
                 pageId = WlanWizardPage::PageGenericError;
@@ -1218,13 +1225,6 @@ void WlanWizardPrivate::loadDocml()
     mDialog->addAction(mActionNext);
     mDialog->addAction(mActionFinish);
     
-    // TODO: workaround to prevent action to close the dialog
-    disconnect(mActionPrevious, SIGNAL(triggered()), mDialog.data(), SLOT(close()));
-    disconnect(mActionCancel, SIGNAL(triggered()), mDialog.data(), SLOT(close()));
-    disconnect(mActionNext, SIGNAL(triggered()), mDialog.data(), SLOT(close()));
-    disconnect(mActionFinish, SIGNAL(triggered()), mDialog.data(), SLOT(close()));
-
-    ok = true;
     ok = connect(mPageTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
     Q_ASSERT(ok);
     
@@ -1256,12 +1256,9 @@ void WlanWizardPrivate::loadDocml()
         SLOT(cancelTriggered()));
     Q_ASSERT(ok);
 
-    // TODO: workaround for full screen dialog, with docml it is possible to
-    // define fullscreen dialog, mut resize is not done correctly when orientation
-    // is changed. See TSW Error: MTAA-854DK8
     ok = HbStyleLoader::registerFilePath(":/css/custom.css");
     Q_ASSERT(ok);
-    
+
     OstTraceFunctionExit0(WLANWIZARDPRIVATE_LOADDOCML_EXIT);
 }
 
