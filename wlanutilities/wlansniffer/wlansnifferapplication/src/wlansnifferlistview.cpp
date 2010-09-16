@@ -233,10 +233,6 @@ void WlanSnifferListView::loadDocml(bool isEmbedded)
     }
     Q_ASSERT(ok);
     
-    // Load the view by name from the xml file
-    QGraphicsWidget *widget = mDocLoader->findWidget(WlanSnifferListViewName);
-    Q_ASSERT(widget);
-
     // Set view menu
     HbMenu *viewMenu = qobject_cast<HbMenu *>(mDocLoader->findWidget("viewMenu"));
     Q_ASSERT(viewMenu);
@@ -630,7 +626,6 @@ void WlanSnifferListView::handleWlanToggled()
         // Show the dialog and wait for user input.
         mWlanEnableDialog = QSharedPointer<HbMessageBox>(
             new HbMessageBox(HbMessageBox::MessageTypeQuestion)); 
-        mWlanEnableDialog->setTimeout(HbPopup::StandardTimeout);
         mWlanEnableDialog->setText(hbTrId("txt_occ_info_activate_wlan_in_airplane_mode"));
         mWlanEnableDialog->setStandardButtons(HbMessageBox::Yes | HbMessageBox::No);
         // Open the dialog and connect the result to the handleWlanEnableDialogClosed slot

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+ * Copyright (c) 2009 - 2010 Nokia Corporation and/or its subsidiary(-ies).
  * All rights reserved.
  * This component and the accompanying materials are made available
  * under the terms of "Eclipse Public License v1.0"
@@ -32,10 +32,15 @@ void WlanMgmtClientContext::setObject(CWlanMgmtClient *wlanMgmtClient)
 }
 
 
-void WlanMgmtClientContext::setRunProtectedSetup(const QString &ssid, int completionCode)
+void WlanMgmtClientContext::setRunProtectedSetup(
+    const QString &ssid, 
+    int completionCode,
+    bool pushButtonMode )
 {
+    mWlanMgmtClient->iSsid.SetLength(0);
     mWlanMgmtClient->iSsid.Copy((unsigned char*)ssid.toAscii().constData()); 
     mWlanMgmtClient->iCompletionCode = completionCode;
+    mWlanMgmtClient->iPushButtonMode = pushButtonMode ? ETrue : EFalse;
 }
 
 void WlanMgmtClientContext::appendResult(

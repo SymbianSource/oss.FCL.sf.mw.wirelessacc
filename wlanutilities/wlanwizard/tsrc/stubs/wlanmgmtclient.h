@@ -71,6 +71,7 @@ class CWlanMgmtClient : public CBase
         CArrayFixSeg<TWlanProtectedSetupCredentialAttribute> *iResults;
         TWlanSsid iSsid;
         TInt iCompletionCode;
+        TBool iPushButtonMode;
         
         friend class WlanMgmtClientContext;
     };

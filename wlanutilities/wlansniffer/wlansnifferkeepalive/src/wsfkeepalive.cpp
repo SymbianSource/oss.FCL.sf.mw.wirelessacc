@@ -235,8 +235,13 @@ CWsfKeepalive::CWsfKeepalive() :
     iState( EInactive ),
     iIapId( 0 )
     {
-    OstTraceFunctionEntry0( CWSFKEEPALIVE_CWSFKEEPALIVE_ENTRY );
-    OstTraceFunctionExit0( CWSFKEEPALIVE_CWSFKEEPALIVE_EXIT );
+  	OstTraceFunctionEntry0( CWSFKEEPALIVE_CWSFKEEPALIVE_ENTRY );
+	  iCmMgr = NULL;
+    iConnMon = NULL;
+    iConnMonDisc = NULL;
+    iEsock = NULL;
+    iTimer = NULL;
+	  OstTraceFunctionExit0( CWSFKEEPALIVE_CWSFKEEPALIVE_EXIT );
     }
 
 // ---------------------------------------------------------------------------

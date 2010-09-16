@@ -34,7 +34,6 @@ class Debug
     public:
         static inline void PrintBuffer( TUint aLength, const TUint8* aData );
         static inline void PrintString( const TDesC& aString, TUint aLength, const TUint8* aData );
-        static inline void PrintTimestamp( const TDesC& aString );
     };
 
 #define DEBUG(a)		            RDebug::Print(_L(a))

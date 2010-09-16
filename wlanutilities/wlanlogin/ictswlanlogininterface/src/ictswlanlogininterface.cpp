@@ -19,6 +19,7 @@
 
 #include <xqservicerequest.h>
 #include <xqappmgr.h>
+#include <xqaiwdeclplat.h> 
 
 // User includes
 
@@ -42,6 +43,10 @@
 // External function prototypes
 
 // Local constants
+ /*!
+     Service application name
+*/
+static const QString wlanLoginServiceAppName = QString("wlanlogin");
 
 // ======== LOCAL FUNCTIONS ========
 
@@ -122,9 +127,9 @@ void IctsWlanLoginInterface::wlanLoginAppStart(int iapId, int netId, QUrl url)
     
     // Execution of asynchronous and embedded Wlan Login start
     mAsyncRequest = mAiwMgr->create(
-        "wlanlogin",
-        "com.nokia.symbian.IWlanLogin",
-        "start(int,int,QUrl)",
+        wlanLoginServiceAppName,
+        XQI_WLAN_LOGIN,
+        XQOP1_WLAN_LOGIN,
         false);
    
     // The Wlan Login service must always exist
@@ -256,9 +261,9 @@ void IctsWlanLoginInterface::stop()
     
     // Execution of synchronous and embedded Wlan Login stop
     QScopedPointer<XQAiwRequest> syncRequest(mAiwMgr->create(
-         "wlanlogin",
-         "com.nokia.symbian.IWlanLogin",
-         "stop()",
+         wlanLoginServiceAppName,
+         XQI_WLAN_LOGIN,
+         XQOP2_WLAN_LOGIN,
          false));
    
     // The Wlan Login service must always exist

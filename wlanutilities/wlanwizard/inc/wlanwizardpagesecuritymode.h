@@ -61,7 +61,7 @@ protected slots:
     
 private:
     Q_DISABLE_COPY(WlanWizardPageSecurityMode)
-    void populateSecModeList();
+    void populateSecModeList(QStringList &list);
     void addToList(
         QStringList &list,
         const QString &item,
@@ -94,11 +94,6 @@ private:
      */
     HbDocumentLoader *mLoader;
 
-    /*!
-     * True, if a mode has been selected. False otherwise.
-     */
-    bool mValid;
-    
     /*!
      * List of sequrity modes. This list is tied to the radio buttons during
      * the initialization of the page.

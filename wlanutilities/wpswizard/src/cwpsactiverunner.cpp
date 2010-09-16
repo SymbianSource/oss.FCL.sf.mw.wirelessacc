@@ -91,23 +91,13 @@ void CWpsActiveRunner::ConstructL()
     OstTraceFunctionEntry1( CWPSACTIVERUNNER_CONSTRUCTL_ENTRY, this );
 
     CActiveScheduler::Add(this);
-    InitializeL();
-    OstTraceFunctionExit1( CWPSACTIVERUNNER_CONSTRUCTL_EXIT, this );
-}
-
-/*!
- * Initializes the member variables for making the middleware calls
- *
- */
-
-void CWpsActiveRunner::InitializeL()
-{
-    OstTraceFunctionEntry1( CWPSACTIVERUNNER_INITIALIZEL_ENTRY, this );
+    
     iWLANMgmtClient = CWlanMgmtClient::NewL();
+
     iIapParametersArray = new (ELeave) CArrayFixSeg<
         TWlanProtectedSetupCredentialAttribute> (KArrayGranularity);
     
-    OstTraceFunctionExit1( CWPSACTIVERUNNER_INITIALIZEL_EXIT, this );
+    OstTraceFunctionExit1( CWPSACTIVERUNNER_CONSTRUCTL_EXIT, this );
 }
 
 /*!
@@ -139,10 +129,10 @@ void CWpsActiveRunner::StartSetup(RBuf8& aSsid, int aPin)
     ssid.Copy(aSsid);
     TBuf8<KDefaultPinLength> pinCode;
 
+    // When Pin is zero it means that push-button mode is used.
     if (aPin == 0) {
         pinCode.AppendFill('0', 8);
-    }
-    else {
+    } else {
         pinCode.AppendNum(aPin);
     }
 
@@ -165,22 +155,19 @@ void CWpsActiveRunner::RunL()
     TInt completionCode = iStatus.Int();
     QList<TWlanProtectedSetupCredentialAttribute> credentials;
 
-    if(!isCancelTriggered) {
+    if (!isCancelTriggered) {
 
         if (completionCode < KErrNone) {
             //Raise Error
-        QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials, completionCode));
-        }
-        else {
+            QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials, completionCode));
+        } else {
             TInt len = iIapParametersArray->Length();
             TInt count;
-            for(count=0;count<iIapParametersArray->Count();count++)
-                {
+            for (count = 0 ; count < iIapParametersArray->Count() ; count++) {
                 TWlanProtectedSetupCredentialAttribute attr =(*iIapParametersArray)[count];
                 credentials.append(attr);
-                }
+            }
             QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials,completionCode));
-
         }
     }
 
@@ -194,10 +181,9 @@ void CWpsActiveRunner::DoCancel()
 {
     OstTraceFunctionEntry1( CWPSACTIVERUNNER_DOCANCEL_ENTRY, this );
     isCancelTriggered = true;
-    if(iWLANMgmtClient)
-        {
-        iWLANMgmtClient->CancelProtectedSetup();
-        }
+
+    iWLANMgmtClient->CancelProtectedSetup();
+
     OstTraceFunctionExit1( CWPSACTIVERUNNER_DOCANCEL_EXIT, this );
 }
 
@@ -211,13 +197,10 @@ TInt CWpsActiveRunner::RunError(TInt aError)
     OstTrace1( TRACE_ERROR, CWPSACTIVERUNNER_RUNERROR, "CWpsActiveRunner::RunError;aError=%d", aError );
 
     QList<TWlanProtectedSetupCredentialAttribute> credentials;
-    if(iWLANMgmtClient)
-        {
-        iWLANMgmtClient->CancelProtectedSetup();
-        }
-
+    iWLANMgmtClient->CancelProtectedSetup();
+    
     QT_TRYCATCH_LEAVING(iObserver.WpsActiveRunnerStopped(credentials, aError));
 
-    return 0;
+    return KErrNone;
 }
 

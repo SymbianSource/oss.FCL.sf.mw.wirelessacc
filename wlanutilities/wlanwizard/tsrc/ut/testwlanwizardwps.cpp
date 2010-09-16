@@ -360,10 +360,36 @@ void TestWlanWizardWps::tcPinCode_KErrWlanProtectedSetupPBMethodNotSupported()
 #endif
 }
 
-void TestWlanWizardWps::verifyModeSelection()
+void TestWlanWizardWps::tcPinCode_BackToPushButtonMode()
+{
+#ifdef tcPinCode_tcPinCode_BackToPushButtonMode
+    tcPinCode_failure(
+        KErrWlanProtectedSetupPBMethodNotSupported,
+        hbTrId("txt_occ_dialog_configuration_failed_authenticatio"));
+        
+    QCOMPARE( mouseClickPrevious(), true );
+    QTest::qWait(WaitTimeForUi);
+        
+    tcPushButton(
+        "tcPinCode_failure",
+        EWlanIapSecurityModeAllowUnsecure,
+        CMManagerShim::WlanSecModeOpen,
+        EWlanOperatingModeInfrastructure,
+        CMManagerShim::Infra,
+        EWlanDefaultWepKey1,
+        CMManagerShim::WepKeyIndex1,
+        1);
+#endif
+}
+
+void TestWlanWizardWps::verifyModeSelection( int index )
 {
     QCOMPARE( verifyCurrentPage(WpsWizardPage::PageWpsWizardStep2 ), true );
-    QCOMPARE( verifyActionButtons(ButtonHidden, ButtonEnabled, ButtonDisabled, ButtonHidden), true );
+    if (index == -1) {
+        QCOMPARE( verifyActionButtons(ButtonHidden, ButtonEnabled, ButtonDisabled, ButtonHidden), true );
+    } else {
+        QCOMPARE( verifyActionButtons(ButtonHidden, ButtonEnabled, ButtonEnabled, ButtonHidden), true );
+    }
     
     QStringList list;
     list << hbTrId("txt_occ_list_use_pushbutton")
@@ -371,6 +397,10 @@ void TestWlanWizardWps::verifyModeSelection()
          << hbTrId("txt_occ_list_configure_manually");
     
     QCOMPARE(verifyRadioButtons("radioButtonList"), list);
+    
+    if (index != -1) {
+        QCOMPARE(verifyRadioButtonState( "radioButtonList", index, list.at(index) ), true);
+    }
 }
 
 
@@ -381,7 +411,8 @@ void TestWlanWizardWps::tcPushButton(
     int operModeWlan,
     int operModeCmm,
     int defaultWepKeyIndexWlan,
-    int defaultWepKeyIndexCmm)
+    int defaultWepKeyIndexCmm,
+    int index)
 {
     mWlanQtUtilsContext->setCreateWlanIapResult(3);
     mWlanQtUtilsContext->setConnectionSuccessed(true);
@@ -416,7 +447,7 @@ void TestWlanWizardWps::tcPushButton(
         ap.setValue(WlanQtUtilsAp::ConfIdWpaPsk, "wpapsk");
     }
     
-    mWlanMgmtClientContext->setRunProtectedSetup(ssid, KErrNone);
+    mWlanMgmtClientContext->setRunProtectedSetup(ssid, KErrNone, true);
     mWlanMgmtClientContext->appendResult(
         ssid,
         secModeWlan,
@@ -427,17 +458,21 @@ void TestWlanWizardWps::tcPushButton(
         "wepkey3",
         "wepkey4",
         "wpapsk");
+
+    // Wizard is already in Mode Selection Page
+    if (index == -1) {
+        mView->mWizard->setParameters(
+            ssid,
+            ssid.toUtf8(),
+            CMManagerShim::Adhoc,
+            CMManagerShim::WlanSecModeWep,
+            false,
+            true);
         
-    mView->mWizard->setParameters(
-        ssid,
-        ssid.toUtf8(),
-        CMManagerShim::Adhoc,
-        CMManagerShim::WlanSecModeWep,
-        false,
-        true);
-        
-    mView->showWizard();
-    verifyModeSelection();
+        mView->showWizard();
+    }
+    
+    verifyModeSelection(index);
 
     QCOMPARE(selectRadioButton("radioButtonList", 0), true);
     QTest::qWait(WaitTimeForUi);
@@ -470,7 +505,7 @@ void TestWlanWizardWps::tcPinCode_failure(
     mWlanQtUtilsContext->setSignalWlanNetworkOpened(3);
     mWlanQtUtilsContext->setSignalIctResult(3, WlanQtUtils::IctPassed);
 
-    mWlanMgmtClientContext->setRunProtectedSetup(ssid, errorCode);
+    mWlanMgmtClientContext->setRunProtectedSetup(ssid, errorCode, false);
         
     mView->mWizard->setParameters(
         ssid,

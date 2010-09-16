@@ -60,19 +60,3 @@ inline void Debug::PrintString( const TDesC& aString, TUint aLength, const TUint
     RDebug::Print( line );
     }
 
-// -----------------------------------------------------------------------------
-// Debug::PrintTimestamp
-// -----------------------------------------------------------------------------
-//
-inline void Debug::PrintTimestamp( const TDesC& aString )
-    {
-    TBuf<KPrintLineLength> line;
-    TTime time;
-    time.HomeTime();
-    
-    time.FormatL( line, _L( "%H:%T:%S:%C" ) );
-    line.Append( _L( " " ) );
-    line.Append( aString );
-    
-    RDebug::Print( line );
-    }

@@ -41,7 +41,10 @@ CIctsEngine::CIctsEngine( TUint32 aIapId,
 iIapId( aIapId ), iNetworkId( aNetworkId ), iPollingStatus( EFalse ), 
 iRepository( NULL ), iClient( aClient )
     {
-    
+    iPollingIntervalTimer =NULL;
+    iPollingTimeTimer = NULL;  
+    iHttpHandler =NULL;
+    iPollingInterval=0;
     }
 
 // ---------------------------------------------------------------------------

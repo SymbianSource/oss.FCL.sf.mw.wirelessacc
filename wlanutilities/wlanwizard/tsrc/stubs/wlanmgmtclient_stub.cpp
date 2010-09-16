@@ -68,7 +68,14 @@ void CWlanMgmtClient::RunProtectedSetup(
     for (int i = 0 ; i < iResults->Count() ; ++i){
         aCredentials.AppendL(iResults->At(i));
     }
-    User::RequestComplete(&aStatus, iCompletionCode);
+    
+    TWlanWpsPin pinForPushButtonMode;
+    pinForPushButtonMode.AppendFill('0', 8);
+    QCOMPARE( pinForPushButtonMode == aWpsPin, iPushButtonMode ); 
+    
+    // Complete the request immediately
+    TRequestStatus *status = &aStatus;
+    User::RequestComplete(status, iCompletionCode);
 }
 
 // ---------------------------------------------------------

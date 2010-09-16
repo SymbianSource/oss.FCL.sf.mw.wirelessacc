@@ -45,8 +45,7 @@ WlanWizardPageNetworkMode::WlanWizardPageNetworkMode(
     mWidget(NULL),
     mList(NULL),
     mLabel(NULL),
-    mLoader(NULL),
-    mValid(false)
+    mLoader(NULL)
 {
     OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_ENTRY );
     OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_WLANWIZARDPAGENETWORKMODE_EXIT );
@@ -94,13 +93,18 @@ HbWidget* WlanWizardPageNetworkMode::initializePage()
         Q_ASSERT(mLabel != NULL);
 
         // Connect document loading to main window orientation changes.
-        ok = connect(mWizard->mainWindow(),
-            SIGNAL(orientationChanged(Qt::Orientation)), this,
+        ok = connect(
+            mWizard->mainWindow(),
+            SIGNAL(orientationChanged(Qt::Orientation)),
+            this,
             SLOT(loadDocmlSection(Qt::Orientation)));
         Q_ASSERT(ok);
         
         // Connect a function to a radio button selection.
-        ok = connect(mList, SIGNAL(itemSelected(int)), this,
+        ok = connect(
+            mList,
+            SIGNAL(itemSelected(int)),
+            this,
             SLOT(itemSelected()));
         Q_ASSERT(ok);
 
@@ -108,11 +112,14 @@ HbWidget* WlanWizardPageNetworkMode::initializePage()
             "txt_occ_dialog_select_network_mode_and_status"));
     }
     
-    QStringList items;
-    
+    QStringList items;    
     populateRadioButtonList(items);
-    
-    mList->setItems(items);
+
+    // Do not override the list, if it didn't change, because setItems()
+    // clears the possible selected item.
+    if (items != mList->items()) {
+        mList->setItems(items);
+    }
     
     OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_INITIALIZEPAGE_EXIT );
     return mWidget;
@@ -134,8 +141,7 @@ int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
     
     if (mWpsSupported.at(index)) {
         nextPage = WlanWizardPageInternal::PageWpsStart;
-    }
-    else {
+    } else {
         setting.mode = mNetworkModes.at(index);
         setting.hidden = mIsHidden.at(index);
         setting.wpsSupported = mWpsSupported.at(index);
@@ -162,14 +168,15 @@ int WlanWizardPageNetworkMode::nextId(bool &removeFromStack) const
 
 /*!
  * This method is overrides the default implementation from WlanWizardPage.
- * It indicates whether the Next-button should be enabled or not.
- * @return mValid, which is true if a radio button has been selected.
+ * @return Should the Next-button be enabled or not.
  */
 bool WlanWizardPageNetworkMode::showPage()
 {
     OstTraceFunctionEntry0( WLANWIZARDPAGENETWORKMODE_SHOWPAGE_ENTRY );
     OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_SHOWPAGE_EXIT );
-    return mValid;
+    // Next-button is enabled whenever the radio button list has some value
+    // selected.
+    return mList->selected() != -1;
 }
 
 /*!
@@ -182,8 +189,7 @@ void WlanWizardPageNetworkMode::itemSelected()
     OstTrace0( TRACE_BORDER, WLANWIZARDPAGENETWORKMODE_ITEMSELECTED,
         "WlanWizardPageNetworkMode::itemSelected" );
 
-    mValid = true;
-    mWizard->enableNextButton(mValid);
+    mWizard->enableNextButton(true);
     OstTraceFunctionExit0( WLANWIZARDPAGENETWORKMODE_ITEMSELECTED_EXIT );
 }
 
@@ -247,8 +253,7 @@ void WlanWizardPageNetworkMode::addToList(
                 mWpsSupported.append(wpsSupported);
             }
         }
-    }
-    else { 
+    } else { 
         list << item;
         mNetworkModes.append(mode);
         mIsHidden.append(isHidden);
@@ -271,19 +276,26 @@ void WlanWizardPageNetworkMode::populateRadioButtonList(QStringList &list)
     mIsHidden.clear();
     mWpsSupported.clear();
 
-    // A list is created. Since there is no practical way of knowing whether
-    // the new contents are different from the previous contents (if there
-    // even were any in the first place) the validity is always reset.
-    mValid = false;
-        
-    addToList(list, hbTrId("txt_occ_dblist_val_infrastructure_public"),
-        CMManagerShim::Infra, false, false);
+    addToList(
+        list,
+        hbTrId("txt_occ_dblist_val_infrastructure_public"),
+        CMManagerShim::Infra,
+        false,
+        false);
 
-    addToList(list, hbTrId("txt_occ_list_infrastructure_hidden"),
-        CMManagerShim::Infra, true, false);
+    addToList(
+        list,
+        hbTrId("txt_occ_list_infrastructure_hidden"),
+        CMManagerShim::Infra,
+        true,
+        false);
 
-    addToList(list, hbTrId("txt_occ_list_adhoc_1"), CMManagerShim::Adhoc,
-        false, false);
+    addToList(
+        list,
+        hbTrId("txt_occ_list_adhoc_1"),
+        CMManagerShim::Adhoc,
+        false,
+        false);
     
     if (mWizard->configurationExists(WlanWizardHelper::ConfAvailableNetworkOptions)) {
         // addToList with wpsSupported=true is only called, when there are available

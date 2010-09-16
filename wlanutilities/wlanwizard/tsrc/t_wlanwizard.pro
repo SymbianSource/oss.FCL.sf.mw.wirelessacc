@@ -161,7 +161,7 @@ SOURCES += \
     ../../wpswizard/src/wpswizardstepfive.cpp \
     ../../wpswizard/src/cwpsactiverunner.cpp
     
-LIBS      += -leapqtplugininfo
+LIBS      += -leapqtplugininfo -lecom
     
 symbian: {
     TARGET.CAPABILITY = ALL -TCB 

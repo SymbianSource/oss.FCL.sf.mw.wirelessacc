@@ -24,7 +24,6 @@
 #ifdef WLANENTRYPLUGIN_SERVICETRACES    
 #include <xqservicelog.h>
 #endif
-#include <xqappmgr.h>
 #include <xqaiwdecl.h>
 #include <xqaiwdeclplat.h>
 
@@ -63,7 +62,9 @@
 
 CpWlanEntryItemData::CpWlanEntryItemData(CpItemDataHelper &itemDataHelper) :
     CpSettingFormEntryItemData(itemDataHelper, hbTrId("txt_occ_dblist_wireless_lan")),
-    mWlanStatusInfo(new WlanStatusInfo(this))
+    mWlanStatusInfo(new WlanStatusInfo(this)),
+    mProcessing(false),
+    mRequest(0)
 {
     OstTraceFunctionEntry0(CPWLANENTRYITEMDATA_CPWLANENTRYITEMDATA_ENTRY);
     
@@ -88,8 +89,43 @@ CpWlanEntryItemData::CpWlanEntryItemData(CpItemDataHelper &itemDataHelper) :
 CpWlanEntryItemData::~CpWlanEntryItemData()
 {
     OstTraceFunctionEntry0(DUP1_CPWLANENTRYITEMDATA_CPWLANENTRYITEMDATA_ENTRY);
+    delete mRequest;
     OstTraceFunctionExit0(DUP1_CPWLANENTRYITEMDATA_CPWLANENTRYITEMDATA_EXIT);
 }
+
+void CpWlanEntryItemData::handleOk(const QVariant &result)
+{
+    OstTraceFunctionEntry0(CPWLANENTRYITEMDATA_HANDLEOK_ENTRY);
+    Q_UNUSED(result);
+    mProcessing = false;
+
+    delete mRequest;
+    mRequest = NULL;
+
+#ifdef WLANENTRYPLUGIN_SERVICETRACES    
+    XQSERVICE_DEBUG_PRINT("CpWlanEntryItemData::handleOk() service request completed OK");
+#endif    
+    OstTraceFunctionExit0(CPWLANENTRYITEMDATA_HANDLEOK_EXIT);
+}
+
+
+void CpWlanEntryItemData::handleError(int errorCode, const QString& errorMessage)
+{
+   OstTraceFunctionEntry0(CPWLANENTRYITEMDATA_HANDLEERROR_ENTRY);
+   TPtrC tmp(errorMessage.utf16(),errorMessage.length());
+   OstTraceExt2(TRACE_FLOW, CPWLANENTRYITEMDATA_HANDLEERROR, "CpWlanEntryItemData::handleError;errorCode=%d;errorMessage=%S", errorCode, tmp);
+   
+   mProcessing = false;
+   
+   delete mRequest;
+   mRequest = NULL;
+
+   #ifdef WLANENTRYPLUGIN_SERVICETRACES    
+    XQSERVICE_DEBUG_PRINT("CpWlanEntryItemData::handleOk() service request completed with error");
+#endif    
+   OstTraceFunctionExit0(CPWLANENTRYITEMDATA_HANDLEERROR_EXIT);
+}
+
 
 /*!
     Function for handling the entry item click.
@@ -99,36 +135,43 @@ CpBaseSettingView *CpWlanEntryItemData::createSettingView() const
 {
     OstTraceFunctionEntry0(CPWLANENTRYITEMDATA_CREATESETTINGVIEW_ENTRY);
     
+    if (mProcessing) {
+        OstTrace0(TRACE_NORMAL, CPWLANENTRYITEMDATA_CREATESETTINGVIEW, "CpWlanEntryItemData::createSettingView:already processing, return");
+        return 0;
+    }
+    mProcessing = true;
+    
 #ifdef WLANENTRYPLUGIN_SERVICETRACES    
     qInstallMsgHandler(XQSERVICEMESSAGEHANDLER);
     XQSERVICE_DEBUG_PRINT("CpWlanEntryItemData::createSettingView requesting listView()");
 #endif
 
-    // Execute synchronous WLAN Sniffer list view
-    XQApplicationManager aiwMgr;
-    XQAiwRequest *request = aiwMgr.create(
+    // Execute asynchronous WLAN Sniffer list view
+    mRequest = mAiwMgr.create(
         "wlansniffer",
         XQI_WLAN_SNIFFER,
         XQOP_WLAN_SNIFFER,
         true);
 
     // The WLAN Sniffer service must always exist
-    Q_ASSERT(request);
+    Q_ASSERT(mRequest);
 
-    // The service is synchronous & embedded
-    request->setSynchronous(true);
+    // The service is asynchronous & embedded
+    mRequest->setSynchronous(false);
     
     // Window title needs to be set to "Control Panel"
     XQRequestInfo reqInfo;
     reqInfo.setInfo(XQINFO_KEY_WINDOW_TITLE, hbTrId("txt_cp_title_control_panel"));
-    request->setInfo(reqInfo);
+    mRequest->setInfo(reqInfo);
+
+    connect(mRequest, SIGNAL(requestOk(QVariant)), SLOT( handleOk(QVariant)), Qt::QueuedConnection);
+    connect(mRequest, SIGNAL(requestError(int, QString)), SLOT(handleError(int, QString)));
     
-    bool status = request->send();
+    bool status = mRequest->send();
 #ifdef WLANENTRYPLUGIN_SERVICETRACES    
-    XQSERVICE_DEBUG_PRINT("CpWlanEntryItemData::createSettingView listView() service request completed");
+    XQSERVICE_DEBUG_PRINT("CpWlanEntryItemData::createSettingView listView() service request sent");
 #endif    
     Q_ASSERT(status);
-    delete request;
 
     OstTraceFunctionExit0(CPWLANENTRYITEMDATA_CREATESETTINGVIEW_EXIT);
     return 0;

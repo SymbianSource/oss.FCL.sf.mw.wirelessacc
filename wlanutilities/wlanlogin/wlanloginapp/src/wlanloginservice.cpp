@@ -17,6 +17,7 @@
 
 // System includes
 #include <QUrl>
+#include <xqaiwdeclplat.h> 
 
 // User includes
 #include "wlanloginservice.h"
@@ -34,13 +35,21 @@
     Wlan login application. 
 */
 
+// External function prototypes
+
+// Local constants
+ /*!
+     Full service name i.e "wlanlogin.com.nokia.symbian.IWlanLogin"
+*/
+static const QString wlanLoginFullServiceName = QString("wlanlogin") + QString(".") + QString(XQI_WLAN_LOGIN);
+
 /*!
     Constructor.
     
     @param[in] parent Object parent.
  */
 WlanLoginService::WlanLoginService(QObject* parent)
-    : XQServiceProvider(QLatin1String("wlanlogin.com.nokia.symbian.IWlanLogin"), parent),
+    : XQServiceProvider(wlanLoginFullServiceName, parent),
       mReturnValue(WlanLoginStatusNone)
 {
     OstTraceFunctionEntry0(WLANLOGINSERVICE_WLANLOGINSERVICE_ENTRY);

@@ -67,12 +67,12 @@ public:
     /**
      * Cm Manager Hotspot info getter.
      */
-    TBool CWsfKeepaliveCmm::GetHotspotInfoL(TInt32 aIapId);
+    TBool GetHotspotInfoL(TInt32 aIapId);
 
     /**
      * Cm Manager Hotspot IAP deleter.
      */
-    TBool CWsfKeepaliveCmm::DeleteHotspotIapL(TInt32 aIapId);
+    TBool DeleteHotspotIapL(TInt32 aIapId);
 
 protected:
     

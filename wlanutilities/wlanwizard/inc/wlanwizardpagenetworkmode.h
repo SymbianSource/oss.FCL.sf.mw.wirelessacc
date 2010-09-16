@@ -104,11 +104,6 @@ private:
     HbDocumentLoader *mLoader;
     
     /*!
-     * True, if a mode has been selected. False otherwise.
-     */
-    bool mValid;
-    
-    /*!
      * List of network modes. This list is tied to the radio buttons during
      * the initialization of the page.
      */

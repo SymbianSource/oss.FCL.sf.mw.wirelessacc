@@ -45,6 +45,7 @@ using namespace CMManager;
 //
 CHssIapHandler::CHssIapHandler( )
     {
+    iWLANRecord = NULL;
     DEBUG("CHssIapHandler::CHssIapHandler");
     }
 
@@ -385,7 +386,7 @@ void CHssIapHandler::GetClientIapsL( const TUid aUId, RArray<TUint>& aIapIdArray
                 if (buffer.Compare( uidClient ) == 0)
                     {
                     iapId = dest.ConnectionMethodL(j).GetIntAttributeL( ECmIapId );
-                    aIapIdArray.Append( iapId );
+                    aIapIdArray.AppendL( iapId );
                     DEBUG("CHssIapSettingsHandler::GetClientsIapsL: UIDs matched");
                     DEBUG1("CHssIapSettingsHandler::Found IapId: %d", iapId);
                     }

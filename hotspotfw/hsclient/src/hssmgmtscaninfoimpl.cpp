@@ -32,6 +32,7 @@
 //
 CHssMgmtScanInfoImpl::CHssMgmtScanInfoImpl()
     {
+    iScanInfo=NULL;
     DEBUG("CHssMgmtScanInfoImpl::CHssMgmtScanInfoImpl()");
     }
 

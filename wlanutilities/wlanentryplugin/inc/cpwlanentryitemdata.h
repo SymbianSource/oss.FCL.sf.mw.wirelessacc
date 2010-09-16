@@ -19,14 +19,15 @@
 #define CPWLANENTRYITEMDATA_H
 
 // System includes
-
-#include "cpsettingformentryitemdata.h"
+#include <xqappmgr.h>
 
 // User includes
+#include "cpsettingformentryitemdata.h"
 
 // Forward declarations
 
 class WlanStatusInfo;
+class XQAiwRequest;
 
 // External data types
 
@@ -59,14 +60,19 @@ private:
     Q_DISABLE_COPY(CpWlanEntryItemData)
 
     virtual CpBaseSettingView *createSettingView() const;
-
+    
 private slots:
 
     void statusUpdate();
+    void handleOk(const QVariant &result);
+    void handleError(int errorCode, const QString& errorMessage);
 
 private: // data
 
     WlanStatusInfo *mWlanStatusInfo;        //!< WLAN status info handler
+    mutable bool mProcessing; //used to mark if there is a request being processed
+    mutable XQAiwRequest *mRequest;
+    mutable XQApplicationManager mAiwMgr;
 
     // Friend classes
 

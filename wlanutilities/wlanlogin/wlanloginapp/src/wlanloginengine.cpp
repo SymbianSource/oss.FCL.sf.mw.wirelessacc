@@ -25,6 +25,7 @@
 #include <qnetworkconfigmanager.h>
 #include <qnetworkconfiguration.h>
 #include <qnetworksession.h>
+#include <apgtask.h>
 
 //User includes
 #include "wlanloginengine.h"
@@ -142,6 +143,44 @@ void WlanLoginEngine::setEngineState(WlanLoginEngine::EngineState newState)
         mEngineState);
     
     OstTraceFunctionExit0(WLANLOGINENGINE_SETENGINESTATE_EXIT);
+}
+
+/*!
+    Function that brings WLAN Sniffer to foreground
+    
+    @param [in] newState New state of the engine to be set
+ */
+bool WlanLoginEngine::bringSnifferToForeground()
+{
+    OstTraceFunctionEntry0(WLANLOGINENGINE_BRINGSNIFFERTOFOREGROUND_ENTRY);
+
+    bool retVal = false;
+    RWsSession wsSession;
+
+    if(KErrNone != wsSession.Connect()){
+        OstTrace0(TRACE_NORMAL, 
+        WLANLOGINENGINE_BRINGSNIFFERTOFOREGROUND_WS_SESSION_FAILED, 
+        "WARNING: Session could not be opened to Window server");
+        
+    } else {
+        TApaTaskList taskList(wsSession);
+        //Find WLAN Sniffer's task by using it's UID as reference
+        TApaTask task = taskList.FindApp(TUid::Uid(0x10281CAA));
+     
+        if(task.Exists())
+        {
+            task.BringToForeground();
+            retVal = true;
+        } else {
+            OstTrace0(TRACE_NORMAL, 
+            WLANLOGINENGINE_BRINGSNIFFERTOFOREGROUND_TASK_NOT_FOUND,
+            "WARNING: WLAN Sniffer was not found from the task list");
+        }
+        wsSession.Close();       
+    }
+    OstTraceFunctionExit0(WLANLOGINENGINE_BRINGSNIFFERTOFOREGROUND_EXIT);
+
+    return retVal;
 }
 
 
@@ -465,8 +504,13 @@ void WlanLoginEngine::handleCancelTriggered()
     OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLECANCELTRIGGERED_ENTRY);
     
     //Check if Qt Highway request is completed
-     if (mStartRequestCompleted == false){
+     if (mStartRequestCompleted == false) {
         
+         if (!bringSnifferToForeground()) {
+             //WLAN Sniffer was not found so make exit as there is nobody to close us
+             qApp->exit();
+         }
+         
          switch (engineState()) {
             
          case UpdatingNetworkConfigurations:
@@ -512,16 +556,20 @@ void WlanLoginEngine::handleNextTriggered()
 {
     OstTraceFunctionEntry0(WLANLOGINENGINE_HANDLENEXTTRIGGERED_ENTRY);
 
-    if (mStartRequestCompleted == false ) {    
-        emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusNext);
+    if (mStartRequestCompleted == false ) {
+        if (bringSnifferToForeground()) {
+            emitCompleteServiceRequest(WlanLoginService::WlanLoginStatusNext);
+        } else {
+            qApp->exit();
+        }
+    } else {
+        //put application to background:
+        WlanLoginApplication* app = static_cast<WlanLoginApplication *>(this->parent());    
+        app->mainWindow()->lower();
     }
-    
-    //put application to background:
-    WlanLoginApplication* app = static_cast<WlanLoginApplication *>(this->parent());    
-    app->mainWindow()->lower();
-    
     OstTraceFunctionExit0(WLANLOGINENGINE_HANDLENEXTTRIGGERED_EXIT);
 }
+
 
 /*!
     This function shows connection dropped message box to the user

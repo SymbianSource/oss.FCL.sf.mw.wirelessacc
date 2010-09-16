@@ -48,4 +48,4 @@
 #define tcPinCode_KErrWlanProtectedSetupDevicePasswordAuthFailure_enabled
 #define tcPinCode_KErrWlanProtectedSetupPINMethodNotSupported_enabled
 #define tcPinCode_KErrWlanProtectedSetupPBMethodNotSupported_enabled
-
+#define tcPinCode_tcPinCode_BackToPushButtonMode
