@@ -77,6 +77,8 @@ private slots:
     void testDisconnectIapOk();
     void testDisconnectIapIgnored();
 
+    void testMoveIapToInternetOk();
+
     void testConnectionStatus();
     
     void testIapNameFound();

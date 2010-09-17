@@ -28,7 +28,6 @@
 
 // Forward declarations
 
-class WlanQtUtilsIap;
 class WlanQtUtilsAp;
 class WlanQtUtilsPrivate;
 
@@ -101,7 +100,7 @@ public:
     void stopWlanScan();
 
     void availableWlans(
-        QList< QSharedPointer<WlanQtUtilsIap> > &wlanIapList,
+        QList< QSharedPointer<WlanQtUtilsAp> > &wlanIapList,
         QList< QSharedPointer<WlanQtUtilsAp> > &wlanApList) const;
     
     void availableWlanAps(
@@ -116,6 +115,8 @@ public:
     void connectIap(int iapId, bool runIct = false);
 
     void disconnectIap(int iapId);
+
+    void moveIapToInternetSnap(int iapId);
 
     ConnStatus connectionStatus() const;
     

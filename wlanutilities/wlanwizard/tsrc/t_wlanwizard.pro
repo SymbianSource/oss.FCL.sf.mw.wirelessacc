@@ -38,6 +38,22 @@ RESOURCES += ../resources/resource.qrc
 RESOURCES += ../../eapwizard/resources/eapwizard_resource.qrc
 RESOURCES += ../../wpswizard/resources/wpswizard_resource.qrc
 
+DOCML += \
+    ../resources/occ_wlan_wizard_main.docml \
+    ../resources/occ_add_wlan_05.docml \
+    ../resources/occ_add_wlan_06.docml \
+    ../resources/occ_add_wlan_02_03.docml \
+    ../resources/occ_add_wlan_01_04.docml \
+    ../resources/occ_add_wlan_error.docml \
+    ../../eapwizard/resources/occ_eap_wizard_01_02_04.docml \
+    ../../eapwizard/resources/occ_eap_wizard_03.docml \
+    ../../eapwizard/resources/occ_eap_wizard_05_07.docml \
+    ../../eapwizard/resources/occ_eap_wizard_06.docml \
+    ../../eapwizard/resources/occ_eap_wizard_08.docml \
+    ../../wpswizard/resources/occ_wps_01_05.docml \
+    ../../wpswizard/resources/occ_wps_02_03.docml \
+    ../../wpswizard/resources/occ_wps_04.docml    
+
 INCLUDEPATH += \
     stubs
 

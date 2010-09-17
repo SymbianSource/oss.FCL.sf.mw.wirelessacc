@@ -113,7 +113,7 @@ private slots:
     
     void startWlanWizard();
     
-    void handleWlanEnableDialogClosed(HbAction *action);
+    void handleWlanEnableDialogClosed(int action);
 
 private: // data
 

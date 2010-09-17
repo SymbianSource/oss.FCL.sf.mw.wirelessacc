@@ -16,6 +16,7 @@
 */
 
 // System includes
+
 #include <HbApplication>
 #include <HbDocumentLoader>
 #include <HbStackedWidget>
@@ -23,16 +24,19 @@
 #include <HbAction>
 #include <HbLineEdit>
 #include <HbLabel>
+
 #include <QGraphicsWidget>
 #include <QObjectList>
 #include <QtCore>
 #include <QTest>
 #include <QDebug>
 #include <QList>
+
 #include <cmmanagerdefines_shim.h>
 #include <wlanerrorcodes.h>
 
 // User includes
+
 #include "testwlanwizardconnect.h"
 #include "testwlanwizardconnect_conf.h"
 #include "hbautotest.h"
@@ -130,6 +134,7 @@ void TestWlanWizardConnect::tc_connect_to_open_success_cancel()
     mWlanQtUtilsContext->setSignalIctResult(3, WlanQtUtils::IctPassed);
 
     mView->mWizard->setParameters(
+        "tc_connect_to_open_success_cancel",
         "tc_connect_to_open_success_cancel",
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeOpen,
@@ -349,6 +354,7 @@ void TestWlanWizardConnect::tc_iap_creation_fails()
 
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         CMManagerShim::Infra,
         CMManagerShim::WlanSecModeOpen, 
         false,
@@ -383,6 +389,7 @@ void TestWlanWizardConnect::tc_cancel_key_query()
     
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         CMManagerShim::Adhoc, 
         CMManagerShim::WlanSecModeWep,
         true,
@@ -421,6 +428,7 @@ void TestWlanWizardConnect::tc_connect_success(const QString &ssid, int networkM
 
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         networkMode,
         securityMode,
         true,
@@ -429,7 +437,8 @@ void TestWlanWizardConnect::tc_connect_success(const QString &ssid, int networkM
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
-    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdName, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid.toUtf8());
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
     ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, hidden);
     
@@ -531,6 +540,7 @@ void TestWlanWizardConnect::tc_network_error_codes(
     mWlanQtUtilsContext->setActiveWlanIapResult(1);
     mView->mWizard->setParameters(
         ssid,
+        ssid.toUtf8(),
         networkMode,
         securityMode,
         true,
@@ -539,7 +549,8 @@ void TestWlanWizardConnect::tc_network_error_codes(
     WlanQtUtilsAp ap;
     ap.setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
     ap.setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
-    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdName, ssid);
+    ap.setValue(WlanQtUtilsAp::ConfIdSsid, ssid.toUtf8());
     ap.setValue(WlanQtUtilsAp::ConfIdHidden, false);
     ap.setValue(WlanQtUtilsAp::ConfIdWlanScanSSID, hidden);
 

@@ -38,7 +38,6 @@
 
 #include "wlanqtutils.h"
 #include "wlanqtutilsap.h"
-#include "wlanqtutilsiap.h"
 
 #include "wlansnifferengine.h"
 #include "wlansniffermainwindow.h"
@@ -375,7 +374,7 @@ void WlanSnifferListView::updateListContent()
 
     if (!mIgnoreWlanScanResults) {
         // Get the latest scan results
-        QList< QSharedPointer<WlanQtUtilsIap> > iaps;
+        QList< QSharedPointer<WlanQtUtilsAp> > iaps;
         QList< QSharedPointer<WlanQtUtilsAp> > aps;
         mEngine->wlanQtUtils()->availableWlans(iaps, aps);
     
@@ -633,8 +632,9 @@ void WlanSnifferListView::handleWlanToggled()
             new HbMessageBox(HbMessageBox::MessageTypeQuestion)); 
         mWlanEnableDialog->setTimeout(HbPopup::StandardTimeout);
         mWlanEnableDialog->setText(hbTrId("txt_occ_info_activate_wlan_in_airplane_mode"));
+        mWlanEnableDialog->setStandardButtons(HbMessageBox::Yes | HbMessageBox::No);
         // Open the dialog and connect the result to the handleWlanEnableDialogClosed slot
-        mWlanEnableDialog->open(this, SLOT(handleWlanEnableDialogClosed(HbAction*)));
+        mWlanEnableDialog->open(this, SLOT(handleWlanEnableDialogClosed(int)));
     } else {
         // Stop WLAN scanning immediately when switching WLAN OFF.
         // WLAN might have sent scan results just before disabling WLAN.
@@ -655,8 +655,6 @@ void WlanSnifferListView::startWlanWizard()
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTVIEW_STARTWLANWIZARD_ENTRY);
 
-    // TODO: Stop connections & do other cleanup before wizard can start? 
-
     emit wizardTriggered(NULL);
 
     OstTraceFunctionExit0(WLANSNIFFERLISTVIEW_STARTWLANWIZARD_EXIT);
@@ -669,17 +667,16 @@ void WlanSnifferListView::startWlanWizard()
     @param [in] action The user action received from the dialog.
 */
 
-void WlanSnifferListView::handleWlanEnableDialogClosed(HbAction *action)
+void WlanSnifferListView::handleWlanEnableDialogClosed(int action)
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTVIEW_HANDLEWLANENABLEDIALOGCLOSED_ENTRY);
-    
+
     // The dialog must exist
     Q_ASSERT(mWlanEnableDialog);
-    
+
     // If the user selected yes, then the wlan value is toggled,
     // otherwise nothing needs to be done.
-    // TODO: Update actions().at(0) when a better solution is provided by orbit
-    if (action == mWlanEnableDialog->actions().at(0)) {
+    if (action == HbMessageBox::Yes) {
         mEngine->setMasterWlan(true); 
     }
 

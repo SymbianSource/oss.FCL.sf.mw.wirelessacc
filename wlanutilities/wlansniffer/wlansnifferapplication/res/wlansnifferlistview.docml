@@ -13,6 +13,7 @@
             <widget name="statusContainer" type="HbWidget">
                 <widget name="statusLabel" type="HbLabel">
                     <enums name="textWrapping" value="TextWordWrap"/>
+                    <integer name="maximumLines" value="2"/>
                     <enums name="aspectRatioMode" value="IgnoreAspectRatio"/>
                     <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Expanding" verticalStretch="0"/>
                     <fontspec name="fontSpec" role="Primary" textheight="var(hb-param-text-height-primary)"/>

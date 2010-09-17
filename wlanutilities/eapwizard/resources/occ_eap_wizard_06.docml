@@ -1,59 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hbdocument version="1.1">
+<hbdocument version="1.2">
     <widget name="occ_eap_wizard_06" type="HbWidget">
+        <!-- layout id: txt_occ_dialog_insert_the_name_of_the_new_wlan_net -->
         <widget name="title" type="HbLabel">
             <enums name="textWrapping" value="TextWordWrap"/>
             <string locid="txt_occ_title_select_user_certificate" name="plainText" value="Select user certificate"/>
-            <fontspec name="fontSpec" role="Secondary" textheight="0"/>
+            <fontspec name="fontSpec" role="Secondary" textheight="var(hb-param-text-height-secondary)"/>
+            <integer name="maximumLines" value="4"/>
         </widget>
+        <!-- layout id: txt_occ_dblist_val_infrastructure_public -->
         <widget name="list" type="HbRadioButtonList"/>
+        <!-- layout id: qtl_dialog_pri3 -->
         <widget name="errorLabel" type="HbLabel">
             <enums name="textWrapping" value="TextWordWrap"/>
             <enums name="alignment" value="AlignLeft|AlignTop|AlignLeading"/>
             <string locid="txt_occ_dialog_no_certificates_installed_wizard_c" name="plainText" value="No certificates installed. Wizard cannot continue."/>
-            <fontspec name="fontSpec" role="Secondary" textheight="0"/>
+            <fontspec name="fontSpec" role="Secondary" textheight="var(hb-param-text-height-secondary)"/>
+            <integer name="maximumLines" value="3"/>
         </widget>
         <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Expanding" verticalStretch="0"/>
         <layout type="anchor"/>
     </widget>
     <section name="portrait_section">
         <widget name="occ_eap_wizard_06" type="HbWidget">
-            <widget name="title" type="HbLabel">
-                <sizepolicy horizontalPolicy="Expanding" horizontalStretch="0" verticalPolicy="Preferred" verticalStretch="0"/>
-            </widget>
             <layout type="anchor">
-                <anchoritem dst="title" dstEdge="LEFT" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
-                <anchoritem dst="title" dstEdge="TOP" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
-                <anchoritem dst="title" dstEdge="RIGHT" spacing="-var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
-                <anchoritem dst="list" dstEdge="LEFT" spacing="0un" src="" srcEdge="LEFT"/>
-                <anchoritem dst="list" dstEdge="TOP" spacing="var(hb-param-margin-gene-middle-vertical)" src="title" srcEdge="BOTTOM"/>
-                <anchoritem dst="list" dstEdge="RIGHT" spacing="0un" src="" srcEdge="RIGHT"/>
-                <anchoritem dst="list" dstEdge="BOTTOM" spacing="0un" src="" srcEdge="BOTTOM"/>
-                <anchoritem dst="errorLabel" dstEdge="LEFT" spacing="0un" src="title" srcEdge="LEFT"/>
-                <anchoritem dst="errorLabel" dstEdge="TOP" spacing="var(hb-param-margin-gene-middle-vertical)" src="title" srcEdge="BOTTOM"/>
-                <anchoritem dst="errorLabel" dstEdge="RIGHT" spacing="0un" src="title" srcEdge="RIGHT"/>
+                <anchoritem dst="title" dstEdge="LEFT" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
+                <anchoritem dst="title" dstEdge="TOP" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
+                <anchoritem direction="NEGATIVE" dst="title" dstEdge="RIGHT" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
+                <anchoritem dst="list" dstEdge="LEFT" src="" srcEdge="LEFT"/>
+                <anchoritem dst="list" dstEdge="TOP" prefLength="var(hb-param-margin-gene-middle-vertical)" src="title" srcEdge="BOTTOM"/>
+                <anchoritem dst="list" dstEdge="RIGHT" src="" srcEdge="RIGHT"/>
+                <anchoritem dst="list" dstEdge="BOTTOM" src="" srcEdge="BOTTOM"/>
+                <anchoritem dst="errorLabel" dstEdge="LEFT" src="title" srcEdge="LEFT"/>
+                <anchoritem dst="errorLabel" dstEdge="TOP" prefLength="var(hb-param-margin-gene-middle-vertical)" src="title" srcEdge="BOTTOM"/>
+                <anchoritem dst="errorLabel" dstEdge="RIGHT" src="title" srcEdge="RIGHT"/>
             </layout>
-        </widget>
-        <widget name="list" type="HbRadioButtonList">
-            <size height="230un" name="transformOriginPoint" width="0un"/>
         </widget>
     </section>
     <section name="landscape_section">
         <widget name="occ_eap_wizard_06" type="HbWidget">
-            <widget name="title" type="HbLabel">
-                <sizepolicy horizontalPolicy="Fixed" horizontalStretch="0" verticalPolicy="Fixed" verticalStretch="0"/>
-                <sizehint type="FIXED" width="expr((var(hb-param-screen-width) - var(hb-param-margin-gene-middle-horizontal))  / 2  - var(hb-param-margin-gene-screen) - var(hb-param-margin-gene-popup))"/>
-            </widget>
             <layout type="anchor">
-                <anchoritem dst="title" dstEdge="TOP" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
-                <anchoritem dst="title" dstEdge="LEFT" spacing="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
-                <anchoritem dst="list" dstEdge="LEFT" spacing="var(hb-param-margin-gene-middle-horizontal)" src="title" srcEdge="RIGHT"/>
-                <anchoritem dst="list" dstEdge="TOP" spacing="0un" src="title" srcEdge="TOP"/>
-                <anchoritem dst="list" dstEdge="RIGHT" spacing="0un" src="" srcEdge="RIGHT"/>
-                <anchoritem dst="list" dstEdge="BOTTOM" spacing="0un" src="" srcEdge="BOTTOM"/>
-                <anchoritem dst="errorLabel" dstEdge="LEFT" spacing="var(hb-param-margin-gene-middle-horizontal)" src="title" srcEdge="RIGHT"/>
-                <anchoritem dst="errorLabel" dstEdge="TOP" spacing="0un" src="title" srcEdge="TOP"/>
-                <anchoritem dst="errorLabel" dstEdge="RIGHT" spacing="-var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
+                <anchoritem dst="title" dstEdge="TOP" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="TOP"/>
+                <anchoritem dst="title" dstEdge="LEFT" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="LEFT"/>
+                <anchoritem direction="NEGATIVE" dst="title" dstEdge="RIGHT" prefLength="expr(var(hb-param-margin-gene-middle-horizontal) / 2)" src="" srcEdge="CENTERH"/>
+                <anchoritem dst="list" dstEdge="LEFT" prefLength="var(hb-param-margin-gene-middle-horizontal)" src="title" srcEdge="RIGHT"/>
+                <anchoritem dst="list" dstEdge="TOP" src="" srcEdge="TOP"/>
+                <anchoritem dst="list" dstEdge="RIGHT" src="" srcEdge="RIGHT"/>
+                <anchoritem dst="list" dstEdge="BOTTOM" src="" srcEdge="BOTTOM"/>
+                <anchoritem dst="errorLabel" dstEdge="LEFT" prefLength="var(hb-param-margin-gene-middle-horizontal)" src="title" srcEdge="RIGHT"/>
+                <anchoritem dst="errorLabel" dstEdge="TOP" src="title" srcEdge="TOP"/>
+                <anchoritem direction="NEGATIVE" dst="errorLabel" dstEdge="RIGHT" prefLength="var(hb-param-margin-gene-popup)" src="" srcEdge="RIGHT"/>
             </layout>
         </widget>
     </section>

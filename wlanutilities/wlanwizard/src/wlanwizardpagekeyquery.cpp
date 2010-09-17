@@ -1,22 +1,22 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description: 
- *   WLAN Wizard Page: Key query page for WEP and WPA (2).
- *
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+* WLAN Wizard Page: Key query page for WEP and WPA (2).
+*/
 
 // System includes
+
 #include <HbDocumentLoader>
 #include <HbMainWindow>
 #include <HbWidget>
@@ -26,10 +26,12 @@
 #include <HbParameterLengthLimiter>
 
 // User includes
+
 #include "wlanwizard.h"
 #include "wlanwizard_p.h"
 #include "wlanwizardpagekeyquery.h"
 #include "wlanwizardutils.h"
+
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpagekeyqueryTraces.h"
@@ -63,8 +65,8 @@ WlanWizardPageKeyQuery::WlanWizardPageKeyQuery(WlanWizardPrivate* parent) :
     mLabelError(NULL), 
     mDocLoader(NULL)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_EXIT);
 }
 
 /*!
@@ -72,11 +74,12 @@ WlanWizardPageKeyQuery::WlanWizardPageKeyQuery(WlanWizardPrivate* parent) :
  */
 WlanWizardPageKeyQuery::~WlanWizardPageKeyQuery()
 {
-    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_ENTRY );
+    OstTraceFunctionEntry0(DUP1_WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_ENTRY);
+    
     delete mDocLoader;
     
     // Wizard framework deletes the visualization (owns mWidget).
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_EXIT );
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGEKEYQUERY_WLANWIZARDPAGEKEYQUERY_EXIT);
 }
 
 /*!
@@ -87,7 +90,8 @@ WlanWizardPageKeyQuery::~WlanWizardPageKeyQuery()
  */
 HbWidget* WlanWizardPageKeyQuery::initializePage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_INITIALIZEPAGE_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_INITIALIZEPAGE_ENTRY);
+    
     if (!mWidget) {
         bool ok;
         
@@ -137,9 +141,9 @@ HbWidget* WlanWizardPageKeyQuery::initializePage()
     
     mLabelTitle->setPlainText(
         HbParameterLengthLimiter("txt_occ_dialog_enter_key_for_1").arg(
-            mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
+            mWizard->configuration(WlanWizardPrivate::ConfName).toString()));
     
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_INITIALIZEPAGE_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_INITIALIZEPAGE_EXIT);
     return mWidget;
 }
 
@@ -151,14 +155,16 @@ HbWidget* WlanWizardPageKeyQuery::initializePage()
  */
 void WlanWizardPageKeyQuery::loadDocmlSection(Qt::Orientation orientation)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_LOADDOCMLSECTION_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_LOADDOCMLSECTION_ENTRY);
+    
     WlanWizardPageInternal::loadDocmlSection(
         mDocLoader,
         orientation,
         ":/docml/occ_add_wlan_01_04.docml", 
         "portrait_section",
         "landscape_section");
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_LOADDOCMLSECTION_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_LOADDOCMLSECTION_EXIT);
 }
 
 /*!
@@ -175,7 +181,8 @@ void WlanWizardPageKeyQuery::loadDocmlSection(Qt::Orientation orientation)
  */
 int WlanWizardPageKeyQuery::nextId(bool &removeFromStack) const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_NEXTID_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_NEXTID_ENTRY);
+    
     WlanWizardUtils::KeyStatus status(WlanWizardUtils::KeyStatusOk);
     int pageId = WlanWizardPage::nextId(removeFromStack);
     int secMode = mWizard->configuration(
@@ -211,7 +218,8 @@ int WlanWizardPageKeyQuery::nextId(bool &removeFromStack) const
     }
 
     removeFromStack = false;
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_NEXTID_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_NEXTID_EXIT);
     return pageId;
 }
 
@@ -220,11 +228,12 @@ int WlanWizardPageKeyQuery::nextId(bool &removeFromStack) const
  */
 bool WlanWizardPageKeyQuery::showPage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_SHOWPAGE_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_SHOWPAGE_ENTRY);
+    
     // Open virtual keyboard by setting focus to line edit
     mLineEdit->setFocus();
     
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_SHOWPAGE_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_SHOWPAGE_EXIT);
     return true;
 }
 
@@ -239,11 +248,13 @@ bool WlanWizardPageKeyQuery::showPage()
  */
 bool WlanWizardPageKeyQuery::eventFilter(QObject *obj, QEvent *event)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_EVENTFILTER_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_EVENTFILTER_ENTRY);
+    
     if (obj == mLineEdit && event->type() == QEvent::FocusIn) {
         mLabelError->setPlainText("");
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_EVENTFILTER_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_EVENTFILTER_EXIT);
     return false;
 }
 
@@ -258,7 +269,8 @@ bool WlanWizardPageKeyQuery::eventFilter(QObject *obj, QEvent *event)
 QString WlanWizardPageKeyQuery::keyStatusToErrorString(
     WlanWizardUtils::KeyStatus status) const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEKEYQUERY_KEYSTATUSTOERRORSTRING_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEKEYQUERY_KEYSTATUSTOERRORSTRING_ENTRY);
+    
     QString errorString;
     switch (status) {
     case WlanWizardUtils::KeyStatusIllegalCharacters:
@@ -278,6 +290,7 @@ QString WlanWizardPageKeyQuery::keyStatusToErrorString(
         // nothing to do here.
         break;
     }
-    OstTraceFunctionExit0( WLANWIZARDPAGEKEYQUERY_KEYSTATUSTOERRORSTRING_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEKEYQUERY_KEYSTATUSTOERRORSTRING_EXIT);
     return errorString;
 }

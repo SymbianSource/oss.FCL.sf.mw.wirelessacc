@@ -28,7 +28,7 @@ TRANSLATIONS += wpswizardplugin.ts
 DOCML += \
     resources/occ_wps_01_05.docml \
     resources/occ_wps_02_03.docml \
-    resources/occ_wps_P4.docml
+    resources/occ_wps_04.docml
 
 INCLUDEPATH += inc \
         ../inc

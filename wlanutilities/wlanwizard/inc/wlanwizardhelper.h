@@ -52,45 +52,47 @@ public:
         Please remember to update trace.properties upon changes.
      */
     enum ConfigurationId {
-        //! QString: WLAN Network name (aka SSID)
-        ConfSsid = 0,
+        //! QString: WLAN Network name
+        ConfName = 0,
+        //! QByteArray: WLAN Network SSID
+        ConfSsid = 1,
         //! int: CMManagerShim::WlanConnectionMode
-        ConfNetworkMode = 1,
+        ConfNetworkMode = 2,
         //! int: CMManagerShim::WlanSecMode
-        ConfSecurityMode = 2,
+        ConfSecurityMode = 3,
         //! QString: WPA PSK
-        ConfKeyWpa = 3,
+        ConfKeyWpa = 4,
         //! QString: WEP Key 1
-        ConfKeyWep1 = 4,
+        ConfKeyWep1 = 5,
         //! QString: WEP Key 2
-        ConfKeyWep2 = 5,
+        ConfKeyWep2 = 6,
         //! QString: WEP Key 3
-        ConfKeyWep3 = 6,
+        ConfKeyWep3 = 7,
         //! QString: WEP Key 4
-        ConfKeyWep4 = 7,
+        ConfKeyWep4 = 8,
         //! int: CMManagerShim:::WlanWepKeyIndex, Default WEP Key index
-        ConfKeyWepDefault = 8,
+        ConfKeyWepDefault = 9,
         //! bool: Internet Connectivity Test result, true passed.
-        ConfIctStatus = 9,
+        ConfIctStatus = 10,
         //! int, -1 (WlanQtUtils::IapIdNone): not defined: IAP ID
-        ConfIapId = 10,
+        ConfIapId = 11,
         //! bool: true if connection was established successfully
-        ConfConnected = 11,
+        ConfConnected = 12,
         //! bool: WLAN AP explicit scanning need
-        ConfWlanScanSSID = 12,
+        ConfWlanScanSSID = 13,
         //! bool: if true use psk, if false use EAP 
-        ConfUsePsk = 13,
+        ConfUsePsk = 14,
         //! bool: if true processing connection page is required.
-        ConfProcessSettings = 14,
+        ConfProcessSettings = 15,
         //! QString: Localized error string for WlanWizardPageGenericError
-        ConfGenericErrorString = 15,
+        ConfGenericErrorString = 16,
         //! WlanWizardScanList: Available network options
-        ConfAvailableNetworkOptions = 16,
+        ConfAvailableNetworkOptions = 17,
         //! bool: Wps supported
-        ConfWpsSupported = 17,
+        ConfWpsSupported = 18,
         //! int: Identifies how many steps should be gone backwards from 
         // GenericErrorPage
-        ConfGenericErrorPageStepsBackwards = 18,
+        ConfGenericErrorPageStepsBackwards = 19,
     };
     
 public:

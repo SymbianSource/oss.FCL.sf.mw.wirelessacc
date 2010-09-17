@@ -16,18 +16,22 @@
 */
 
 // System includes
+
 #include <HbDocumentLoader>
 #include <HbMainWindow>
 #include <HbWidget>
 #include <HbLineEdit>
 #include <HbEditorInterface>
 #include <HbLabel>
+
 #include <wlanqtutils.h>
 
 // User includes
+
 #include "wlanwizardpagessid.h"
 #include "wlanwizard_p.h"
 #include "wlanwizardutils.h"
+
 #include "OstTraceDefinitions.h"
 #ifdef OST_TRACE_COMPILER_IN_USE
 #include "wlanwizardpagessidTraces.h"
@@ -44,9 +48,8 @@ WlanWizardPageSsid::WlanWizardPageSsid(WlanWizardPrivate* parent) :
     mSsid(NULL),
     mLoader(NULL)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY );
-
-    OstTraceFunctionExit0( WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT);
 }
 
 /*!
@@ -55,9 +58,11 @@ WlanWizardPageSsid::WlanWizardPageSsid(WlanWizardPrivate* parent) :
  */
 WlanWizardPageSsid::~WlanWizardPageSsid()
 {
-    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY );
+    OstTraceFunctionEntry0(DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_ENTRY);
+    
     delete mLoader;
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT );
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGESSID_WLANWIZARDPAGESSID_EXIT);
 }
 
 /*!
@@ -66,9 +71,12 @@ WlanWizardPageSsid::~WlanWizardPageSsid()
  */
 HbWidget* WlanWizardPageSsid::initializePage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_INITIALIZEPAGE_ENTRY );
-    OstTrace0( TRACE_NORMAL, WLANWIZARDPAGESSID_INITIALIZEPAGE,
-        "WlanWizardPageSsid::initializePage" );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_INITIALIZEPAGE_ENTRY);
+    
+    OstTrace0(
+        TRACE_NORMAL,
+        WLANWIZARDPAGESSID_INITIALIZEPAGE,
+        "WlanWizardPageSsid::initializePage");
 
     // It is not possible for this method to be called more than once during
     // wizard lifetime.
@@ -112,11 +120,9 @@ HbWidget* WlanWizardPageSsid::initializePage()
 
     HbEditorInterface editInterface(mSsid);
     
-    // TODO: remove (HbEditorConstraints) type cast when 
-    // Q_DECLARE_OPERATORS_FOR_FLAGS(HbEditorConstraints) is defined (SDK xxx)
     editInterface.setInputConstraints(
-        (HbEditorConstraints)(HbEditorConstraintAutoCompletingField |
-            HbEditorConstraintLatinAlphabetOnly));
+        HbEditorConstraintAutoCompletingField |
+        HbEditorConstraintLatinAlphabetOnly);
     
     editInterface.setSmileyTheme(HbSmileyTheme());
     editInterface.setEditorClass(HbInputEditorClassNetworkName);
@@ -124,7 +130,7 @@ HbWidget* WlanWizardPageSsid::initializePage()
         Qt::ImhNoPredictiveText | Qt::ImhPreferLowercase);
     mSsid->setMaxLength(WlanWizardUtils::SsidMaxLength);
 
-	OstTraceFunctionExit0( WLANWIZARDPAGESSID_INITIALIZEPAGE_EXIT );
+	OstTraceFunctionExit0(WLANWIZARDPAGESSID_INITIALIZEPAGE_EXIT);
 	return mWidget;
 }
 
@@ -135,13 +141,15 @@ HbWidget* WlanWizardPageSsid::initializePage()
  */
 bool WlanWizardPageSsid::showPage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_SHOWPAGE_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_SHOWPAGE_ENTRY);
+    
     // Initiate the scanning of public APs here.
     mWizard->wlanQtUtils()->scanWlanAps();
     
     // Open virtual keyboard by setting focus to line edit
     mSsid->setFocus();
-    OstTraceFunctionExit0( WLANWIZARDPAGESSID_SHOWPAGE_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESSID_SHOWPAGE_EXIT);
     return !(mSsid->text().isEmpty());
 }
 
@@ -152,13 +160,16 @@ bool WlanWizardPageSsid::showPage()
  */
 int WlanWizardPageSsid::nextId(bool &removeFromStack) const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_NEXTID_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_NEXTID_ENTRY);
+    
     removeFromStack = false;
 
     // SSID is stored into configuration
-    mWizard->setConfiguration(WlanWizardPrivate::ConfSsid, mSsid->text());
+    QString ssid(mSsid->text());
+    mWizard->setConfiguration(WlanWizardPrivate::ConfName, ssid);
+    mWizard->setConfiguration(WlanWizardPrivate::ConfSsid, ssid.toUtf8());
     
-    OstTraceFunctionExit0( WLANWIZARDPAGESSID_NEXTID_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGESSID_NEXTID_EXIT);
     return WlanWizardPageInternal::PageScanning;
 }
 
@@ -170,10 +181,13 @@ int WlanWizardPageSsid::nextId(bool &removeFromStack) const
  */
 void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_LOADDOCMLSECTION_ENTRY );
-    OstTrace1( TRACE_FLOW, WLANWIZARDPAGESSID_LOADDOCML,
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_LOADDOCMLSECTION_ENTRY);
+    
+    OstTrace1(
+        TRACE_FLOW,
+        WLANWIZARDPAGESSID_LOADDOCML,
         "WlanWizardPageSsid::loadDocml - orientation ;orientation=%x",
-        ( TUint )( orientation ) );
+        (TUint)orientation);
 
     WlanWizardPageInternal::loadDocmlSection(
         mLoader,
@@ -181,7 +195,8 @@ void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
         ":/docml/occ_add_wlan_01_04.docml", 
         "portrait_section",
         "landscape_section");
-    OstTraceFunctionExit0( WLANWIZARDPAGESSID_LOADDOCMLSECTION_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGESSID_LOADDOCMLSECTION_EXIT);
 }
 
 /*!
@@ -191,11 +206,15 @@ void WlanWizardPageSsid::loadDocmlSection(Qt::Orientation orientation)
  */
 void WlanWizardPageSsid::textChanged(const QString &text)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGESSID_TEXTCHANGED_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGESSID_TEXTCHANGED_ENTRY);
+
     Q_UNUSED(text);
-    OstTrace0( TRACE_FLOW, WLANWIZARDPAGESSID_TEXTCHANGED,
-        "WlanWizardPageSsid::textChanged in text edit widget" );
+    OstTrace0(
+        TRACE_FLOW,
+        WLANWIZARDPAGESSID_TEXTCHANGED,
+        "WlanWizardPageSsid::textChanged in text edit widget");
 
     mWizard->enableNextButton(!(mSsid->text().isEmpty()));
-    OstTraceFunctionExit0( WLANWIZARDPAGESSID_TEXTCHANGED_EXIT );
+
+    OstTraceFunctionExit0(WLANWIZARDPAGESSID_TEXTCHANGED_EXIT);
 }

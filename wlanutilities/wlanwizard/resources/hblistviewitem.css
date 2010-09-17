@@ -13,6 +13,8 @@ HbListViewItem::text-1[layoutName="wlanwizardsummaryitem"]{
 	text-align: left;
 	size-policy-horizontal: preferred;
 	pref-width:-1;
+	text-line-count-min:1;
+	text-line-count-max:1;
 }
 
 HbListViewItem::text-1[layoutName="wlanwizardsummaryitem"]:landscape{
@@ -28,4 +30,6 @@ HbListViewItem::text-2[layoutName="wlanwizardsummaryitem"]{
 	font-variant: secondary;
 	pref-width:-1;
 	text-align: left;
+	text-line-count-min:1;
+	text-line-count-max:1;
 }

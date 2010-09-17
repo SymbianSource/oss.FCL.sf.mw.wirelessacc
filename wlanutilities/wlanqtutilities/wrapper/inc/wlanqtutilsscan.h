@@ -26,7 +26,7 @@
 
 // User includes
 
-#include "wlanqtutilsiap.h"
+#include "wlanqtutilsap.h"
 
 // Forward declarations
 
@@ -67,7 +67,7 @@ signals:
         @param [in] availableIaps Available WLAN IAP's found in scan.
     */
     void availableWlanIaps(
-        QList< QSharedPointer<WlanQtUtilsIap> > &availableIaps);
+        QList< QSharedPointer<WlanQtUtilsAp> > &availableIaps);
 
     /*!
         Signal indicating available WLAN access points.

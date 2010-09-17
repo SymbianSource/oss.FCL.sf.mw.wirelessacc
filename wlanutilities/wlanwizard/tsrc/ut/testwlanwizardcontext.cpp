@@ -1,20 +1,22 @@
 /*
- * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
- * All rights reserved.
- * This component and the accompanying materials are made available
- * under the terms of "Eclipse Public License v1.0"
- * which accompanies this distribution, and is available
- * at the URL "http://www.eclipse.org/legal/epl-v10.html".
- *
- * Initial Contributors:
- * Nokia Corporation - initial contribution.
- *
- * Contributors:
- *
- * Description:
- */
+* Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:
+* WLAN Wizard test context.
+*/
 
 // System includes
+
 #include <HbApplication>
 #include <HbDocumentLoader>
 #include <HbStackedWidget>
@@ -23,17 +25,19 @@
 #include <HbLineEdit>
 #include <HbLabel>
 #include <HbCheckBox>
+#include <HbListWidget>
+#include <HbListWidgetItem>
+#include <HbParameterLengthLimiter>
+
 #include <QGraphicsWidget>
 #include <QObjectList>
 #include <QtCore>
 #include <QTest>
 #include <QDebug>
 #include <QList>
-#include <HbListWidget>
-#include <HbListWidgetItem>
-#include <HbParameterLengthLimiter>
 
 // User includes
+
 #include "testwlanwizardcontext.h"
 #include "hbautotest.h"
 #include "wlanwizard.h"
@@ -78,11 +82,17 @@ ContextWlanApList::~ContextWlanApList()
     clear();
 }
 
-void ContextWlanApList::Add(QString name, int netMode, int secMode, bool wpaPskInUse,
-    bool wpsSupported, int signalStrength)
+void ContextWlanApList::Add(
+    QString name,
+    int netMode,
+    int secMode,
+    bool wpaPskInUse,
+    bool wpsSupported,
+    int signalStrength)
 {
     QSharedPointer<WlanQtUtilsAp> temp = QSharedPointer<WlanQtUtilsAp>(new WlanQtUtilsAp());
-    temp->setValue(WlanQtUtilsAp::ConfIdSsid, name);
+    temp->setValue(WlanQtUtilsAp::ConfIdName, name);
+    temp->setValue(WlanQtUtilsAp::ConfIdSsid, name.toUtf8());
     temp->setValue(WlanQtUtilsAp::ConfIdConnectionMode, netMode);
     temp->setValue(WlanQtUtilsAp::ConfIdSecurityMode, secMode);
     temp->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, wpaPskInUse);
@@ -964,5 +974,3 @@ bool TestView::verifyStatus(WizardStatusSignal status, int iapId )
     }
     return ret;
 }
-
-

@@ -5,7 +5,6 @@
     </qresource>
 
     <qresource prefix="/wlansnifferlayout" >
-        <file>listview.css</file>
         <file>hblistviewitem.css</file>
         <file>hblistviewitem.widgetml</file>
     </qresource>

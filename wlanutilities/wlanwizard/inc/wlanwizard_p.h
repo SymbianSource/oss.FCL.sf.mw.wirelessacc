@@ -62,7 +62,8 @@ public:
     virtual ~WlanWizardPrivate();
 
     void setParameters(
-        const QString &ssid, 
+        const QString &name,
+        const QByteArray &ssid,
         int networkMode, 
         int securityMode,
         bool usePsk, 
@@ -73,7 +74,8 @@ public:
 public:
     // For WLAN Wizard pages
     int getNextPageId(
-        const QString &ssid, 
+        const QString &name,
+        const QByteArray &ssid,
         int networkMode, 
         int securityMode,
         bool usePsk, 

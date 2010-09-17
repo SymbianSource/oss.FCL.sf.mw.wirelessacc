@@ -137,20 +137,22 @@ WlanWizard::~WlanWizard()
    Wifi Protected Setup
    \a wps can be used with Open, WEP and WPA (2) with PSK.
    
-   @param [in] ssid The name of WLAN network (ssid), max length 32 characters.
+   @param [in] name The name of WLAN network, max length 32 characters.
+   @param [in] ssid The SSID of WLAN network, max length 32 characters.
    @param [in] networkMode Network mode of known access point
    @param [in] securityMode Security mode of known access point
    @param [in] usePsk used only with WPA or WPA2 \a securityMode
    @param [in] wps is Wifi Protected Setup supported?
  */
 void WlanWizard::setParameters(
-    const QString &ssid, 
+    const QString &name, 
+    const QByteArray &ssid, 
     int networkMode, 
     int securityMode, 
     bool usePsk,
     bool wps)
 {
-    d_ptr->setParameters(ssid, networkMode, securityMode, usePsk, wps);
+    d_ptr->setParameters(name, ssid, networkMode, securityMode, usePsk, wps);
 }
 
 /*!

@@ -26,7 +26,6 @@
 
 // User includes
 
-#include "wlanqtutilsiap.h"
 #include "wlanqtutilsap.h"
 
 #include "wlansnifferlistwidget.h"
@@ -348,18 +347,18 @@ void TestWlanSniffer::testUpdateContentRobustness1()
 
 void TestWlanSniffer::testUpdateContentRobustness2()
 {
-    QSharedPointer<WlanQtUtilsIap> iap2(new WlanQtUtilsIap());
-    iap2->setValue(WlanQtUtilsIap::ConfIdIapId, 2);
-    iap2->setValue(WlanQtUtilsIap::ConfIdNetworkId, 0);
-    iap2->setValue(WlanQtUtilsIap::ConfIdName, "SSID 2");
+    QSharedPointer<WlanQtUtilsAp> iap2(new WlanQtUtilsAp());
+    iap2->setValue(WlanQtUtilsAp::ConfIdIapId, 2);
+    iap2->setValue(WlanQtUtilsAp::ConfIdNetworkId, 0);
+    iap2->setValue(WlanQtUtilsAp::ConfIdName, "SSID 2");
     iap2->setValue(WlanQtUtilsAp::ConfIdSsid, "SSID 2");
     iap2->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 10);
     iap2->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     iap2->setValue(WlanQtUtilsAp::ConfIdSecurityMode, CMManagerShim::WlanSecModeWpa);
-    QSharedPointer<WlanQtUtilsIap> iap4(new WlanQtUtilsIap());
-    iap4->setValue(WlanQtUtilsIap::ConfIdIapId, 4);
-    iap4->setValue(WlanQtUtilsIap::ConfIdNetworkId, 0);
-    iap4->setValue(WlanQtUtilsIap::ConfIdName, "SSID 4");
+    QSharedPointer<WlanQtUtilsAp> iap4(new WlanQtUtilsAp());
+    iap4->setValue(WlanQtUtilsAp::ConfIdIapId, 4);
+    iap4->setValue(WlanQtUtilsAp::ConfIdNetworkId, 0);
+    iap4->setValue(WlanQtUtilsAp::ConfIdName, "SSID 4");
     iap4->setValue(WlanQtUtilsAp::ConfIdSsid, "SSID 4");
     iap4->setValue(WlanQtUtilsAp::ConfIdSignalStrength, 20);
     iap4->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
@@ -528,6 +527,7 @@ void TestWlanSniffer::appendWlanAp(
     int securityMode)
 {
     QSharedPointer<WlanQtUtilsAp> ap(new WlanQtUtilsAp());
+    ap->setValue(WlanQtUtilsAp::ConfIdName, ssId);
     ap->setValue(WlanQtUtilsAp::ConfIdSsid, ssId);
     ap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, signalStrength);
     ap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, networkMode);
@@ -549,15 +549,15 @@ void TestWlanSniffer::appendWlanIap(
     int signalStrength,
     int securityMode)
 {
-    WlanQtUtilsIap *iap = new WlanQtUtilsIap();
-    iap->setValue(WlanQtUtilsIap::ConfIdIapId, iapId);
-    iap->setValue(WlanQtUtilsIap::ConfIdNetworkId, netId);
-    iap->setValue(WlanQtUtilsIap::ConfIdName, name);
+    WlanQtUtilsAp *iap = new WlanQtUtilsAp();
+    iap->setValue(WlanQtUtilsAp::ConfIdIapId, iapId);
+    iap->setValue(WlanQtUtilsAp::ConfIdNetworkId, netId);
+    iap->setValue(WlanQtUtilsAp::ConfIdName, name);
     iap->setValue(WlanQtUtilsAp::ConfIdSsid, ssId);
     iap->setValue(WlanQtUtilsAp::ConfIdSignalStrength, signalStrength);
     iap->setValue(WlanQtUtilsAp::ConfIdConnectionMode, CMManagerShim::Infra);
     iap->setValue(WlanQtUtilsAp::ConfIdSecurityMode, securityMode);
     iap->setValue(WlanQtUtilsAp::ConfIdWpaPskUse, false);
     iap->setValue(WlanQtUtilsAp::ConfIdWpsSupported, false);
-    mIaps.append(QSharedPointer<WlanQtUtilsIap>(iap));
+    mIaps.append(QSharedPointer<WlanQtUtilsAp>(iap));
 }

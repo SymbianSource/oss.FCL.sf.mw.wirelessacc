@@ -86,7 +86,8 @@ void FirstView::start(bool)
 
     if (mUseConf->isChecked()) {
         mWizard->setParameters(
-            mSsid->text(), 
+            mSsid->text(),
+            mSsid->text().toUtf8(),
             mNetworkMode->currentIndex(), 
             1 << mSecurityMode->currentIndex(),
             mUseWpaPsk->isChecked(),

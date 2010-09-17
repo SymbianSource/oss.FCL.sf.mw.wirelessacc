@@ -12,7 +12,7 @@
 * Contributors:
 *
 * Description: 
-*   WLAN Wizard Page: Processing settings, connection and running ict.
+* WLAN Wizard Page: Processing settings, connection and running ICT.
 */
 
 // System includes
@@ -66,7 +66,8 @@ WlanWizardPageProcessingSettings::WlanWizardPageProcessingSettings(
     mLabel(NULL), 
     mNextPageId(WlanWizardPageInternal::PageSummary)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_ENTRY);
+    
     WlanQtUtils* utils = mWizard->wlanQtUtils();
 
     bool ok;
@@ -93,7 +94,8 @@ WlanWizardPageProcessingSettings::WlanWizardPageProcessingSettings(
 
     Q_UNUSED(ok);
     Q_ASSERT(ok);
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_EXIT);
 }
 
 /*!
@@ -101,12 +103,14 @@ WlanWizardPageProcessingSettings::WlanWizardPageProcessingSettings(
  */
 WlanWizardPageProcessingSettings::~WlanWizardPageProcessingSettings()
 {
-    OstTraceFunctionEntry0( DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_ENTRY );
+    OstTraceFunctionEntry0(DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_ENTRY);
+    
     // signals are automatically disconnected
     delete mDocLoader;
     
     // Wizard framework deletes the visualization (owns mWidget).
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_EXIT );
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANWIZARDPAGEPROCESSINGSETTINGS_EXIT);
 }
 
 /*!
@@ -114,7 +118,8 @@ WlanWizardPageProcessingSettings::~WlanWizardPageProcessingSettings()
  */
 HbWidget* WlanWizardPageProcessingSettings::initializePage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_INITIALIZEPAGE_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_INITIALIZEPAGE_ENTRY);
+    
     if (!mWidget) {
         mDocLoader = new HbDocumentLoader(mWizard->mainWindow());
         
@@ -138,9 +143,9 @@ HbWidget* WlanWizardPageProcessingSettings::initializePage()
     mLabel->setPlainText(
         HbParameterLengthLimiter(
             "txt_occ_dialog_checking_connection_to_1").arg(
-                mWizard->configuration(WlanWizardPrivate::ConfSsid).toString()));
+                mWizard->configuration(WlanWizardPrivate::ConfName).toString()));
 
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_INITIALIZEPAGE_EXIT );
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_INITIALIZEPAGE_EXIT);
     return mWidget;
 }
 
@@ -153,9 +158,11 @@ HbWidget* WlanWizardPageProcessingSettings::initializePage()
  */
 int WlanWizardPageProcessingSettings::nextId(bool &removeFromStack) const
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_NEXTID_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_NEXTID_ENTRY);
+    
     removeFromStack = true;
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_NEXTID_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_NEXTID_EXIT);
     return mNextPageId;
 }
 
@@ -167,8 +174,8 @@ int WlanWizardPageProcessingSettings::nextId(bool &removeFromStack) const
  */
 bool WlanWizardPageProcessingSettings::showPage()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_SHOWPAGE_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_SHOWPAGE_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_SHOWPAGE_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_SHOWPAGE_EXIT);
     return false;
 }
 
@@ -180,14 +187,16 @@ bool WlanWizardPageProcessingSettings::showPage()
  */
 void WlanWizardPageProcessingSettings::loadDocmlSection(Qt::Orientation orientation)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_LOADDOCMLSECTION_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_LOADDOCMLSECTION_ENTRY);
+    
     WlanWizardPageInternal::loadDocmlSection(
         mDocLoader,
         orientation,
         ":/docml/occ_add_wlan_06.docml", 
         "portrait_section",
         "landscape_section");
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_LOADDOCMLSECTION_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_LOADDOCMLSECTION_EXIT);
 }
 
 /*!
@@ -201,14 +210,17 @@ void WlanWizardPageProcessingSettings::loadDocmlSection(Qt::Orientation orientat
  */
 void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_ENTRY );
-    OstTraceExt2( TRACE_BORDER,
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_ENTRY);
+    
+    OstTraceExt2(
+        TRACE_BORDER,
         WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED, 
         "WlanWizardPageProcessingSettings::wlanNetworkClosed;iapId=%d;reason=%d",
-        iapId, reason );
+        iapId,
+        reason);
         
     if (iapId != mWizard->configuration(WlanWizardHelper::ConfIapId).toInt()) {
-        OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_EXIT );
+        OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_EXIT);
         return;
     }
 
@@ -262,9 +274,11 @@ void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
     }
     
     OstTrace0( 
-        TRACE_BORDER, WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_DONE,
-        "WlanWizardPageProcessingSettings::wlanNetworkClosed - Done" );
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_EXIT );
+        TRACE_BORDER,
+        WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_DONE,
+        "WlanWizardPageProcessingSettings::wlanNetworkClosed - Done");
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKCLOSED_EXIT);
 }
 
 /*!
@@ -276,15 +290,17 @@ void WlanWizardPageProcessingSettings::wlanNetworkClosed(int iapId, int reason)
  */
 void WlanWizardPageProcessingSettings::ictResult(int iapId, int reason)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_ENTRY);
+    
     OstTraceExt2( 
         TRACE_BORDER, 
         WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT, 
         "WlanWizardPageProcessingSettings::ictResult;iapId=%d;result=%d", 
-        iapId, reason );
+        iapId,
+        reason);
     
     if (iapId != mWizard->configuration(WlanWizardHelper::ConfIapId).toInt()) {
-        OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_EXIT );
+        OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_EXIT);
         return;
     }
     
@@ -304,9 +320,12 @@ void WlanWizardPageProcessingSettings::ictResult(int iapId, int reason)
         
     mWizard->nextPage();
     
-    OstTrace0( TRACE_BORDER, WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_DONE, 
-        "WlanWizardPageProcessingSettings::ictResult - Done" );
-    OstTraceFunctionExit0( DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_EXIT );
+    OstTrace0(
+        TRACE_BORDER,
+        WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_DONE, 
+        "WlanWizardPageProcessingSettings::ictResult - Done");
+    
+    OstTraceFunctionExit0(DUP1_WLANWIZARDPAGEPROCESSINGSETTINGS_ICTRESULT_EXIT);
 }
 
 /*!
@@ -316,14 +335,16 @@ void WlanWizardPageProcessingSettings::ictResult(int iapId, int reason)
  */
 void WlanWizardPageProcessingSettings::wlanNetworkOpened(int iapId)
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKOPENED_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKOPENED_ENTRY);
+    
     Q_UNUSED(iapId);
     OstTrace1(
         TRACE_BORDER, 
         WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKOPENED, 
         "WlanWizardPageProcessingSettings::wlanNetworkOpened;iapId=%d", 
         iapId);
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKOPENED_EXIT );
+    
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_WLANNETWORKOPENED_EXIT);
 }
 
 /*!
@@ -333,8 +354,8 @@ void WlanWizardPageProcessingSettings::wlanNetworkOpened(int iapId)
  */
 bool WlanWizardPageProcessingSettings::requiresStartOperation()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_REQUIRESSTARTOPERATION_ENTRY );
-    OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_REQUIRESSTARTOPERATION_EXIT );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_REQUIRESSTARTOPERATION_ENTRY);
+    OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_REQUIRESSTARTOPERATION_EXIT);
     return true;
 }
 
@@ -345,7 +366,8 @@ bool WlanWizardPageProcessingSettings::requiresStartOperation()
  */
 void WlanWizardPageProcessingSettings::startOperation()
 {
-    OstTraceFunctionEntry0( WLANWIZARDPAGEPROCESSINGSETTINGS_STARTOPERATION_ENTRY );
+    OstTraceFunctionEntry0(WLANWIZARDPAGEPROCESSINGSETTINGS_STARTOPERATION_ENTRY);
+    
     if (mWizard->handleIap()) {
         mNextPageId = WlanWizardPageInternal::PageSummary;
         
@@ -370,5 +392,6 @@ void WlanWizardPageProcessingSettings::startOperation()
             WlanWizardPage::OneStepBackwards);
         mWizard->nextPage();
     }
-	OstTraceFunctionExit0( WLANWIZARDPAGEPROCESSINGSETTINGS_STARTOPERATION_EXIT );
+    
+	OstTraceFunctionExit0(WLANWIZARDPAGEPROCESSINGSETTINGS_STARTOPERATION_EXIT);
 }

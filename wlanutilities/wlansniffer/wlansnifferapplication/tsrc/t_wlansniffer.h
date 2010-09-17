@@ -28,7 +28,6 @@
 // Forward declarations
 
 class HbListWidget;
-class WlanQtUtilsIap;
 class WlanQtUtilsAp;
 class WlanSnifferListWidget;
 
@@ -84,7 +83,7 @@ private: // data
     
     HbListWidget *mListWidget;
     WlanSnifferListWidget *mWidget;
-    QList< QSharedPointer<WlanQtUtilsIap> > mIaps;
+    QList< QSharedPointer<WlanQtUtilsAp> > mIaps;
     QList< QSharedPointer<WlanQtUtilsAp> > mAps;
 };
 

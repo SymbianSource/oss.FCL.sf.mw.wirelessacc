@@ -266,7 +266,7 @@ void EapQtConfigInterfaceContext::createEapFast(
     }
     
     EapQtConfig config;
-    config.setValue(EapQtConfig::ProvisioningModeAuthenticated, false);
+    config.setValue(EapQtConfig::ProvisioningModeAuthenticated, true);
     config.setValue(EapQtConfig::ProvisioningModeUnauthenticated, true);
     config.setValue(EapQtConfig::VerifyServerRealm, false);
     config.setValue(EapQtConfig::UseIdentityPrivacy, false);

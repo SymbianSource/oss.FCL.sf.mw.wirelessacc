@@ -542,7 +542,7 @@ bool EapWizardPrivate::handleEapFastSettings(EapQtConfig &eapConf)
     bool ret = true;
     EapQtPacStoreConfig pacStoreConf;
 
-    eapConf.setValue(EapQtConfig::ProvisioningModeAuthenticated, false);
+    eapConf.setValue(EapQtConfig::ProvisioningModeAuthenticated, true);
     eapConf.setValue(EapQtConfig::ProvisioningModeUnauthenticated, true);
     eapConf.setValue(EapQtConfig::VerifyServerRealm, false);
     eapConf.setValue(EapQtConfig::UseIdentityPrivacy, false);

@@ -28,7 +28,6 @@
 
 #include "wlanqtutils.h"
 #include "wlanqtutilsap.h"
-#include "wlanqtutilsiap.h"
 
 #include "wlansniffer.h"
 #include "wlansnifferlistitem.h"
@@ -108,7 +107,7 @@ WlanSnifferListWidget::~WlanSnifferListWidget()
  */
 
 void WlanSnifferListWidget::updateContent(
-    QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+    QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
     QList< QSharedPointer<WlanQtUtilsAp> > &aps,
     int connectedIapId)
 {
@@ -169,7 +168,7 @@ void WlanSnifferListWidget::scrollTo(int row)
 */
 
 void WlanSnifferListWidget::sortIaps(
-    QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+    QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
     int connectedIapId)
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_SORTIAPS_ENTRY);
@@ -183,7 +182,7 @@ void WlanSnifferListWidget::sortIaps(
     // Find the possible connected IAP
     int connectedIndex = 0;
     for (int i = 0; i < iaps.size(); i++) {
-        if (iaps[i]->value(WlanQtUtilsIap::ConfIdIapId).toInt() == connectedIapId) {
+        if (iaps[i]->value(WlanQtUtilsAp::ConfIdIapId).toInt() == connectedIapId) {
             connectedIndex = i;
             break;
         }
@@ -235,13 +234,13 @@ void WlanSnifferListWidget::sortAps(
  */
 
 bool WlanSnifferListWidget::iapLessThan(
-    const QSharedPointer<WlanQtUtilsIap> iap1,
-    const QSharedPointer<WlanQtUtilsIap> iap2)
+    const QSharedPointer<WlanQtUtilsAp> iap1,
+    const QSharedPointer<WlanQtUtilsAp> iap2)
 {
     // Primary comparison is based on the name
     int result = HbStringUtil::compareC(
-        iap1->value(WlanQtUtilsIap::ConfIdName).toString(),
-        iap2->value(WlanQtUtilsIap::ConfIdName).toString());
+        iap1->value(WlanQtUtilsAp::ConfIdName).toString(),
+        iap2->value(WlanQtUtilsAp::ConfIdName).toString());
 
     return (result < 0) ? true : false;
 }
@@ -276,13 +275,13 @@ bool WlanSnifferListWidget::apLessThan(
     @return Found WLAN List Widget item, 0 if not found.
 */
 
-WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
-    QSharedPointer<WlanQtUtilsIap> iap)
+WlanSnifferListItem *WlanSnifferListWidget::findFromOldIapList(
+    QSharedPointer<WlanQtUtilsAp> iap)
 {
-    OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_IAP_ENTRY);
+    OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_FINDFROMOLDIAPLIST_IAP_ENTRY);
 
     WlanSnifferListItem *result = NULL;
-    QVariant iapData = iap->value(WlanQtUtilsIap::ConfIdIapId);
+    QVariant iapData = iap->value(WlanQtUtilsAp::ConfIdIapId);
     for (int row = 0; row < mListWidget->count(); row++) {
         HbListWidgetItem *item = mListWidget->item(row);
         if (item->data() == iapData) {
@@ -293,12 +292,12 @@ WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
 
     OstTraceExt2(
         TRACE_DUMP,
-        WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_IAP,
-        "WlanSnifferListWidget::findFromOldList;iapId=%d;found=%hhu",
+        WLANSNIFFERLISTWIDGET_FINDFROMOLDIAPLIST_IAP,
+        "WlanSnifferListWidget::findFromOldIapList;iapId=%d;found=%hhu",
         iapData.toInt(),
         (result != NULL) ? true : false);
     
-    OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_IAP_EXIT);
+    OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_FINDFROMOLDIAPLIST_IAP_EXIT);
     return result;
 }
 
@@ -310,10 +309,10 @@ WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
     @return Found WLAN List Widget item, 0 if not found.
 */
 
-WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
+WlanSnifferListItem *WlanSnifferListWidget::findFromOldApList(
     QSharedPointer<WlanQtUtilsAp> ap)
 {
-    OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_AP_ENTRY);
+    OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_FINDFROMOLDAPLIST_ENTRY);
     
     WlanSnifferListItem *result = NULL;
     for (int row = 0; row < mListWidget->count(); row++) {
@@ -332,13 +331,13 @@ WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
     TPtrC16 ssid(tmp.utf16(), tmp.length());
     OstTraceExt2(
         TRACE_NORMAL,
-        WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_AP,
-        "WlanSnifferListWidget::findFromOldList;found=%hhu;ssid=%S",
+        WLANSNIFFERLISTWIDGET_FINDFROMOLDAPLIST,
+        "WlanSnifferListWidget::findFromOldApList;found=%hhu;ssid=%S",
         (result != NULL) ? true : false,
         ssid);
 #endif
     
-    OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_FINDFROMOLDLIST_AP_EXIT);
+    OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_FINDFROMOLDAPLIST_EXIT);
     return result;
 }
 
@@ -353,13 +352,13 @@ WlanSnifferListItem *WlanSnifferListWidget::findFromOldList(
 */
 
 HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
-    QSharedPointer<WlanQtUtilsIap> iap,
+    QSharedPointer<WlanQtUtilsAp> iap,
     int connectedIapId)
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_LISTITEMCREATE_IAP_ENTRY);
     
     WlanSnifferListItem *item = new WlanSnifferListItem();
-    item->setNetworkName(iap->value(WlanQtUtilsIap::ConfIdName).toString());
+    item->setNetworkName(iap->value(WlanQtUtilsAp::ConfIdName).toString());
     // Note: WPS icon is needed only in IAP setup, no longer here
     if (iap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt() !=
         CMManagerShim::WlanSecModeOpen) {
@@ -368,13 +367,13 @@ HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
 
     item->setLeftIcon(
         leftIconChoose(
-            iap->value(WlanQtUtilsIap::ConfIdIapId).toInt(),
+            iap->value(WlanQtUtilsAp::ConfIdIapId).toInt(),
             connectedIapId));
     item->setSignalIcon(
         signalStrengthIconChoose(
             iap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt()));
     
-    item->setData(iap->value(WlanQtUtilsIap::ConfIdIapId));
+    item->setData(iap->value(WlanQtUtilsAp::ConfIdIapId));
     
     OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_LISTITEMCREATE_IAP_EXIT);
     return item;
@@ -394,7 +393,7 @@ HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
     OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_LISTITEMCREATE_AP_ENTRY);
     
     WlanSnifferListItem *item = new WlanSnifferListItem();
-    item->setNetworkName(ap->value(WlanQtUtilsAp::ConfIdSsid).toString());
+    item->setNetworkName(ap->value(WlanQtUtilsAp::ConfIdName).toString());
     if (ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool()) {
         // WPS is supported, use a dedicated security icon
         item->setSecureIcon("qtg_small_wifi");
@@ -406,11 +405,11 @@ HbListWidgetItem *WlanSnifferListWidget::listItemCreate(
     item->setSignalIcon(
         signalStrengthIconChoose(
             ap->value(WlanQtUtilsAp::ConfIdSignalStrength).toInt()));
-    
+
     QVariant data;
     data.setValue(*ap);
     item->setData(data);
-    
+
     OstTraceFunctionExit0(WLANSNIFFERLISTWIDGET_LISTITEMCREATE_AP_EXIT);
     return item;
 }
@@ -477,7 +476,7 @@ QString WlanSnifferListWidget::leftIconChoose(
 */
 
 void WlanSnifferListWidget::removeLostItems(
-    const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+    const QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
     const QList< QSharedPointer<WlanQtUtilsAp> > &aps)
 {
     OstTraceFunctionEntry0(WLANSNIFFERLISTWIDGET_REMOVELOSTITEMS_ENTRY);
@@ -490,8 +489,8 @@ void WlanSnifferListWidget::removeLostItems(
         const HbListWidgetItem *item = mListWidget->item(row);
         if (item->data().canConvert<int>()) {
             // Item was an IAP, try to find it from the new IAP list
-            foreach (QSharedPointer<WlanQtUtilsIap> iap, iaps) {
-                if (iap->value(WlanQtUtilsIap::ConfIdIapId) == 
+            foreach (QSharedPointer<WlanQtUtilsAp> iap, iaps) {
+                if (iap->value(WlanQtUtilsAp::ConfIdIapId) == 
                     item->data()) {
                     found = true;
                     break;
@@ -540,7 +539,7 @@ void WlanSnifferListWidget::removeLostItems(
 */
 
 void WlanSnifferListWidget::addDiscoveredItemsAndUpdateRest(
-    const QList< QSharedPointer<WlanQtUtilsIap> > &iaps,
+    const QList< QSharedPointer<WlanQtUtilsAp> > &iaps,
     const QList< QSharedPointer<WlanQtUtilsAp> > &aps,
     int connectedIapId)
 {
@@ -548,13 +547,13 @@ void WlanSnifferListWidget::addDiscoveredItemsAndUpdateRest(
     
     int row = 0;
     // Loop through new IAPs and try to find them from the old list
-    foreach (QSharedPointer<WlanQtUtilsIap> newIap, iaps) {
-        WlanSnifferListItem *oldItem = findFromOldList(newIap);
+    foreach (QSharedPointer<WlanQtUtilsAp> newIap, iaps) {
+        WlanSnifferListItem *oldItem = findFromOldIapList(newIap);
         if (oldItem != NULL) {
             // Match found, update icons
             oldItem->setLeftIcon(
                 leftIconChoose(
-                    newIap->value(WlanQtUtilsIap::ConfIdIapId).toInt(),
+                    newIap->value(WlanQtUtilsAp::ConfIdIapId).toInt(),
                     connectedIapId));
             oldItem->setSignalIcon(
                 signalStrengthIconChoose(
@@ -588,7 +587,7 @@ void WlanSnifferListWidget::addDiscoveredItemsAndUpdateRest(
     // Repeat the same for new APs. Notice that row index continues from
     // previous loop
     foreach (QSharedPointer<WlanQtUtilsAp> newAp, aps) {
-        WlanSnifferListItem *oldItem = findFromOldList(newAp);
+        WlanSnifferListItem *oldItem = findFromOldApList(newAp);
         if (oldItem != NULL) {
             oldItem->setSignalIcon(
                 signalStrengthIconChoose(

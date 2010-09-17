@@ -25,6 +25,7 @@
 #include <es_enum.h>
 
 #include <cmconnectionmethod.h>
+#include <cmpluginwlandef.h>
 #include <cmconnectionmethoddef.h>
 #include <cmmanager.h>
 #include <cmmanagerdef.h>
@@ -109,14 +110,26 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
     
     if  ( aSettings.Name.Length() > 0 )
         {
-        plugin.SetStringAttributeL( ECmName, aSettings.Name );
-        plugin.UpdateL();
+        plugin.SetStringAttributeL( CMManager::ECmName, aSettings.Name );
         }
+    
+    if  ( aSettings.iSSID.Length() > 0 )
+        {
+        plugin.SetStringAttributeL( CMManager::EWlanSSID, aSettings.iSSID );
+        }
+    
+    plugin.SetIntAttributeL( CMManager::EWlanConnectionMode, 
+                              aSettings.iConnectionMode );
+    plugin.SetIntAttributeL( CMManager::EWlanChannelID, 0 );
+    plugin.SetIntAttributeL( CMManager::EWlanSecurityMode, 
+                              aSettings.iSecurityMode );
+    
+    plugin.UpdateL();
     CleanupStack::PopAndDestroy( &plugin ); 
     CleanupStack::PopAndDestroy( &cmManager ); 
 
     // CommsDat section starts
-    CMDBSession* dbSession = CMDBSession::NewL(CMDBSession::LatestVersion());
+    CMDBSession* dbSession = CMDBSession::NewL( CMDBSession::LatestVersion() );
     CleanupStack::PushL( dbSession );
     iWLANRecord = static_cast<CMDBGenericRecord*>
         ( CCDRecordBase::RecordFactoryL( 0 ) );
@@ -124,37 +137,8 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
     iWLANRecord->InitializeL( KGenericTable(),NULL );
     iWLANRecord->SetRecordId( serviceId );
     iWLANRecord->LoadL( *dbSession );
-
-    // Set Network Name
-    if ( aSettings.iSSID.Length() > 0 )
-        {
-        CMDBField<TDesC>* textField = 
-            (CMDBField<TDesC>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanSSID );            
-        textField->SetMaxLengthL( aSettings.iSSID.Length() );
-        textField->SetL( aSettings.iSSID );
-        }
     
-    // Set Connection Mode 
-    *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanConnMode)) = 
-                                                   aSettings.iConnectionMode;
-    
-    // Set Channel Id.
-    *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanChannelID )) = 0;
-    
-    //  Set Security Mode
-    *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanSecMode )) = 
-                                                    aSettings.iSecurityMode;
-    
-    // Check if THssIapSettings is created wrong (dynamically). 
-    // -> Then default value is not set to security mode and it will be huge.
-    // -> Destination can become unusable.
-    TInt secMode = aSettings.iSecurityMode;
-    if ( secMode > EHssWpa2Only )
-        {
-        secMode = EHssAllowUnsecure;
-        }
-    
-    if( secMode == EHssWep )
+    if( aSettings.iSecurityMode == EHssWep )
         {
         DEBUG("CHssIapHandler::ChangeSettingsL -> SecurityMode == EHssWep");
         *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL(KCDTIdWlanAuthMode)) = aSettings.iAuthenticationMode;
@@ -167,7 +151,7 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
         *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanFormatKey3 )) = aSettings.iWepKeyFormat[2];
         *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL( KCDTIdWlanFormatKey4 )) = aSettings.iWepKeyFormat[3];
         }
-    else if( secMode > EHssWep )
+    else if( aSettings.iSecurityMode > EHssWep )
         {
         DEBUG("CHssIapHandler::ChangeSettingsL -> SecurityMode > EHssWep");
         if ( aSettings.iEnableWpaPsk ) // Use PreSharedKey
@@ -188,12 +172,13 @@ TInt CHssIapHandler::ChangeSettingsL( const TUint aIapID,
             *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL(KCDTIdWlanWpaKeyLength)) = aSettings.iWPAKeyLength;
             *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL(KCDTIdWlanEnableWpaPsk)) = aSettings.iEnableWpaPsk;
             }
-        else // Use EAP. EAP settings can be set with EAP API.
+        else // Use EAP. EAP settings can be set using EAP API.
             {
             DEBUG("CHssIapHandler::ChangeSettingsL -> SecurityMode > EHssWep -> EAP");
             *((CMDBField<TUint32>*)iWLANRecord->GetFieldByIdL(KCDTIdWlanEnableWpaPsk)) = aSettings.iEnableWpaPsk;
             }
         }
+    
     // Update access point, be prepared that Commsdat might be locked
     TInt errCode( KErrLocked );
     TInt retryCount( 0 );
