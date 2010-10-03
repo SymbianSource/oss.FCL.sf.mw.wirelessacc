@@ -85,6 +85,7 @@ public:
     WlanLoginNetworkAccessManager* networkAccessManager() const;
     EngineState engineState();
     void setEngineState(EngineState newState);
+    bool bringSnifferToForeground();
     
 signals:
     void completeServiceRequest(int status);

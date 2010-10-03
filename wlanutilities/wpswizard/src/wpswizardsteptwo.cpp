@@ -145,6 +145,8 @@ int WpsPageStepTwo::nextId(bool &removeFromStack) const
     removeFromStack = false;
     
     if (mItemSelected == WpsPushButtonMode) {
+        // Reset Pin code, pin 0 means push-button mode
+        mWizard->setPin(0);
         id = WpsWizardPage::PageWpsWizardStep3_Button;
         
     } else if (mItemSelected == WpsPinCodeMode) {

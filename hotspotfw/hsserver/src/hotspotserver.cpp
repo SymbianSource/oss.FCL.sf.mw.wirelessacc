@@ -107,6 +107,12 @@ void PanicClient(const RMessagePtr2& aMessage,THotspotPanic aPanic)
 CHotSpotServer::CHotSpotServer()
     :CPolicyServer( EPriorityStandard, THotSpotServerPlatSecPolicy, ESharableSessions )
     {
+    iAssociationValue=false;
+    iLogoutSent=false ;
+    iLoginValue=false;
+    iIapCheckValue=false;
+    iMgtClient=NULL;
+    iClientIapsChecked =0;
     }
 
 // -----------------------------------------------------------------------------
@@ -234,7 +240,7 @@ void CHotSpotServer::FindClientIapsL()
                                             EWlanServiceExtensionTableName );
                 clientUid.Copy( client->Des() );
                 delete client;
-                SetClientIap( iapId, clientUid );
+                SetClientIapL( iapId, clientUid );
                 DEBUG1("CHotSpotServer::FindClientIapsL() iapId: %d", iapId );
                 }
             }
@@ -532,15 +538,15 @@ TUint CHotSpotServer::GetLogoutTimeMicroSecs( TDes& aClientUid )
     }
 
 // -----------------------------------------------------------------------------
-// SetTimerValues
+// SetTimerValuesL
 // -----------------------------------------------------------------------------
 //
-void CHotSpotServer::SetTimerValues(
+void CHotSpotServer::SetTimerValuesL(
         TDes& aClientUid,
         TUint aLoginTimerValue,   // in seconds
         TUint aLogoutTimerValue ) // in seconds
     {    
-    DEBUG("HotspotServer::SetTimerValues()");
+    DEBUG("HotspotServer::SetTimerValuesL()");
     TInt ret = FindClientUid( aClientUid );
     TUint loginTimeMicroSecs = KHssDefaultLoginTimeMicroSecs ;
     TUint logoutTimeMicroSecs = KHssDefaultLogoutTimeMicroSecs ;
@@ -560,20 +566,20 @@ void CHotSpotServer::SetTimerValues(
 
     if (ret != KErrNotFound)
         {
-        DEBUG("CHotSpotServer::SetTimerValues(): Existing client modified.");
+        DEBUG("CHotSpotServer::SetTimerValuesL(): Existing client modified.");
         // ret is the matching element's index.
         iLoginLogoutTimerArray[ret].iLoginTimeMicroSecs = loginTimeMicroSecs;
         iLoginLogoutTimerArray[ret].iLogoutTimeMicroSecs = logoutTimeMicroSecs;
         }
     else
         {
-        DEBUG("CHotSpotServer::SetTimerValues(): New Client added.");
+        DEBUG("CHotSpotServer::SetTimerValuesL(): New Client added.");
         // Create a new element and append it to the array.
         const SLoginLogoutTimers addedElement = {
                 aClientUid,
                 loginTimeMicroSecs,
                 logoutTimeMicroSecs };
-        iLoginLogoutTimerArray.Append( addedElement );
+        iLoginLogoutTimerArray.AppendL( addedElement );
         }
     }
 
@@ -629,14 +635,14 @@ TInt CHotSpotServer::GetClientUid( TUint aIapId,  TDes& aUid )
     }
 
 // -----------------------------------------------------------------------------
-// SetClientIap
+// SetClientIapL
 // -----------------------------------------------------------------------------
 //
-void CHotSpotServer::SetClientIap( TUint aIapId, TDes& aUid )
+void CHotSpotServer::SetClientIapL( TUint aIapId, TDes& aUid )
     {
     DEBUG("CHotspotServer::SetClientIap()");
     SClientIaps clientElement = { aIapId, aUid };
-    iClientIaps.Append( clientElement );
+    iClientIaps.AppendL( clientElement );
     }
 
 // -----------------------------------------------------------------------------

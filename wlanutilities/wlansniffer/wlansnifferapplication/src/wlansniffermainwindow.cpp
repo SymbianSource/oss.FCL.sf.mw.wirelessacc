@@ -136,42 +136,43 @@ void WlanSnifferMainWindow::startWlanWizard(const WlanQtUtilsAp *ap)
 {
     OstTraceFunctionEntry0(WLANSNIFFERMAINWINDOW_STARTWLANWIZARD_ENTRY);
     
-    Q_ASSERT(mWizard == NULL);
-
-    // Stop WLAN scanning for the duration of WLAN Wizard
-    mEngine->stopWlanScanning();
-    
-    mWizard = QSharedPointer<WlanWizard>(new WlanWizard(this));
-    bool connectStatus = connect(
-        mWizard.data(),
-        SIGNAL(finished(int,bool)),
-        this,
-        SLOT(handleWlanWizardComplete(int,bool)),
-        Qt::QueuedConnection);
-    Q_ASSERT(connectStatus == true);
-    
-    connectStatus = connect(
-        mWizard.data(),
-        SIGNAL(cancelled()),
-        this,
-        SLOT(handleWlanWizardCancelled()),
-        Qt::QueuedConnection);
-    Q_ASSERT(connectStatus == true);
-    
-    // Create an IAP for a specific AP
-    if (ap) {
-        mWizard->setParameters(
-            ap->value(WlanQtUtilsAp::ConfIdName).toString(),
-            ap->value(WlanQtUtilsAp::ConfIdSsid).toByteArray(),
-            ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
-            ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
-            ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),
-            ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool());
+    if (mWizard == NULL) {
+        // Stop WLAN scanning for the duration of WLAN Wizard
+        mEngine->stopWlanScanning();
+        
+        mWizard = QSharedPointer<WlanWizard>(new WlanWizard(this));
+        bool connectStatus = connect(
+            mWizard.data(),
+            SIGNAL(finished(int,bool)),
+            this,
+            SLOT(handleWlanWizardComplete(int,bool)),
+            Qt::QueuedConnection);
+        Q_ASSERT(connectStatus == true);
+        
+        connectStatus = connect(
+            mWizard.data(),
+            SIGNAL(cancelled()),
+            this,
+            SLOT(handleWlanWizardCancelled()),
+            Qt::QueuedConnection);
+        Q_ASSERT(connectStatus == true);
+        
+        // Create an IAP for a specific AP
+        if (ap) {
+            mWizard->setParameters(
+                ap->value(WlanQtUtilsAp::ConfIdName).toString(),
+                ap->value(WlanQtUtilsAp::ConfIdSsid).toByteArray(),
+                ap->value(WlanQtUtilsAp::ConfIdConnectionMode).toInt(),
+                ap->value(WlanQtUtilsAp::ConfIdSecurityMode).toInt(),
+                ap->value(WlanQtUtilsAp::ConfIdWpaPskUse).toInt(),
+                ap->value(WlanQtUtilsAp::ConfIdWpsSupported).toBool());
+        }
+        // else: Add WLAN IAP manually
+        
+        mWizard->show();
     }
-    // else: Add WLAN IAP manually
+    // else: already running Wizard, ignore this call
     
-    mWizard->show();
-
     OstTraceFunctionExit0(WLANSNIFFERMAINWINDOW_STARTWLANWIZARD_EXIT);
 }
 

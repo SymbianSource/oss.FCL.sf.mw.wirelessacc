@@ -128,6 +128,7 @@ private:
     void closeViews();
     void updateFrame(int pageId);
     void loadDocml();
+    void connectActions();
     void disconnectActions();
 
 private:

@@ -57,7 +57,7 @@ static const QString WlanSnifferLayoutPath(":/wlansnifferlayout/");
  */
 
 WlanSniffer::WlanSniffer(int argc, char* argv[]) :
-    HbApplication(argc, argv),
+    HbApplication(argc, argv, Hb::NoSplash),
     mEngine(new WlanSnifferEngine(this)),
     mTranslator(),
     mMainWindow(0)

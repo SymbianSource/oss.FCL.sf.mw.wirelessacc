@@ -47,8 +47,7 @@ WlanWizardPageSecurityMode::WlanWizardPageSecurityMode(
     mWidget(NULL),
     mList(NULL),
     mLabel(NULL),
-    mLoader(NULL),
-    mValid(false)
+    mLoader(NULL)
 {
     OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_ENTRY);
     OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_WLANWIZARDPAGESECURITYMODE_EXIT);
@@ -119,17 +118,24 @@ HbWidget* WlanWizardPageSecurityMode::initializePage()
     }
     
     // Create contents to the security mode radio button list.
-    populateSecModeList();
+    QStringList items;    
+    populateSecModeList(items);
 
+    // Do not override the list, if it didn't change, because setItems()
+    // clears the possible selected item.
+    if (items != mList->items()) {
+        mList->setItems(items);
+    }
+    
     OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_INITIALIZEPAGE_EXIT);
     return mWidget;
 }
 
 /*!
- * Validates the Sequrity more selection and sets the configuration in
+ * Validates the Security more selection and sets the configuration in
  * the wlanwizard.
  * @param [out] removeFromStack returns false.
- * @return depending on the sequrity mode, returns the appropriate view
+ * @return depending on the security mode, returns the appropriate view
  * identifier.
  */
 int WlanWizardPageSecurityMode::nextId(bool &removeFromStack) const
@@ -151,19 +157,20 @@ int WlanWizardPageSecurityMode::nextId(bool &removeFromStack) const
         mUsePsk.at(mList->selected()));
     
     OstTraceFunctionExit0(LANWIZARDPAGESECURITYMODE_NEXTID_EXIT);
-    return mPageIds.at( mList->selected() );
+    return mPageIds.at(mList->selected());
 }
 
 /*!
  * This method is overrides the default implementation from WlanWizardPage.
- * It indicates whether the Next-button should be enabled or not.
- * @return true, if a mode has been selected.
+ * @return Should the Next-button be enabled or not.
  */
 bool WlanWizardPageSecurityMode::showPage()
 {
     OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_SHOWPAGE_ENTRY);
     OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_SHOWPAGE_EXIT);
-    return mValid;
+    // Next-button is enabled whenever the radio button list has some value
+    // selected.
+    return mList->selected() != -1;
 }
 
 /*!
@@ -178,9 +185,8 @@ void WlanWizardPageSecurityMode::itemSelected()
         TRACE_BORDER,
         WLANWIZARDPAGESECURITYMODE_ITEMSELECTED,
         "WlanWizardPageSecurityMode::itemSelected");
-    
-    mValid = true;
-    mWizard->enableNextButton(mValid);
+
+    mWizard->enableNextButton(true);
     
     OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_ITEMSELECTED_EXIT);
 }
@@ -213,34 +219,28 @@ void WlanWizardPageSecurityMode::loadDocmlSection(Qt::Orientation orientation)
 
 /*!
  * Support function that creates the contents of the security mode list. 
+ * @param [out] list is the list of captions used for the radio buttons.
  */
-void WlanWizardPageSecurityMode::populateSecModeList()
+void WlanWizardPageSecurityMode::populateSecModeList(QStringList &list)
 {
     OstTraceFunctionEntry0(WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_ENTRY);
-    
-    QStringList items;
     
     mSecModes.clear();
     mPageIds.clear();
     mUsePsk.clear();
     
-    // A list is created. Since there is no practical way of knowing whether
-    // the new contents are different from the previous contents (if there
-    // even were any in the first place) the validity is always reset.
-    mValid = false;
-
     // Create the radio button list to correspond to correct security mode
     // identifiers and page identifiers.
     // Populate the list according to network mode selection.
     addToList(
-        items,
+        list,
         hbTrId("txt_occ_list_open"), 
         CMManagerShim::WlanSecModeOpen,
         WlanWizardPage::PageProcessSettings,
         false);
 
     addToList(
-        items,
+        list,
         hbTrId("txt_occ_list_wep_1"),
         CMManagerShim::WlanSecModeWep,
         WlanWizardPageInternal::PageKeyQuery,
@@ -251,29 +251,27 @@ void WlanWizardPageSecurityMode::populateSecModeList()
         != CMManagerShim::Adhoc) {
 
         addToList(
-            items,
+            list,
             hbTrId("txt_occ_list_wpa_with_password"),
             CMManagerShim::WlanSecModeWpa,
             WlanWizardPageInternal::PageKeyQuery,
             true);
 
         addToList(
-            items,
+            list,
             hbTrId("txt_occ_list_wpa_with_eap"),
             CMManagerShim::WlanSecModeWpa,
             WlanWizardPage::PageEapStart,
             false);
 
         addToList(
-            items,
+            list,
             hbTrId("txt_occ_list_8021x_1"),
             CMManagerShim::WlanSecMode802_1x,
             WlanWizardPage::PageEapStart,
             false);
     }
 
-    mList->setItems(items);
-    
     OstTraceFunctionExit0(WLANWIZARDPAGESECURITYMODE_POPULATESECMODELIST_EXIT);
 }
 

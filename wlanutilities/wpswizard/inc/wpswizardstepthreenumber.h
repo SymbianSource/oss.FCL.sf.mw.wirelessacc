@@ -55,8 +55,6 @@ public:
 
     int previousTriggered();
 
-    void cancelTriggered();
-
     bool showPage();
 
 private:

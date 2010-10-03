@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hbdocument version="0.7">
+    <object name="exitAction" type="HbAction">
+        <string name="text" value="Exit"/>
+    </object>
+    <widget name="view" type="HbView">
+        <widget name="content" role="HbView:widget" type="HbWidget">
+            <widget name="container_2" type="HbWidget">
+                <widget name="pushButton_3" type="HbPushButton">
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="Known Wlan Found"/>
+                </widget>
+                <widget name="pushButton_4" type="HbPushButton">
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="Unknown Wlan Found"/>
+                </widget>
+                <widget name="pushButton_5" type="HbPushButton">
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="WLAN connected"/>
+                </widget>
+                <widget name="pushButton_2" type="HbPushButton">
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="No Wlan Networks"/>
+                </widget>
+                <widget name="pushButton_7" type="HbPushButton">
+                    <real name="z" value="3"/>
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="GPRS disconnected"/>
+                </widget>
+                <widget name="pushButton_6" type="HbPushButton">
+                    <real name="z" value="6"/>
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="GPRS connected"/>
+                </widget>
+                <widget name="pushButton_8" type="HbPushButton">
+                    <real name="z" value="7"/>
+                    <sizehint height="45" type="PREFERRED" width="259"/>
+                    <string name="text" value="WLAN disconnected"/>
+                </widget>
+                <real name="z" value="3"/>
+                		<sizehint height="215" type="PREFERRED" width="566"/>
+                		<layout type="anchor">
+                    		<anchoritem dst="pushButton_4" dstEdge="TOP" spacing="12" src="" srcEdge="TOP"/>
+                    		<anchoritem dst="pushButton_2" dstEdge="TOP" spacing="12" src="" srcEdge="TOP"/>
+                    		<anchoritem dst="pushButton_2" dstEdge="LEFT" spacing="15" src="" srcEdge="LEFT"/>
+		                    <anchoritem dst="pushButton_3" dstEdge="LEFT" spacing="15" src="" srcEdge="LEFT"/>
+    		                <anchoritem dst="pushButton_6" dstEdge="LEFT" spacing="15" src="" srcEdge="LEFT"/>
+        		            <anchoritem dst="pushButton_3" dstEdge="TOP" spacing="5" src="pushButton_2" srcEdge="BOTTOM"/>
+            		        <anchoritem dst="pushButton_6" dstEdge="TOP" spacing="5" src="pushButton_3" srcEdge="BOTTOM"/>
+                		    <anchoritem dst="pushButton_5" dstEdge="TOP" spacing="5" src="pushButton_4" srcEdge="BOTTOM"/>
+                    		<anchoritem dst="pushButton_7" dstEdge="TOP" spacing="5" src="pushButton_5" srcEdge="BOTTOM"/>
+		                    <anchoritem dst="pushButton_4" dstEdge="LEFT" spacing="10" src="pushButton_2" srcEdge="RIGHT"/>
+    		                <anchoritem dst="pushButton_5" dstEdge="LEFT" spacing="10" src="pushButton_3" srcEdge="RIGHT"/>
+        		            <anchoritem dst="pushButton_7" dstEdge="LEFT" spacing="10" src="pushButton_6" srcEdge="RIGHT"/>
+            		        <anchoritem dst="pushButton_8" dstEdge="LEFT" spacing="15" src="" srcEdge="LEFT"/>
+                		    <anchoritem dst="pushButton_8" dstEdge="TOP" spacing="5" src="pushButton_6" srcEdge="BOTTOM"/>
+                		</layout>               
+            </widget>
+            <real name="z" value="0"/>
+            <layout type="anchor">
+                <anchoritem dst="container_2" dstEdge="LEFT" spacing="25" src="" srcEdge="LEFT"/>
+                <anchoritem dst="container_2" dstEdge="TOP" spacing="35" src="" srcEdge="TOP"/>
+            </layout>
+        </widget>
+        <widget name="viewMenu" role="HbView:menu" type="HbMenu">
+            <ref object="exitAction" role="HbMenu:addAction"/>
+        </widget>
+        <string name="title" value="Indicator Test"/>
+    </widget>
+    <metadata activeUIState="Common ui state" display="QHD landscape" unit="un">
+        <resource location="wlanindicatortest.qrc"/>
+        <uistate name="Common ui state" sections="#common"/>
+    </metadata>
+</hbdocument>

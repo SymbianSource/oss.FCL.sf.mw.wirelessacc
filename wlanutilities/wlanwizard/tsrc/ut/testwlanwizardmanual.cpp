@@ -391,6 +391,15 @@ void TestWlanWizardManual::tc_manual_selection_with_press_previous()
     QCOMPARE( selectRadioButton( "list", 0 ), true );
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonEnabled, ButtonHidden), true );
+
+    QCOMPARE( mouseClickPrevious(), true );
+    QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageNetworkMode, "huuhaa3421"), true );
+    QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonEnabled, ButtonHidden), true ); 
+    QCOMPARE( mouseClickNext(), true );
+    QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageNetworkSecurity, "huuhaa3421"), true );
+    QCOMPARE( verifyActionButtons(ButtonEnabled, ButtonEnabled, ButtonEnabled, ButtonHidden), true ); 
+    QCOMPARE( verifySelectedRadioButton("list"), 0 );
+    
     QCOMPARE( mouseClickNext(), true );
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageSummary, 10, 500), true );
     QCOMPARE( verifyActionButtons(ButtonHidden, ButtonEnabled, ButtonHidden, ButtonEnabled), true );
@@ -822,7 +831,7 @@ void TestWlanWizardManual::tc_iap_creation_fail()
     QCOMPARE( mouseClickNext(), true );
     QCOMPARE( verifyCurrentPageWithInfo(WlanWizardPageInternal::PageScanning, "huuhaa3421"), true );
     QCOMPARE( verifyCurrentPage(WlanWizardPageInternal::PageNetworkMode), true );
-    QCOMPARE( verifySelectedRadioButton("list"), ListNoneSelected );
+    QCOMPARE( verifySelectedRadioButton("list"), 2 );
     QCOMPARE( selectRadioButton( "list", 2 ), true );
     QTest::qWait(WaitTimeForUi);
     QCOMPARE( mouseClickNext(), true );

@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -15,8 +15,8 @@
 * WLAN Entry Plugin resource iby file.
 */
 
-#ifndef WLANENTRYPLUGIN_RESOURCES_IBY
-#define WLANENTRYPLUGIN_RESOURCES_IBY
+#ifndef CPWLANENTRYPLUGIN_RESOURCES_IBY
+#define CPWLANENTRYPLUGIN_RESOURCES_IBY
 
 #include <bldvariant.hrh>
 #include <data_caging_paths_for_iby.hrh> 
@@ -27,4 +27,4 @@ data=DATAZ_/QT_TRANSLATIONS_DIR/wlanentryplugin.qm QT_TRANSLATIONS_DIR/wlanentry
 
 #endif // __PROTOCOL_WLAN
 
-#endif // WLANENTRYPLUGIN_RESOURCES_IBY
+#endif // CPWLANENTRYPLUGIN_RESOURCES_IBY

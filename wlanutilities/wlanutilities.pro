@@ -19,11 +19,11 @@ TEMPLATE = subdirs
 
 SUBDIRS  += \
     wlanqtutilities \
+    cpwlanentryplugin \
     eapwizard \
     wpswizard \
     wlanwizard \
     wlansniffer \
-    wlanentryplugin \
     wlanindicatorplugin \
     cpwlansettingsplugin \
     wlanlogin

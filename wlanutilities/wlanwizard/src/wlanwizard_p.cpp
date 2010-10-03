@@ -786,6 +786,10 @@ void WlanWizardPrivate::previousTriggered()
         "WlanWizardPrivate::previousTriggered;this=%x",
         this);
     
+    // Disconnect signals from any actions until we are finished
+    // processing this one
+    disconnectActions();
+    
     mPageTimer->stop();
 
     int index = mStackedWidget->currentIndex();
@@ -810,6 +814,9 @@ void WlanWizardPrivate::previousTriggered()
     // returned, in this case default value for int is 0 which means PageNone.
     updateFrame(mPages.key(page));
     enableNextButton(page->showPage());
+
+    // Reconnect signals from actions
+    connectActions();
     
     OstTrace1(
         TRACE_BORDER,
@@ -834,6 +841,10 @@ void WlanWizardPrivate::nextTriggered()
         "WlanWizardPrivate::nextTriggered;this=%x",
         this);
     
+    // Disconnect signals from any actions until we are finished
+    // processing this one
+    disconnectActions();
+    
     mPageTimer->stop();
 
     HbWidget *widget = qobject_cast<HbWidget*>(mStackedWidget->currentWidget());
@@ -842,6 +853,9 @@ void WlanWizardPrivate::nextTriggered()
     bool removeFromStack;
     int pageId = mPageMapper[widget]->nextId(removeFromStack);
     showPage(pageId, removeFromStack);
+    
+    // Reconnect signals from actions
+    connectActions();
     
     OstTrace1(
         TRACE_BORDER,
@@ -1228,7 +1242,22 @@ void WlanWizardPrivate::loadDocml()
     ok = connect(mPageTimer, SIGNAL(timeout()), this, SLOT(onTimeOut()));
     Q_ASSERT(ok);
     
-    ok = connect(
+    connectActions();
+    
+    ok = HbStyleLoader::registerFilePath(":/css/custom.css");
+    Q_ASSERT(ok);
+
+    OstTraceFunctionExit0(WLANWIZARDPRIVATE_LOADDOCML_EXIT);
+}
+
+/*!
+   Connect triggered() signals from all toolbar actions.
+ */
+void WlanWizardPrivate::connectActions()
+{
+    OstTraceFunctionEntry0(WLANWIZARDPRIVATE_CONNECTACTIONS_ENTRY);
+    
+    bool ok = connect(
         mActionNext,
         SIGNAL(triggered()), 
         this,
@@ -1248,18 +1277,15 @@ void WlanWizardPrivate::loadDocml()
         this,
         SLOT(finishTriggered()));
     Q_ASSERT(ok);
-    
-    ok = connect(
+
+    ok =connect(
         mActionCancel,
         SIGNAL(triggered()), 
         this,
         SLOT(cancelTriggered()));
     Q_ASSERT(ok);
-
-    ok = HbStyleLoader::registerFilePath(":/css/custom.css");
-    Q_ASSERT(ok);
-
-    OstTraceFunctionExit0(WLANWIZARDPRIVATE_LOADDOCML_EXIT);
+    
+    OstTraceFunctionExit0(WLANWIZARDPRIVATE_CONNECTACTIONS_EXIT);
 }
 
 /*!

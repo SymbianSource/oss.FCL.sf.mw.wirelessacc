@@ -131,23 +131,9 @@ int WpsPageStepThreeNumber::nextId(bool &removeFromStack) const
 int WpsPageStepThreeNumber::previousTriggered()
 {
     OstTraceFunctionEntry1(WPSPAGESTEPTHREENUMBER_PREVIOUSTRIGGERED_ENTRY, this);
-    
-    mWizard->setPin(0);
-    
     OstTraceFunctionExit1(WPSPAGESTEPTHREENUMBER_PREVIOUSTRIGGERED_EXIT, this);
     return (PageWpsWizardStep3_Number - PageWpsWizardStep2) - 1;
 }
-
-/*!
-   CallBack when the cancel button is clicked
- */
-void WpsPageStepThreeNumber::cancelTriggered()
-{
-    OstTraceFunctionEntry1(WPSPAGESTEPTHREENUMBER_CANCELTRIGGERED_ENTRY, this);
-    mWizard->setPin(0);    
-    OstTraceFunctionExit1(WPSPAGESTEPTHREENUMBER_CANCELTRIGGERED_EXIT, this);
-}
-
 
 /*!
    Determines whether the Next action button should be enabled or not

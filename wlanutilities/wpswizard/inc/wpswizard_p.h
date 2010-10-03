@@ -115,7 +115,9 @@ private:
     TWlanProtectedSetupCredentialAttribute mWpsAttr;
     //! Array of objects containing WLAN credentials.
     QList<TWlanProtectedSetupCredentialAttribute> mIapList;
-    //! Random number generated for Number entry mode
+    /*! Random number generated for Number entry mode. When the value is zero (0)
+     *  Push-Button mode is used.
+     */
     int mRandomNumber;
     
     friend class WpsWizard;

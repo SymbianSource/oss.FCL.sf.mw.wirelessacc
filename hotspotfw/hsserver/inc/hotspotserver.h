@@ -261,7 +261,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aLoginTimerValue, set login timer value
         * @param aLogoutTimerValue, set logout timer value.
         */        
-        void SetTimerValues(
+        void SetTimerValuesL(
                 TDes& aClientUid,
                 TUint aLoginTimerValue,
                 TUint aLogoutTimerValue );
@@ -280,7 +280,7 @@ NONSHARABLE_CLASS ( CHotSpotServer ) : public CPolicyServer, public MWlanMgmtNot
         * @param aIapId, IAP id
         * @param aUid, clients user id
         */        
-        void SetClientIap( TUint aIapId, TDes& aUid );
+        void SetClientIapL( TUint aIapId, TDes& aUid );
 
         /**
         * Removes client IAP from the array.

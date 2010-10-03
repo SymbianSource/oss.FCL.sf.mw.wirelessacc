@@ -39,8 +39,8 @@ class CWpsActiveRunner : public CActive
 public:
     static CWpsActiveRunner* NewL(MWpsActiveRunnerCallback& aObserver);
     virtual ~CWpsActiveRunner();
-public:
 
+public:
     void RunL();
     void DoCancel();
     TInt RunError(TInt aError);
@@ -51,7 +51,7 @@ protected:
 private:
     explicit CWpsActiveRunner(MWpsActiveRunnerCallback& aObserver);
     void ConstructL();
-    void InitializeL();
+
 private:    
 
     //! observer for notification of WPS setup completion

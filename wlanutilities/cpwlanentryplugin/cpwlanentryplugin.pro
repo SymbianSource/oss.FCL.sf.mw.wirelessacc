@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+# Copyright (c) 2009-2010 Nokia Corporation and/or its subsidiary(-ies).
 # All rights reserved.
 # This component and the accompanying materials are made available
 # under the terms of "Eclipse Public License v1.0"
@@ -51,9 +51,8 @@ TRANSLATIONS = wlanentryplugin.ts
 symbian: { 
     TARGET.EPOCALLOWDLLDATA = 1
     TARGET.UID3 = 0x2002BCE0
-    SYMBIAN_PLATFORMS = WINSCW ARMV5
-    BLD_INF_RULES.prj_exports += "rom/wlanentryplugin.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlanentryplugin.iby)"
-    BLD_INF_RULES.prj_exports += "rom/wlanentryplugin_resources.iby LANGUAGE_APP_LAYER_IBY_EXPORT_PATH(wlanentryplugin_resources.iby)"
+    BLD_INF_RULES.prj_exports += "rom/cpwlanentryplugin.iby CORE_MW_LAYER_IBY_EXPORT_PATH(cpwlanentryplugin.iby)"
+    BLD_INF_RULES.prj_exports += "rom/cpwlanentryplugin_resources.iby LANGUAGE_APP_LAYER_IBY_EXPORT_PATH(cpwlanentryplugin_resources.iby)"
     
     # Enable for QtHighway tracing
     # DEFINES += WLANENTRYPLUGIN_SERVICETRACES

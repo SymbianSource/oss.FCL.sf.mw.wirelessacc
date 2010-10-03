@@ -37,9 +37,10 @@
 //
 CHssScanHandler::CHssScanHandler( )
 	{
-    DEBUG("CHssScanHandler::CHssScanHandler");
-    
-	}
+	iMgmtClient=NULL;
+	iScanInfo=NULL;
+  DEBUG("CHssScanHandler::CHssScanHandler");
+  }
 
 // -----------------------------------------------------------------------------
 // ConstructL

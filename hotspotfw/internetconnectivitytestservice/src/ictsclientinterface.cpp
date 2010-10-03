@@ -29,7 +29,7 @@
 //
 CIctsClientInterface::CIctsClientInterface()
     {
-    
+    iEngine =NULL;
     }
 
 // ---------------------------------------------------------------------------

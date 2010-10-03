@@ -17,7 +17,7 @@
  */
 
 /*
- * %version: 6 %
+ * %version: 7 %
  */
 
 #include <QList>
@@ -35,7 +35,8 @@ EapQtConfigInterface::EapQtConfigInterface(
 {
     mCalledMethods.append("EapQtConfigInterface");
     QCOMPARE(bearerType, EapQtConfigInterface::EapBearerTypeWlan);
-    QCOMPARE(iapId, EapQtConfigInterface::IapIdUndefined);
+    int tmp = EapQtConfigInterface::IapIdUndefined;
+    QCOMPARE(iapId, tmp);
 }
 
 EapQtConfigInterface::~EapQtConfigInterface()

@@ -21,6 +21,7 @@
 #include "hssnotif.h"
 #include "hssinterface.h"
 #include "am_debug.h"
+#include "hotspotsession.h"
 
 // ============================ MEMBER FUNCTIONS ===============================
 

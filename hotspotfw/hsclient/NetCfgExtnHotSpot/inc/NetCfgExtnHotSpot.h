@@ -115,6 +115,10 @@ private:
     inline CNetworkConfigExtensionHotSpot::CNetworkConfigExtensionHotSpot( MNifIfNotify& aNifIfNotify ) :
     CNetworkConfigExtensionBase( aNifIfNotify )
     {
+    	iNotAuthenticated =false;
+    	iNotDeregistered = false;
+    	iIsStartLoginActive=false;
+    	iHotspotConnect=0;
     }
 
 #endif

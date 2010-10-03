@@ -19,7 +19,6 @@
 #ifndef HSSSRVNOTIFICATIONS_H
 #define HSSSRVNOTIFICATIONS_H
 
-#include "hssinterface.h"
 #include <wlanmgmtcommon.h>
 #include <wlanmgmtinterface.h>
 

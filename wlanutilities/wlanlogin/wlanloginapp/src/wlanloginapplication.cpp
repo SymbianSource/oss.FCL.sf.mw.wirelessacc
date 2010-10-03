@@ -56,7 +56,7 @@
     @param [in] argv Parameters. 
  */
 WlanLoginApplication::WlanLoginApplication(int argc, char* argv[]) :
-    HbApplication( argc, argv ),
+    HbApplication(argc, argv, Hb::NoSplash),
     mService(new WlanLoginService(this)),
     mTranslator(new HbTranslator()),
     mEngine(new WlanLoginEngine(this)),

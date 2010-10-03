@@ -75,8 +75,8 @@ SERVICE.FILE = res/service_conf.xml
 MMP_RULES += "USERINCLUDE traces"
 
 symbian*: {
-	LIBS += -lictsclientinterface
-	TARGET.UID3 = 0x2002E6D0
+    LIBS += -lictsclientinterface -lapgrfx -lws32
+    TARGET.UID3 = 0x2002E6D0
     TARGET.CAPABILITY = CAP_APPLICATION NetworkControl
     BLD_INF_RULES.prj_exports += "rom/wlanlogin.iby CORE_MW_LAYER_IBY_EXPORT_PATH(wlanlogin.iby)"
     BLD_INF_RULES.prj_exports += "rom/wlanlogin_resources.iby LANGUAGE_APP_LAYER_IBY_EXPORT_PATH(wlanlogin_resources.iby)"

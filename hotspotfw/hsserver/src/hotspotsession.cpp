@@ -45,7 +45,17 @@ CHotSpotSession::CHotSpotSession( CHotSpotServer& aServer ) :
     iServer( aServer ), iClient( NULL ), iSrvNotifications ( NULL ), 
     iNotificationHandle( NULL ), iAllowNotifications( ETrue ), iHotspotExtension( ETrue )
     {
-    
+    iIapSettingsHandler=NULL;
+    iNotifications=NULL;
+    iLoginTimer=NULL;
+    iLogoutTimer=NULL;
+    iMgtClient=NULL;
+    iIapId=0;
+    iNetId=0;
+    iNotificationHandle=NULL;
+    iIsNotificationRequestPending =false;
+    iClientUid.iUid =0;
+
     }
 
 // -----------------------------------------------------------------------------
@@ -172,7 +182,7 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             HandleCancelNotifications( aMessage );
             break;
         case EHssRegister :
-            ProcessRegister( aMessage );
+            ProcessRegisterL( aMessage );
             break;
         case EHssUnRegister :
             ProcessUnRegister( aMessage );
@@ -470,7 +480,7 @@ void CHotSpotSession::DispatchMessageL( const RMessage2& aMessage )
             ModifyClientUid( uid );
             TUint loginTimerValue = aMessage.Int1();
             TUint logoutTimerValue = aMessage.Int2();
-            iServer.SetTimerValues( uid, loginTimerValue, logoutTimerValue );
+            iServer.SetTimerValuesL( uid, loginTimerValue, logoutTimerValue );
             aMessage.Complete( KErrNone );
             break;
             }
@@ -635,9 +645,9 @@ void CHotSpotSession::LogoutTimeout()
 // ProcessRegister
 // ---------------------------------------------------------
 //
-void CHotSpotSession::ProcessRegister( const RMessage2& aMessage )
+void CHotSpotSession::ProcessRegisterL( const RMessage2& aMessage )
     {
-    DEBUG("CHotSpotSession::ProcessRegister");
+    DEBUG("CHotSpotSession::ProcessRegisterL");
     
     iAllowNotifications = EFalse;
     TBufC< KIapNameLength > iapName;
@@ -664,7 +674,7 @@ void CHotSpotSession::ProcessRegister( const RMessage2& aMessage )
     DEBUG1( "CHotSpotSession::EHssRegister ret: %d", ret );
     if ( KErrNone == ret )
         {
-        iServer.SetClientIap( iapId, bufUid );
+        iServer.SetClientIapL( iapId, bufUid );
         aMessage.Complete( iapId );
         }
 

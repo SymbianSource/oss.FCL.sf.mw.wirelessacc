@@ -94,6 +94,14 @@ CWlanSettingsPrivate::CWlanSettingsPrivate(WlanSettings *q_ptr) :
     mScanInterval(KWlanSettingsDefaultScanNetwork)
 {
     OstTraceFunctionEntry0(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_ENTRY);
+    
+    mCmSettings.iCellularDataUsageHome = ECmCellularDataUsageConfirm;
+    mCmSettings.iCellularDataUsageVisitor = ECmCellularDataUsageConfirm;
+    mCmSettings.iUsageOfWlan = ECmUsageOfWlanKnown;
+    mJoinWlanType = EJoinWlanKnown;
+    mSession = NULL;
+    mWlanMgmtClient = NULL;
+        
     OstTraceFunctionExit0(CWLANSETINGPRIVATE_CWLANSETINGPRIVATE_EXIT);
 }
 

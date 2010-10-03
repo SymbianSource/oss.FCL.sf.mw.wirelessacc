@@ -50,6 +50,7 @@ private slots:
     void tcPinCode_KErrWlanProtectedSetupDevicePasswordAuthFailure();
     void tcPinCode_KErrWlanProtectedSetupPINMethodNotSupported();
     void tcPinCode_KErrWlanProtectedSetupPBMethodNotSupported();
+    void tcPinCode_BackToPushButtonMode();
     /*
     void tcPushButton_KErrNone_back_forward_KErrNone();
     void tcPinCodeMultipleResults();
@@ -57,7 +58,7 @@ private slots:
     */
 
 private: // Helper methods
-    void verifyModeSelection();
+    void verifyModeSelection(int index = -1);
     
 private: // Helper test cases 
     void tcPushButton(
@@ -67,7 +68,8 @@ private: // Helper test cases
         int operModeWlan,
         int operModeCmm,
         int defaultWepKeyIndexWlan,
-        int defaultWepKeyIndexCmm);
+        int defaultWepKeyIndexCmm,
+        int index = -1);
     
     void tcPinCode_failure(
         int errorCode,

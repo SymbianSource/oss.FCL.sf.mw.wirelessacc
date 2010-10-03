@@ -143,7 +143,7 @@ NONSHARABLE_CLASS( CHotSpotSession ) : public CSession2,
         * @param aMessage, RMessage from client side
         * @return None
         */
-        void ProcessRegister( const RMessage2& aMessage );
+        void ProcessRegisterL( const RMessage2& aMessage );
         
         /**
         * Starts client unregister procedures
