@@ -375,8 +375,6 @@ void CWsfEngine::ConnectionEstablishedL( const TDesC& aConnectionName )
     // set the scanner to check connected accounts
     iScanner->ConnectionEstablishedL( aConnectionName );
     
-    iScanner->RestartScanning();
-
     // notify the observers
     for ( TInt i( 0 ); i < iObservers.Count(); ++i )
         {

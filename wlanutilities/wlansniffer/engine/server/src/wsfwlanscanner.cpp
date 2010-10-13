@@ -748,15 +748,6 @@ void CWsfWlanScanner::ConnectionStateChanged(
 void CWsfWlanScanner::BssidChanged( TWlanBssid& /*aNewBSsid*/ )
     {
     LOG_ENTERFN( "CWsfWlanScanner::BssidChanged" );
-    if ( iScanState == EIdle && !IsActive() )
-        {
-        iCacheLifetime = -1;
-        iMaxDelay = 0;
-        // complete ourselves
-        SetActive();
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
     }
 
 
@@ -767,15 +758,6 @@ void CWsfWlanScanner::BssidChanged( TWlanBssid& /*aNewBSsid*/ )
 void CWsfWlanScanner::BssLost()
     {
     LOG_ENTERFN( "CWsfWlanScanner::BssLost" );
-    if ( iScanState == EIdle && !IsActive() )
-        {
-        iCacheLifetime = -1;
-        iMaxDelay = 0;
-        // complete ourselves
-        SetActive();
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
     }
 
 
@@ -786,15 +768,6 @@ void CWsfWlanScanner::BssLost()
 void CWsfWlanScanner::BssRegained()
     {
     LOG_ENTERFN( "CWsfWlanScanner::BssRegained" );
-    if ( iScanState == EIdle && !IsActive() )
-        {
-        iCacheLifetime = -1;
-        iMaxDelay = 0;
-        // complete ourselves
-        SetActive();
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
     }
 
 
@@ -843,15 +816,6 @@ void CWsfWlanScanner::OldNetworksLost()
 void CWsfWlanScanner::TransmitPowerChanged( TUint /*aPower*/ )
     {
     LOG_ENTERFN( "CWsfWlanScanner::TransmitPowerChanged" );
-    if ( iScanState == EIdle && !IsActive() )
-        {
-        iCacheLifetime = -1;
-        iMaxDelay = 0;
-        // complete ourselves
-        SetActive();
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
     }
         
 
@@ -862,15 +826,6 @@ void CWsfWlanScanner::TransmitPowerChanged( TUint /*aPower*/ )
 void CWsfWlanScanner::RssChanged( TWlanRssClass /*aRssClass*/, TUint /*aRss*/ )
     {
     LOG_ENTERFN( "CWsfWlanScanner::RssChanged" );
-    if ( iScanState == EIdle && !IsActive() )
-        {
-        iCacheLifetime = -1;
-        iMaxDelay = 0;
-        // complete ourselves
-        SetActive();
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
     }
 
 

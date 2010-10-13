@@ -253,8 +253,6 @@ EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId, TBool aConnectOnly,
         iObserver->ConnectingFinishedL( err );
         }
     
-    iRefreshing = iSession.RequestScanL();
-    
     return err;
     }
 

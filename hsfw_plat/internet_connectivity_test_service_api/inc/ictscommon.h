@@ -28,8 +28,8 @@
 // Length of HTTP FW response
 const TInt KHttpResponseLength = 1024;
 
-// HTTP::HEAD max response time for timer. 5 seconds.
-const TInt KHttpResponseTime = 5000000; 
+// HTTP::HEAD max response time for timer. 7 seconds.
+const TInt KHttpResponseTime = 7000000; 
 
 // DATA TYPES
     

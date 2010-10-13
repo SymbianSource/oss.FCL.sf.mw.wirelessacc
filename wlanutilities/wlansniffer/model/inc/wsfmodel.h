@@ -101,20 +101,13 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         IMPORT_C void SetEngineObserver( MWsfModelObserver* aObserver );
 
         /**
-        * Return pointer to the list of WLANs. Ownership not passed.
-        * @since S60 5.2
-        * @return Array of WLANs
-        */
-        inline CWsfWlanInfoArray* WlanList();
-        
-        /**
         * Return the latest list of found WLANs. Ownership not passed.
         * @since S60 5.0
         * @return Array of WLANs
         */
         IMPORT_C CWsfWlanInfoArray* GetWlanListL();
         
-        /**
+		/**
         * Asyncronous request to the server to return wlan list size
         * @since S60 5.2
         * @param aPckg request result
@@ -124,11 +117,11 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         IMPORT_C void GetWlanListSize( TPckgBuf<TUint>& aPckg, 
                                        TRequestStatus& aStatus );
 
-        /**
+		/**
         * Asyncronous request to the server to return wlan list
         * @since S60 5.2
         * @param aPckg request result
-        * @param aPtr wlan list
+		* @param aPtr wlan list
         * @param aStatus The request status object used to contain 
         *        the completion status of the request.
         */

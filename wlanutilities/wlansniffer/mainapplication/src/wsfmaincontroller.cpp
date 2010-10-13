@@ -61,8 +61,6 @@ void TWsfMainController::Initialize(
     iAppUi = &aAppUi;
     iModel = &aModel;
     iWlanInfoBranding = &aWlanInfoBranding;
-    // Initialize our reference info array
-    iInfoArray = iModel->WlanList();
     iModel->SetConnecting( EFalse );
     }
 
@@ -358,9 +356,6 @@ void TWsfMainController::WlanConnectionActivatedL()
                 }
             }
         }
-
-    //Update icon
-    iModel->RefreshScanL();   
     }
 
 // ---------------------------------------------------------------------------
@@ -603,40 +598,36 @@ void TWsfMainController::ConnectL()
 void TWsfMainController::UpdateIapIdToInfoArrayL( TWsfWlanInfo& aInfo )
     {
     LOG_ENTERFN( "TWsfMainController::UpdateIapIdToInfoArrayL" ); 
-    
-    if ( iInfoArray )
+    TWsfWlanInfo* temp = iInfoArray->Match( aInfo.iSsid, iInfoArray->Count() );
+    if ( temp && !aInfo.Hidden() )
         {
-        TWsfWlanInfo* temp = iInfoArray->Match( aInfo.iSsid, iInfoArray->Count() );
-        if ( temp && !aInfo.Hidden() )
+        LOG_WRITE( "Info found" );
+        
+        // Check that there aren't any IAPs with same id
+        TWsfWlanInfo* wlanInfoWithSameIapId = iInfoArray->Match( aInfo.iIapId, 
+                                                iInfoArray->Count() );
+        if ( wlanInfoWithSameIapId )
             {
-            LOG_WRITE( "Info found" );
-            
-            // Check that there aren't any IAPs with same id
-            TWsfWlanInfo* wlanInfoWithSameIapId = iInfoArray->Match( aInfo.iIapId, 
-                                                    iInfoArray->Count() );
-            if ( wlanInfoWithSameIapId )
-                {
-                // info with same id found set its iap id to zero
-                LOG_WRITE( "info with same id found" );
-                wlanInfoWithSameIapId->iIapId = 0;
-                }
-            
-            temp->iIapId = aInfo.iIapId;
-            
-            if ( aInfo.iNetworkName.Length() )
-                {
-                // Replace ssid as well since scanner does this same thing
-                temp->iSsid.Copy( aInfo.iNetworkName );
-                }
+            // info with same id found set its iap id to zero
+            LOG_WRITE( "info with same id found" );
+            wlanInfoWithSameIapId->iIapId = 0;
             }
-        else
+        
+        temp->iIapId = aInfo.iIapId;
+        
+        if ( aInfo.iNetworkName.Length() )
             {
-            LOG_WRITE( "Info not found" );
-            TWsfWlanInfo* createdInfo = new (ELeave) TWsfWlanInfo( aInfo );
-            createdInfo->iVisibility = ETrue;
-            createdInfo->iStrengthLevel = EWlanSignalStrengthMax;
-            iInfoArray->AppendL( createdInfo );
+            // Replace ssid as well since scanner does this same thing
+            temp->iSsid.Copy( aInfo.iNetworkName );
             }
+        }
+    else
+        {
+        LOG_WRITE( "Info not found" );
+        TWsfWlanInfo* createdInfo = new (ELeave) TWsfWlanInfo( aInfo );
+        createdInfo->iVisibility = ETrue;
+        createdInfo->iStrengthLevel = EWlanSignalStrengthMax;
+        iInfoArray->AppendL( createdInfo );
         }
     }
     

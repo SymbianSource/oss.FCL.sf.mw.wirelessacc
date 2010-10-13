@@ -39,13 +39,3 @@ inline void CWsfModel::SetConnecting( TBool aIsConnecting )
 	}
 
 
-// -----------------------------------------------------------------------------
-// CWsfModel::WlanList
-// -----------------------------------------------------------------------------
-//
-inline CWsfWlanInfoArray* CWsfModel::WlanList()
-    { 
-    return iArray;
-    }
-
-
