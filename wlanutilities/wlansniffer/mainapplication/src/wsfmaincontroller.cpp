@@ -37,6 +37,7 @@
 #include "wsfdetailsviewcontrollerif.h"
 #include "wsfmainapplication.hrh"
 #include "wsfwlaninfoarrayvisitor.h"
+#include "wsfactivewrappers.h"
 
 #include "wsflogger.h"
 
@@ -53,15 +54,26 @@
 // TWsfMainController::Initialize
 // ---------------------------------------------------------------------------
 //
-void TWsfMainController::Initialize( 
+void TWsfMainController::InitializeL( 
                             CWsfAppUi& aAppUi, 
-                            CWsfModel& aModel, 
+                            CWsfModel& aModel,
+                            CWsfActiveWrappers &aAsyncModel,
                             CWsfWlanInfoArrayVisitor &aWlanInfoBranding )
     {
+	LOG_ENTERFN( "TWsfMainController::InitializeL" ); 
     iAppUi = &aAppUi;
     iModel = &aModel;
+    iAsyncModel = &aAsyncModel;
     iWlanInfoBranding = &aWlanInfoBranding;
     iModel->SetConnecting( EFalse );
+    }
+
+// ---------------------------------------------------------------------------
+// TWsfMainController::~TWsfMainController
+// ---------------------------------------------------------------------------
+//
+TWsfMainController::~TWsfMainController()
+    {
     }
 
 // ---------------------------------------------------------------------------
@@ -141,6 +153,28 @@ void TWsfMainController::UpdateViewL( CWsfWlanInfoArray* aInfoArray )
             }
         }    
     }
+
+
+// ---------------------------------------------------------------------------
+// TWsfMainController::IsConnecting
+// ---------------------------------------------------------------------------
+//
+TBool TWsfMainController::IsConnecting() const
+    {
+    TBool ret( EFalse );
+    if ( iInfoArray ) 
+        {
+        TWsfWlanInfo* firstItem = iInfoArray->At( 0 );
+        if ( firstItem && firstItem->iConnectionState == EConnecting )
+            {
+            ret = ETrue;
+            }
+        }
+    
+    return ret;
+    }
+
+
 
 // Events from AppUi
 
@@ -247,7 +281,7 @@ void TWsfMainController::WlanListChangedL()
     {
     LOG_ENTERFN( "TWsfMainController::WlanListChangedL" ); 
     
-    if ( iModel->IsConnecting() )
+    if ( IsConnecting() )
         {
         LOG_WRITE( "We are connecting just return from here" );
         return;
@@ -263,10 +297,10 @@ void TWsfMainController::WlanListChangedL()
             iAppUi->HideWaitNoteL();
             iInfoArray = iModel->GetWlanListL();
             if ( !iInfoArray->Count() )
-                {        
+                {
                 iAppUi->ShowNoWlansFoundInfoL();       
                 }
-            UpdateViewL();        
+            UpdateViewL();
             }
         // pop cleanup item RestoreRefreshState
         CleanupStack::Pop();
@@ -316,21 +350,25 @@ void TWsfMainController::ScanEnabledL()
 // TWsfMainController::WlanConnectionActivatedL
 // ---------------------------------------------------------------------------
 // 
-void TWsfMainController::WlanConnectionActivatedL()
+void TWsfMainController::WlanConnectionActivatedL( TInt32 aIapId )
     {
-    LOG_ENTERFN( "TWsfMainController::WlanConnectionActivatedL" ); 
+    LOG_ENTERFN( "TWsfMainController::WlanConnectionActivatedL" );
+    LOG_WRITEF( "Iap ID: %d", aIapId );
+    
+    // We are not connected, inform model so that it
+    iModel->SetConnecting( EFalse );
     
     // update the model and refresh ui
     if ( iInfoArray )
         {
         TBool found = EFalse; 
         TWsfWlanInfo info;
-        iModel->GetConnectedWlanDetailsL( info );
-        if ( info.iIapId )
+        
+        if ( aIapId )
             {
             // find the entry for iapid
             // mark it connected - sort the array and refresh
-            TWsfWlanInfo* temp = iInfoArray->Match( info.iIapId, 
+            TWsfWlanInfo* temp = iInfoArray->Match( aIapId, 
                                                     iInfoArray->Count() );
             if ( temp )
                {
@@ -338,22 +376,32 @@ void TWsfMainController::WlanConnectionActivatedL()
                temp->iConnectionState = EConnected;
                iInfoArray->SortArrayL();
                UpdateViewL( iInfoArray );
+               info.iConnectionState = EConnected;
+               info.iIapId = aIapId;
                }
             }
 
         if ( !found )
             {
+            iModel->GetConnectedWlanDetailsL( info );
             // find the entry 
             // mark it connected - sort the array and refresh
             TWsfWlanInfo* temp = iInfoArray->Match( info.iSsid, 
                                                     iInfoArray->Count() );
             if ( temp )
                 {
+                found = ETrue;
                 temp->iConnectionState = EConnected;
                 temp->iIapId = info.iIapId;
                 iInfoArray->SortArrayL();
                 UpdateViewL( iInfoArray );
                 }
+            }
+        
+        if ( found && iStartBrowser )
+            {
+            LaunchBrowserL( info.Connected(), info.iIapId );
+            iStartBrowser = EFalse;
             }
         }
     }
@@ -362,9 +410,12 @@ void TWsfMainController::WlanConnectionActivatedL()
 // TWsfMainController::WlanConnectionClosedL
 // ---------------------------------------------------------------------------
 //         
-void TWsfMainController::WlanConnectionClosedL()
+void TWsfMainController::WlanConnectionClosedL( TInt32 aIapId )
     {
-    LOG_ENTERFN( "TWsfMainController::WlanConnectionClosedL" ); 
+    LOG_ENTERFN( "TWsfMainController::WlanConnectionClosedL" );
+    LOG_WRITEF( "Iap ID: %d", aIapId );
+	iModel->SetConnecting( EFalse );
+    
     // update the model and refresh ui
     if ( iInfoArray )
         {
@@ -396,14 +447,16 @@ void TWsfMainController::WlanConnectionClosedL()
     // Abort current scan if exists so that we get 
     // newest scan results propagated to ui
     iModel->AbortScanningL();
-    iModel->RefreshScanL();     
+    iAsyncModel->RefreshScan();     
     }
 
 // ---------------------------------------------------------------------------
 // TWsfMainController::ConnectingFinishedL
 // ---------------------------------------------------------------------------
 //
-void TWsfMainController::ConnectionCreationProcessFinishedL( TInt /*aResult*/ )
+void TWsfMainController::ConnectionCreationProcessFinishedL( 
+        TInt32 /* aIapId */,
+        TInt /*aResult*/ )
     {
     // no implementation required
     }
@@ -430,7 +483,7 @@ void TWsfMainController::CloseDetailsViewL()
     ShowWlanListL();
     // After the Details View closed the mainview's 
     // WlanList will be refreshed.
-    iModel->RefreshScanL();
+    iAsyncModel->RefreshScan();
     }
 
 // ------------------------------- Menu press handler ------------------------
@@ -443,92 +496,15 @@ void TWsfMainController::CloseDetailsViewL()
 void TWsfMainController::StartBrowsingL()
     {
     LOG_ENTERFN( "TWsfMainController::StartBrowsingL" ); 
-    if ( iAppUi->SuppressingKeyEvents() || iModel->IsConnectedL() && 
+    if ( IsConnecting() || ( iAppUi->SuppressingKeyEvents() || iModel->IsConnectedL() && 
              ( !iMainView->SelectedItem() || 
-               !iMainView->SelectedItem()->Connected() ) )
+               !iMainView->SelectedItem()->Connected() ) ) )
         {
         iAppUi->ShowErrorNoteL( R_QTN_WLAN_INFO_CONNECTION_ALREADY_ACTIVE );
         return;
         }
     
-    // make sure we don't suppress our key events forever
-    CleanupStack::PushL( TCleanupItem( ReleaseSuppressingKeyEvents, this ) );
-    iAppUi->SetSuppressingKeyEvents( ETrue );
-    
-    TWsfWlanInfo* selectedItem = iMainView->SelectedItem();
-    TWsfWlanInfo info;
-
-    if ( selectedItem )
-        {
-        info = *selectedItem;
-        }
-    
-    // Prevent connections to ad-hoc + WPA 
-    if ( info.iNetMode == CMManager::EAdhoc 
-            && info.iSecurityMode == CMManager::EWlanSecModeWpa )
-        {
-        iAppUi->ShowGlobalErrorNoteL( KErrNotSupported );
-        CleanupStack::PopAndDestroy();
-        return;
-        }
-
-    TInt result( KErrNone );
-    
-    TWsfIapPersistence persistence = EIapPersistent;
-    
-    if ( !info.Known() && !info.Connected() )
-        {
-        // if not known yet, create an IAP
-        if ( iModel->CreateAccessPointL( info, EFalse ) )
-            {
-            persistence = EIapExpireOnDisconnect;
-            // update iapID to list
-            UpdateIapIdToInfoArrayL( info );
-            }
-        else
-            {
-            result = KErrGeneral;
-            }
-        }
-    
-    if ( info.iIapId && !info.Connected() )
-        {
-        // hopefully we have a valid IAP id inside
-        result = iModel->ConnectL( info.iIapId, EFalse, persistence );
-        }
-    else if ( !info.Connected() )
-        {
-        result = KErrGeneral;
-        }
-    
-    // pop cleanup item ReleaseSuppressingKeyEvents
-    CleanupStack::Pop();
-    iAppUi->SetSuppressingKeyEvents( EFalse );
-
-    if ( !result )
-        {
-        TUint32 passedIap( info.iIapId );
-
-        if ( info.Connected() && !passedIap )
-            {
-            // in case we have an EasyWLAN here
-            RCmManagerExt cmmanager;
-            cmmanager.OpenLC();
-
-            passedIap = cmmanager.EasyWlanIdL();
-            
-            CleanupStack::PopAndDestroy( &cmmanager );
-            }
-        
-        // launch the browser
-        iModel->LaunchBrowserL( passedIap );
-        }
-    else if ( result == KErrCancel )
-        {
-        // connection creation was cancelled, refresh the view
-        iModel->RefreshScanL();
-        }
-    
+    StartConnectionL( ETrue );
     }
 
     
@@ -538,57 +514,16 @@ void TWsfMainController::StartBrowsingL()
 //
 void TWsfMainController::ConnectL()
     {
-    LOG_ENTERFN( "TWsfMainController::ConnectL" ); 
-    if ( iAppUi->SuppressingKeyEvents() || iModel->IsConnectedL() )
+    LOG_ENTERFN( "TWsfMainController::ConnectL" );
+    
+    if ( iAppUi->SuppressingKeyEvents() || iModel->IsConnectedL() || 
+            IsConnecting() )
         {
         iAppUi->ShowErrorNoteL( R_QTN_WLAN_INFO_CONNECTION_ALREADY_ACTIVE );
         return;
         }
-    
-    // make sure we don't suppress our key events forever
-    CleanupStack::PushL( TCleanupItem( ReleaseSuppressingKeyEvents, this ) );
-    iAppUi->SetSuppressingKeyEvents( ETrue );
-    
-    TWsfWlanInfo* selectedItem = iMainView->SelectedItem();
-    TWsfWlanInfo info;
 
-    if ( selectedItem )
-        {
-        info = *selectedItem;
-        }
-    
-    // Prevent connections to ad-hoc + WPA 
-    if ( info.iNetMode == CMManager::EAdhoc 
-            && info.iSecurityMode == CMManager::EWlanSecModeWpa )
-        {
-        iAppUi->ShowGlobalErrorNoteL( KErrNotSupported );
-        CleanupStack::PopAndDestroy();
-        return;
-        }
-    
-    TWsfIapPersistence persistence = EIapPersistent;
-        
-    if ( !info.Known() )
-        {
-        // a new access point needs to be created
-        if ( iModel->CreateAccessPointL( info, EFalse ) )
-            {
-            persistence = EIapExpireOnDisconnect;
-            // update iapID to list
-            UpdateIapIdToInfoArrayL( info );
-            }
-        }
-    
-    if ( info.iIapId )
-        {
-        // hopefully we have a valid IAP id inside
-        iModel->ConnectL( info.iIapId, ETrue, persistence );
-        }
-
-    // pop cleanup item ReleaseSuppressingKeyEvents
-    CleanupStack::Pop();
-    iAppUi->SetSuppressingKeyEvents( EFalse );  
-
+    StartConnectionL( EFalse );
     }
 
 // ---------------------------------------------------------------------------
@@ -598,36 +533,40 @@ void TWsfMainController::ConnectL()
 void TWsfMainController::UpdateIapIdToInfoArrayL( TWsfWlanInfo& aInfo )
     {
     LOG_ENTERFN( "TWsfMainController::UpdateIapIdToInfoArrayL" ); 
-    TWsfWlanInfo* temp = iInfoArray->Match( aInfo.iSsid, iInfoArray->Count() );
-    if ( temp && !aInfo.Hidden() )
+    
+    if ( iInfoArray )
         {
-        LOG_WRITE( "Info found" );
-        
-        // Check that there aren't any IAPs with same id
-        TWsfWlanInfo* wlanInfoWithSameIapId = iInfoArray->Match( aInfo.iIapId, 
-                                                iInfoArray->Count() );
-        if ( wlanInfoWithSameIapId )
+        TWsfWlanInfo* temp = iInfoArray->Match( aInfo.iSsid, iInfoArray->Count() );
+        if ( temp && !aInfo.Hidden() )
             {
-            // info with same id found set its iap id to zero
-            LOG_WRITE( "info with same id found" );
-            wlanInfoWithSameIapId->iIapId = 0;
+            LOG_WRITE( "Info found" );
+            
+            // Check that there aren't any IAPs with same id
+            TWsfWlanInfo* wlanInfoWithSameIapId = iInfoArray->Match( aInfo.iIapId, 
+                                                    iInfoArray->Count() );
+            if ( wlanInfoWithSameIapId )
+                {
+                // info with same id found set its iap id to zero
+                LOG_WRITE( "info with same id found" );
+                wlanInfoWithSameIapId->iIapId = 0;
+                }
+            
+            temp->iIapId = aInfo.iIapId;
+            
+            if ( aInfo.iNetworkName.Length() )
+                {
+                // Replace ssid as well since scanner does this same thing
+                temp->iSsid.Copy( aInfo.iNetworkName );
+                }
             }
-        
-        temp->iIapId = aInfo.iIapId;
-        
-        if ( aInfo.iNetworkName.Length() )
+        else
             {
-            // Replace ssid as well since scanner does this same thing
-            temp->iSsid.Copy( aInfo.iNetworkName );
+            LOG_WRITE( "Info not found" );
+            TWsfWlanInfo* createdInfo = new (ELeave) TWsfWlanInfo( aInfo );
+            createdInfo->iVisibility = ETrue;
+            createdInfo->iStrengthLevel = EWlanSignalStrengthMax;
+            iInfoArray->AppendL( createdInfo );
             }
-        }
-    else
-        {
-        LOG_WRITE( "Info not found" );
-        TWsfWlanInfo* createdInfo = new (ELeave) TWsfWlanInfo( aInfo );
-        createdInfo->iVisibility = ETrue;
-        createdInfo->iStrengthLevel = EWlanSignalStrengthMax;
-        iInfoArray->AppendL( createdInfo );
         }
     }
     
@@ -637,16 +576,18 @@ void TWsfMainController::UpdateIapIdToInfoArrayL( TWsfWlanInfo& aInfo )
 //
 void TWsfMainController::DisconnectL()
     {
-    LOG_ENTERFN( "TWsfMainController::DisconnectL" ); 
-    if ( iModel->IsConnecting() )
+    LOG_ENTERFN( "TWsfMainController::DisconnectL" );
+        
+    if ( IsConnecting() )
         {
         LOG_WRITE( "Abort connecting" );
         iModel->AbortConnectingL();
+        ConnectingFinishedL( KErrGeneral );
         }
     else
         {
         LOG_WRITE( "Disconnect" );
-        iModel->DisconnectL();
+        iAsyncModel->Disconnect();
         }
     }
 
@@ -722,7 +663,7 @@ void TWsfMainController::AppSwitchedForegroundL()
     //turn on scanning for our point of view
     iModel->EnableScanL();
 
-    if ( !iModel->IsConnecting() )
+    if ( !IsConnecting() )
         {
         LOG_WRITE( "Scan now" ); 
         TBool scan = iModel->RefreshScanL();
@@ -769,7 +710,7 @@ void TWsfMainController::BrowserExitL()
     {
     LOG_ENTERFN( "TWsfMainController::BrowserExitL" ); 
     iModel->AbortScanningL();
-    iModel->RefreshScanL();
+    iAsyncModel->RefreshScan();
     }
 
 
@@ -830,14 +771,14 @@ void TWsfMainController::ConnectingL( TUint32 aIapId )
 void TWsfMainController::ConnectingFinishedL( TInt aResult )
     {
     LOG_ENTERFN( "TWsfMainController::ConnectingFinishedL" ); 
-    if ( iModel->IsConnecting() )
+    if ( IsConnecting() )
         {
         iModel->SetConnecting( EFalse );
         iModel->SetRefreshState( ETrue );
         iAppUi->HideWaitNoteL();
         }
     
-    if ( aResult != KErrNone && aResult != KErrCancel )
+    if ( aResult != KErrNone )
         {
         LOG_WRITEF( "Connection failed with error=%d", aResult );
         if ( iInfoArray && iInfoArray->Count() && 
@@ -862,7 +803,7 @@ void TWsfMainController::ConnectingFinishedL( TInt aResult )
             iInfoArray->SortArrayL();
             UpdateViewL( iInfoArray );
             iModel->AbortScanningL();
-            iModel->RefreshScanL();
+            iAsyncModel->RefreshScan();
             }
         }
     }
@@ -877,7 +818,7 @@ void TWsfMainController::EditBlackListItemsL()
     LOG_ENTERFN( "TWsfMainController::EditBlackListItemsL" ); 
     _ASSERTD( iWlanInfoBranding );
     iWlanInfoBranding->EditBlackListL( *iInfoArray );
-    iModel->RefreshScanL();    
+    iAsyncModel->RefreshScan();    
     }
 
 // ---------------------------------------------------------------------------
@@ -887,7 +828,7 @@ void TWsfMainController::EditBlackListItemsL()
 void TWsfMainController::DetailsScanL()
     {
     LOG_ENTERFN( "TWsfMainController::DetailsScanL" ); 
-    iModel->RefreshScanL();
+    iAsyncModel->RefreshScan();
     }    
 
 // ---------------------------------------------------------------------------
@@ -896,11 +837,12 @@ void TWsfMainController::DetailsScanL()
 //
 void TWsfMainController::ReleaseSuppressingKeyEvents( TAny* aPtr )
     {
+    LOG_ENTERFN( "TWsfMainController::ReleaseSuppressingKeyEvents" ); 
     TWsfMainController* self = 
                         static_cast<TWsfMainController*>( aPtr );
     self->iAppUi->SetSuppressingKeyEvents( EFalse );
     self->iModel->SetConnecting( EFalse );
-    TRAP_IGNORE( self->iModel->RefreshScanL() );
+    TRAP_IGNORE( self->iAsyncModel->RefreshScan() );
     }
 
 // ---------------------------------------------------------------------------
@@ -914,5 +856,114 @@ void TWsfMainController::RestoreRefreshState( TAny* aPtr )
     LOG_WRITE( "Restore refresh state")
     self->iModel->SetRefreshState( ETrue );
     }
-      
+
+// ---------------------------------------------------------------------------
+// TWsfMainController::LaunchBrowserL
+// ---------------------------------------------------------------------------
+//
+void TWsfMainController::LaunchBrowserL( TBool aConnected, TInt32 aIapId )
+    {
+    TUint32 passedIap( aIapId );
+
+    if ( aConnected && !passedIap )
+        {
+        // in case we have an EasyWLAN here
+        RCmManagerExt cmmanager;
+        cmmanager.OpenLC();
+
+        passedIap = cmmanager.EasyWlanIdL();
+        
+        CleanupStack::PopAndDestroy( &cmmanager );
+        }
+    
+    // launch the browser
+    iModel->LaunchBrowserL( passedIap );
+    }
+
+
+// ----------------------------------------------------------------------------
+// TWsfMainController::StartConnectionL
+// ----------------------------------------------------------------------------
+//
+void TWsfMainController::StartConnectionL( TBool aWithBrowser )
+    {
+    LOG_ENTERFN( "TWsfMainController::StartConnectionL" ); 
+    
+    iStartBrowser = EFalse;
+    
+    TWsfWlanInfo* selectedItem = iMainView->SelectedItem();
+    TWsfWlanInfo info;
+    
+    TWsfWlanInfo* firstItem = iInfoArray->At( 0 );
+    if ( firstItem && firstItem->iConnectionState != ENotConnected &&
+         iInfoArray->GetArrayIndex( selectedItem ) != 0 )
+        {
+        firstItem->iConnectionState = ENotConnected;
+        iInfoArray->SortArrayL();
+        UpdateViewL( iInfoArray );
+        }
+    
+    // make sure we don't suppress our key events forever
+    CleanupStack::PushL( TCleanupItem( ReleaseSuppressingKeyEvents, this ) );
+    iAppUi->SetSuppressingKeyEvents( ETrue );
+    
+    if ( selectedItem )
+        {
+        info = *selectedItem;
+        }
+    
+    // Prevent connections to ad-hoc + WPA 
+    if ( info.iNetMode == CMManager::EAdhoc &&
+         info.iSecurityMode == CMManager::EWlanSecModeWpa )
+        {
+        iAppUi->ShowGlobalErrorNoteL( KErrNotSupported );
+        CleanupStack::PopAndDestroy();
+        return;
+        }
+
+    TBool startBrowser(ETrue);
+    
+    TWsfIapPersistence persistence = EIapPersistent;
+    
+    if ( !info.Known() && !iModel->IsConnectedL() )
+        {
+        // if not known yet, create an IAP
+        if ( iModel->CreateAccessPointL( info, EFalse ) )
+            {
+            persistence = EIapExpireOnDisconnect;
+            // update iapID to list
+            UpdateIapIdToInfoArrayL( info );
+            }
+        else
+            {
+            startBrowser = EFalse;
+            }
+        }
+    
+    if ( !info.Connected() && info.iIapId )
+        {
+        iAsyncModel->Connect( info.iIapId, !aWithBrowser, persistence );
+        startBrowser = EFalse;
+        }
+    
+    // pop cleanup item ReleaseSuppressingKeyEvents
+    CleanupStack::Pop();
+    iAppUi->SetSuppressingKeyEvents( EFalse );
+
+    if ( aWithBrowser )
+        {
+        if ( startBrowser )
+            {
+            // Connection is opened we can continue directly by opening the browser
+            LaunchBrowserL( info.Connected(), info.iIapId );
+            }
+        else 
+            {
+            // We need to start browser after the connection has been established 
+            // successfully
+            iStartBrowser = ETrue;
+            }
+        }    
+    }   
+
 // End of file

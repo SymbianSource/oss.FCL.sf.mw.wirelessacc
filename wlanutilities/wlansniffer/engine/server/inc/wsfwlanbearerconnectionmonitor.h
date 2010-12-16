@@ -293,6 +293,14 @@ NONSHARABLE_CLASS( CWsfWlanBearerConnectionMonitor ): public CActive,
         */
         void CheckClientCountL();
         
+        /**
+         * Fills TWsfWlanInfo with the connected wlan's properties
+         * @since S60 Symbian^3
+         * @param aWlanInfo The wlaninfo structure to be filled
+         * @return ETrue if there is a connection and returned data is valid, 
+         *         EFalse otherwise
+         */ 
+        TBool ConnectingWlanConnectionDetails( TWsfWlanInfo* aWlanInfo );
         
     private:    // Data
         

@@ -150,13 +150,6 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         IMPORT_C void CancelAll();
 
         /**
-        * Return the connected wlan network name
-        * @since S60 5.0
-        * @return The connected account name, or NULL if not connected
-        */ 
-        IMPORT_C HBufC* ConnectedAccountNameL();
-
-        /**
         * Return the connected wlan's details
         * @since S60 5.0
         * @param aWlanInfo The wlaninfo object to fill
@@ -184,19 +177,6 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         IMPORT_C void MonitorAccessPointL( TUint32 aMonitoredIap );
         
         /**
-        * Connect to the given WLAN IAP. The function requests the server, 
-        * then starts a synchronous wait until the connection is established.
-        * @since S60 5.0
-        * @param aIapId The id of the IAP to connect to
-        * @param aConnectOnly ETrue if Connect selected
-        * @param aPersistence The value of the persistence property
-        * @return KErrNone if managed to connect, otherwise error code
-        */
-        IMPORT_C TInt ConnectWlanBearerL( TUint32 aIapId, 
-                                          TBool aConnectOnly,
-                           TWsfIapPersistence aPersistence = EIapPersistent );
-        
-        /**
          * Asyncronous request to the server to connect
          * @since S60 5.2
          * @param aPckg request result
@@ -206,7 +186,7 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
          * @param aStatus The request status object used to contain 
          *        the completion status of the request.
          */
-        IMPORT_C void ConnectWlanBearer( TPckgBuf<TBool>& aPckg,
+        IMPORT_C void ConnectWlanBearer( TPckgBuf<TInt>& aPckg,
                                          TUint32 aIapId, 
                                          TBool aConnectOnly,
                                          TWsfIapPersistence aPersistence, 
@@ -226,15 +206,7 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         * @return ETrue on success, otherwise false
         */
         IMPORT_C TBool SetIapPersistenceL( TWsfIapPersistence aPersistence );
-
-        /**
-        * Disconnect the current wlan connection
-        * @since S60 5.0
-        * @return ETrue if there was an active connection and it was 
-        *         disconnected successfully, otherwise EFalse
-        */
-        IMPORT_C TBool DisconnectWlanBearerL();
-        
+       
         /**
         * Asyncronous request to the server to disconnect
         * @since S60 5.2
@@ -325,13 +297,6 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         TBool RecoverFromServerTermination( 
                                         MWsfStateChangeObserver& aObserver );
 
-        /**
-        * Stops the waiting for connection creation started by 
-        * ConnectWlanBearerL.
-        * @since S60 5.0
-        */
-        void StopConnectingWait();
-        
 
     private: // Data
         /**
@@ -339,16 +304,6 @@ NONSHARABLE_CLASS( RWsfSession ): public RSessionBase
         */
         CWsfEventHandler* iEventHandler;
         
-        /**
-        * Indicates the result of the connecting process
-        */
-        TInt iConnectingResult;
-        
-        /**
-        * Waiter to make the asynchronous connect call synchronous 
-        * on client-side
-        */
-        CActiveSchedulerWait* iConnWaiter;
     };
 
 #endif // R_WSFSESSION_H

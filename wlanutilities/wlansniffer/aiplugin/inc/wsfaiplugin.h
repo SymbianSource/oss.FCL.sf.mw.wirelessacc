@@ -199,11 +199,6 @@ NONSHARABLE_CLASS( CWsfAiPlugin ): public CHsContentPublisher,
         void AllocateResourcesL();
     
         /**
-        * Unpublishes (clears) all plugin content from AI2 view
-        */
-        void ClearL();
-    
-        /**
         * Launch WLAN Wizard application
         */
         void LaunchApplicationL();

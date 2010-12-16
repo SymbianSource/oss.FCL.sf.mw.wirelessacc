@@ -145,6 +145,18 @@ NONSHARABLE_CLASS( CWsfAiHelperAppUi ): public CAknViewAppUi,
         */
         void ConnectingFinishedL( TInt aResult );
         
+        /**
+         * Notification to wlan widget when browser is used
+         * @since Symbian^3
+         */
+        void HandleMskIfBrowsingL() {};
+        
+        /**
+         * Notification to wlan widget when just connected
+         * @since Symbian^3
+         */
+        void HandleMskIfConnectedL() {};
+        
 
     public:     // from MWsfStateChangeObserver
         /**
@@ -173,23 +185,26 @@ NONSHARABLE_CLASS( CWsfAiHelperAppUi ): public CAknViewAppUi,
         void ScanEnabledL();
         
         /**
-        * A WLAN connection has been established
-        * @since S60 5.0
-        */
-        void WlanConnectionActivatedL();
+         * A WLAN connection has been established
+         * @param aIapId Access point id
+         * @since S60 5.0
+         */
+        void WlanConnectionActivatedL( TInt32 aIapId );
 
         /**
-        * A WLAN connection has been closed
-        * @since S60 5.0
-        */
-        void WlanConnectionClosedL();   
+         * A WLAN connection has been closed
+         * @param aIapId Access point id
+         * @since S60 5.0
+         */
+        void WlanConnectionClosedL( TInt32 aIapId );   
         
         /**
-        * Connection creation process finished
-        * @since S60 5.2
-        * @param aError System wide error code
-        */
-        void ConnectionCreationProcessFinishedL( TInt aError );
+         * Connection creation process finished
+         * @since Symbian^3
+         * @param aIapId Access point id
+         * @param aError System wide error code
+         */
+        void ConnectionCreationProcessFinishedL( TInt32 aIapId, TInt aError );
         
     private:    // new methods
     
@@ -202,10 +217,10 @@ NONSHARABLE_CLASS( CWsfAiHelperAppUi ): public CAknViewAppUi,
         static TInt LaunchCompletedL( TAny* aObject );
         
         /**
-        * Cleanup function to release the key events suppressing
-        * @since S60 5.0
-        * @param aPtr Pointer for this class
-        */
+         * Cleanup function to release the key events suppressing
+         * @since S60 5.0
+         * @param aPtr Pointer for this class
+         */
         static void ReleaseSuppressingKeyEventsL( TAny* aPtr );
     
         

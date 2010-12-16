@@ -228,17 +228,18 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
     LOG_ENTERFN( "CWsfMainView::DynInitMenuPaneL" );
     LOG_WRITEF( "resource id = %d", aResourceId );
     iController.UpdateSelectedItemL();
-    
+
+    const CWsfDocument* doc = static_cast<const CWsfDocument*>( 
+                                                     AppUi()->Document() );
+
+    TBool connecting( doc->MainController()->IsConnecting() );
+
     if ( aResourceId == R_SNIFFER_MENU )
         {
         LOG_WRITE( "CWsfMainView::DynInitMenuPaneL, R_SNIFFER_MENU" );
-        const CWsfDocument* doc = static_cast<const CWsfDocument*>( 
-                                                         AppUi()->Document() );
         TBool blacklistEmpty( !doc->WlanInfoBranding().BlackListItemCount() );
         TWsfWlanInfo *selectedItem = iController.SelectedItem();
         CWsfWlanInfoArray *infoArray = iModel->GetInfoArray();
-        
-        TBool connecting( doc->Model().IsConnecting() );
         
         if ( !selectedItem )
             {
@@ -322,11 +323,7 @@ void CWsfMainView::DynInitMenuPaneL( TInt aResourceId,
         TBool connected( EFalse );
         TBool known( EFalse );
         TBool hidden( ETrue );
-        
-        const CWsfDocument* doc = static_cast<const CWsfDocument*>( 
-                                                         AppUi()->Document() );
-        
-        TBool connecting( doc->Model().IsConnecting() );
+       
         TBool selectedItemConnecting( EFalse );
 
         

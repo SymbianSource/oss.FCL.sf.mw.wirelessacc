@@ -11,29 +11,28 @@
  *
  * Contributors:
  *
- * Description:  Implementation of CWsfDisconnectActiveWrapper.
+ * Description:  Implementation of CWsfRefreshScanActiveWrapper.
  *
  */
 
-#ifndef CWSFDISCONNECTACTIVEWRAPPER_H
-#define CWSFDISCONNECTACTIVEWRAPPER_H
+#ifndef CWSFREFRESHSCANACTIVEWRAPPER_H
+#define CWSFREFRESHSCANACTIVEWRAPPER_H
 
 //  EXTERNAL INCLUDES
 #include <e32base.h>	
 
 //  INTERNAL INCLUDES
-#include "wsfaicontroller.h"
 
 //  FORWARD DECLARATIONS
 class CWsfModel;
 
 /**
- *  Active object that disconnects wlan
+ *  Active object that requests scans
  *
  *  @lib wsfaiplugin.lib
  *  @since S60 v5.2
  */
-class CWsfDisconnectActiveWrapper : public CActive
+class CWsfRefreshScanActiveWrapper : public CActive
     {
 public:
     // Constructors and destructor
@@ -42,19 +41,19 @@ public:
      * Destructor
      * @since S60 5.2     
      */
-    ~CWsfDisconnectActiveWrapper();
+    ~CWsfRefreshScanActiveWrapper();
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfDisconnectActiveWrapper* NewL( CWsfModel* aModel );
+    static CWsfRefreshScanActiveWrapper* NewL(CWsfModel* aModel);
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfDisconnectActiveWrapper* NewLC( CWsfModel* aModel );
+    static CWsfRefreshScanActiveWrapper* NewLC(CWsfModel* aModel);
 
 public:
 
@@ -69,14 +68,14 @@ private:
     /**
      * constructor
      */
-    CWsfDisconnectActiveWrapper();
+    CWsfRefreshScanActiveWrapper();
 
     /**
      * Factory function.
-     * @since S60 5.2
+     * @since S60 5.0
      * @param aModel CWsfModel pointer
      */
-    void ConstructL( CWsfModel* aModel );
+    void ConstructL(CWsfModel* aModel);
 
 private:
     // From CActive
@@ -93,13 +92,13 @@ private:
     /**
      * @see CActive
      */
-    TInt RunError( TInt aError );
+    TInt RunError(TInt aError);
 
 private:
     /**
      * States of the active object
      */
-    enum CWsfDisconnectActiveWrapperState
+    enum CWsfRefreshScanActiveWrapperState
         {
         EUninitialized, // Uninitialized
         EInitialized, // Initalized
@@ -126,4 +125,4 @@ private:
 
     };
 
-#endif // CWSFDISCONNECTACTIVEWRAPPER_H
+#endif // CWSFREFRESHSCANACTIVEWRAPPER_H

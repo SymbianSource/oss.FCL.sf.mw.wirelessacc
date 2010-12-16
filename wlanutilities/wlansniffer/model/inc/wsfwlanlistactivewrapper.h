@@ -22,10 +22,10 @@
 #include <e32base.h>
 
 //  INTERNAL INCLUDES
-#include "wsfaicontroller.h"
 
 //  FORWARD DECLARATIONS
 class CWsfModel;
+class MWsfModelObserver;
 class CWsfWlanInfoArray;
 
 /**
@@ -48,15 +48,17 @@ public: // Constructors and destructor
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfWLANListActiveWrapper* NewL( CWsfModel* aModel,
-                                            TWsfAiController &aController );
+    static CWsfWLANListActiveWrapper* NewL( 
+            CWsfModel* aModel,
+            MWsfModelObserver &aModelObserver  );
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfWLANListActiveWrapper* NewLC( CWsfModel* aModel, 
-                                             TWsfAiController &aController );
+    static CWsfWLANListActiveWrapper* NewLC( 
+            CWsfModel* aModel, 
+            MWsfModelObserver &aModelObserver  );
 
 public:
     /**
@@ -86,7 +88,7 @@ private:
     /**
      * constructor
      */
-    CWsfWLANListActiveWrapper();
+    CWsfWLANListActiveWrapper(MWsfModelObserver &aModelObserver);
 
     /**
      * Factory function.
@@ -94,7 +96,7 @@ private:
      * @param aModel Whether to react to screensaver events 
      * @param aController Whether to react to screensaver events
      */
-    void ConstructL( CWsfModel* aModel, TWsfAiController &aController );
+    void ConstructL( CWsfModel* aModel );
 
 private: // From CActive
 
@@ -155,6 +157,9 @@ private:
      */
     CWsfModel* iModel;
 
+    /* Reference to Model Observer */
+    MWsfModelObserver &iModelObserver;
+    
     /**
      * Array to store WLAN scan results. Owned.
      */
@@ -169,11 +174,6 @@ private:
      * Wlan data buffer
      */
     HBufC8* iBuffer;
-
-    /**
-     * Pointer to TWsfAiController
-     */
-    TWsfAiController *iController;
 
     /**
      * Is this object called from plugin startup

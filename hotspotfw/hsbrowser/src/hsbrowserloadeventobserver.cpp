@@ -307,11 +307,8 @@ void CHsBrowserLoadEventObserver::UpdateDoIctFlagL()
         if ( url )
         	{
             DEBUG1( "url=%S", url );        
-            if ( url->Compare( *model->Url() ) == 0 )
-               { // match
-               iDoIct = ETrue;
-               DEBUG( "CHsBrowserLoadEventObserver::HandleBrowserLoadEventL() iDoIct = ETrue." );
-               }
+            iDoIct = ETrue;
+            DEBUG( "CHsBrowserLoadEventObserver::HandleBrowserLoadEventL() iDoIct = ETrue." );
     	    }	
         else
         	{
@@ -320,5 +317,3 @@ void CHsBrowserLoadEventObserver::UpdateDoIctFlagL()
         CleanupStack::PopAndDestroy( url );
     	}
 	}
-
-// End of File  

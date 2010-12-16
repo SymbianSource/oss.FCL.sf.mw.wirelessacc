@@ -40,19 +40,42 @@ class MWsfModelObserver: public MWsfBrowserLaunchObserver
     {
     public:     // Abstract methods
         /**
-        * Notification that a connection is about to be created
-        * @since S60 5.0
-        * @param aIapId The IAP id of the connection being created
-        */
+         * Notification that a connection is about to be created
+         * @since S60 5.0
+         * @param aIapId The IAP id of the connection being created
+         */
         virtual void ConnectingL( TUint32 aIapId ) = 0;
         
         /**
-        * Notification that the connection creation process ended
-        * @since S60 5.0
-        * @param aResult The result of the connection creation
-        */
+         * Notification that the connection creation process ended
+         * @since S60 5.0
+         * @param aResult The result of the connection creation
+         */
         virtual void ConnectingFinishedL( TInt aResult ) = 0;
         
+        /**
+         * Propagates the network data from the model
+         * @since Symbian^3
+         */
+        virtual void WlanListDataReadyL() {};
+    
+        /**
+         * Propagates the network data from the model
+         * @since Symbian^3
+         */
+        virtual void StartupRefreshDataReadyL() {};
+        
+        /**
+         * Propagates the network data from the model
+         * @since Symbian^3
+         */
+        virtual void HandleMskIfBrowsingL() = 0;
+        
+        /**
+         * Propagates the network data from the model
+         * @since Symbian^3
+         */
+        virtual void HandleMskIfConnectedL() = 0;
     };
 
 

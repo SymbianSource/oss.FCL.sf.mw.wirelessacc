@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* Copyright (c) 2007-2010 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -337,20 +337,6 @@ TBool CWsfWlanIapWizard::QuerySecureKeyL()
                 okPressed = connUiUtils->EasyWpaDlg( &ptr );
                 CleanupStack::PopAndDestroy( connUiUtils );
                 }
-            else
-                {
-                // no key prompt in EAP mode, but the usual note is shown
-                LOG_WRITE( "secmode WPA-EAP" );
-
-                HBufC* eapText = StringLoader::LoadLC( 
-                                 R_QTN_NETW_CONSET_INFO_EAP_SETTINGS_DEFAULT );
-                CAknInformationNote* informationNote = 
-                                     new (ELeave) CAknInformationNote( ETrue );
-                informationNote->ExecuteLD( *eapText );
-                
-                CleanupStack::PopAndDestroy( eapText );
-                }
-            
             break;                
             }
         
@@ -409,7 +395,14 @@ void CWsfWlanIapWizard::AskNetworkDetailsL()
         LOG_WRITEF( "SSID: [%S]", ssid16 );
 
         // update SSID        
-        CnvUtfConverter::ConvertFromUnicodeToUtf8( iWlanInfo->iSsid, *ssid16 );
+        TInt error = CnvUtfConverter::ConvertFromUnicodeToUtf8( iWlanInfo->iSsid, *ssid16 );
+
+        if ( error )
+            {
+            LOG_WRITE( "ConvertFromUnicodeToUtf8 failed");
+            iWlanInfo->iSsid.Copy( *ssid16 );
+            }
+
         delete ssid16;
 
         // pop up waitnote

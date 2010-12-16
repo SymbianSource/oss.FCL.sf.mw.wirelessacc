@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+ * Copyright (c) 2010 Nokia Corporation and/or its subsidiary(-ies). 
  * All rights reserved.
  * This component and the accompanying materials are made available
  * under the terms of "Eclipse Public License v1.0"
@@ -26,15 +26,16 @@
 
 //  INTERNAL INCLUDES
 #include "wsfcommon.h"
-#include "wsfaicontroller.h"
 #include "wsfmodel.h"
 
 //  FORWARD DECLARATIONS
+class MWsfModelObserver;
 class CWsfWLANListActiveWrapper;
 class CWsfRefreshScanActiveWrapper;
 class CWsfDisconnectActiveWrapper;
 class CWsfConnectActiveWrapper;
 class CWsfLaunchAiHelperActiveWrapper;
+class CWsfConnMonActiveWrapper;
 
 // CLASS DECLARATION
 
@@ -42,7 +43,7 @@ class CWsfLaunchAiHelperActiveWrapper;
  *  Active object helper class that capsulates active wrapper classes
  *
  *  @lib wsfaiplugin.lib
- *  @since S60 v5.2
+ *  @since Symbian^3
  * 
  */
 class CWsfActiveWrappers : public CBase
@@ -52,23 +53,25 @@ public:
 
     /**
      * Destructor.
-     * @since S60 5.2 
+     * @since Symbian^3
      */
-    ~CWsfActiveWrappers();
+    IMPORT_C ~CWsfActiveWrappers();
 
     /**
      * Two-phased constructor.
-     * @since S60 5.2  
+     * @since Symbian^3  
      */
-    static CWsfActiveWrappers* NewL( CWsfModel* aModel,
-            TWsfAiController &aController );
+    IMPORT_C static CWsfActiveWrappers* NewL(
+            CWsfModel* aModel,
+            MWsfModelObserver &aModelObserver );
 
     /**
      * Two-phased constructor.
-     * @since S60 5.2 
+     * @since Symbian^3 
      */
-    static CWsfActiveWrappers* NewLC(CWsfModel* aModel,
-            TWsfAiController &aController );
+    IMPORT_C static CWsfActiveWrappers* NewLC(
+            CWsfModel* aModel,
+            MWsfModelObserver &aModelObserver );
 
 public:
 
@@ -76,57 +79,66 @@ public:
      * Starts disconnecting 
      * @since S60 5.2     
      */
-    void Disconnect();
+    IMPORT_C void Disconnect();
 
     /**
      * Starts connecting
+     * 
      * @since S60 5.2     
      * @param aIapId WLAN IAP id to connect to.
      * @param aConnectOnly ETrue if Connect selected
      * @param aPersistence Persistence property of the IAP
      */
-    void Connect( TUint aIapID, TBool aConnectOnly, 
-                  TWsfIapPersistence aPersistence );
+    IMPORT_C void Connect( 
+            TUint aIapID, 
+            TBool aConnectOnly, 
+            TWsfIapPersistence aPersistence );
 
     /**
      * Starts refresh scan
-     * @since S60 5.2     
+     * @since Symbian^3    
      */
-    void RefreshScan();
+    IMPORT_C void RefreshScan();
 
     /**
      * Starts wlan list refreshing
-     * @since S60 5.2   
+     * @since Symbian^3   
      * @param aStarUp is this called called from plugin start up   
      */
-    void RefreshWLANList( TBool aStarUp );
+    IMPORT_C void RefreshWLANList( TBool aStarUp );
     
     /**
      * Starts launching of ai helper 
-     * @since S60 5.2   
+     * @since Symbian^3   
      * @param aWlanInfo The WlanInfo object to be passed to the helper app
      * @param aConnectOnly ETrue if we are only connecting, 
      *                     EFalse if we should also launch the browser  
      * @param aTestAccessPoint ETrue if ICT is executed, 
      *                         EFalse if ICT is not executed 
      */
-    void LaunchHelperApplicationL( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
+    IMPORT_C void LaunchHelperApplicationL( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
                                    TBool aTestAccessPoint );
 
     /**
      * Returns the list of found WLANs. 
      * Ownership not passed.
-     * @since S60 5.2
+     * @since Symbian^3
      * @return Array of WLANs
      */
-    CWsfWlanInfoArray* GetWLANList();
+    IMPORT_C CWsfWlanInfoArray* GetWLANList();
 
     /**
      * Returns the connected wlan network 
-     * @since S60 5.2
+     * @since Symbian^3
      * @return TWsfWlanInfo
      */
-    TWsfWlanInfo GetConnectedWLANNetwork();
+    IMPORT_C TWsfWlanInfo GetConnectedWLANNetwork();
+	
+	/**
+     * Checks if WLAN is used by browser
+     * @since Symbian^3
+     */
+    IMPORT_C void CheckIsWlanUsedByBrowserL();
 
 private:
 
@@ -138,7 +150,7 @@ private:
     /**
      * Constructor for performing 2nd stage construction
      */
-    void ConstructL( CWsfModel* aModel, TWsfAiController &aController );
+    void ConstructL( CWsfModel* aModel, MWsfModelObserver &aModelObserver );
 
 private:
     // Data
@@ -173,6 +185,12 @@ private:
      */
     CWsfLaunchAiHelperActiveWrapper* iLaunchAiHelperActiveWrapper;
 
+    /**
+     * Pointer to CWsfConnMonActiveWrapper
+     * Own.
+     */
+    CWsfConnMonActiveWrapper* iConnMonActiveWrapper;
+	
     };
 
 #endif // WSFACTIVEWRAPPERS_H

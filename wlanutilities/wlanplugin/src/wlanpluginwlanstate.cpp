@@ -214,7 +214,7 @@ void CWlanPluginWlanState::ScanEnabledL()
 // ---------------------------------------------------------
 // CWlanPluginWlanState::WlanConnectionActivatedL
 // ---------------------------------------------------------    
-void CWlanPluginWlanState::WlanConnectionActivatedL()
+void CWlanPluginWlanState::WlanConnectionActivatedL( TInt32 /* aIapId */ )
     {
     CLOG_ENTERFN( "CWlanPluginWlanState::WlanConnectionActivatedL()" );   
     
@@ -228,7 +228,7 @@ void CWlanPluginWlanState::WlanConnectionActivatedL()
 // ---------------------------------------------------------
 // CWlanPluginWlanState::WlanConnectionClosedL
 // ---------------------------------------------------------    
-void CWlanPluginWlanState::WlanConnectionClosedL()
+void CWlanPluginWlanState::WlanConnectionClosedL( TInt32 /* aIapId */ )
     {
     CLOG_ENTERFN( "CWlanPluginWlanState::WlanConnectionClosedL()" );    
     
@@ -247,7 +247,9 @@ void CWlanPluginWlanState::WlanConnectionClosedL()
 // CWlanPluginWlanState::ConnectionCreationProcessFinishedL
 // ---------------------------------------------------------------------------
 //
-void CWlanPluginWlanState::ConnectionCreationProcessFinishedL( TInt /*aResult*/ )
+void CWlanPluginWlanState::ConnectionCreationProcessFinishedL(
+        TInt32 /* aIapId */,
+        TInt /*aResult*/ )
     {
     // no implementation required
     }

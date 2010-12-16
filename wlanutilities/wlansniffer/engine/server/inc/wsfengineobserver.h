@@ -63,21 +63,24 @@ class MWsfEngineObserver
         /**
         * Called when a WLAN connection has been established
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void ConnectedL() = 0;
+        virtual void ConnectedL( TInt32 aIapId ) = 0;
         
         /**
         * Called when the active WLAN connection has been terminated
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void DisconnectedL() = 0;
+        virtual void DisconnectedL( TInt32 aIapId ) = 0;
         
         /**
         * Called when an error occured during the connecting process
         * @since S60 5.0
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        virtual void ConnectingFailedL( TInt aError ) = 0;
+        virtual void ConnectingFailedL( TInt32 aIapId, TInt aError ) = 0;
 
     };
 

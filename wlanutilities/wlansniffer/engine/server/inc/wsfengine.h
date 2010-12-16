@@ -264,28 +264,31 @@ NONSHARABLE_CLASS( CWsfEngine ): public CBase,
         /**
         * Called when a wlan connection is established
         * @since S60 5.0
-        * @param aConnectionName WLAN connection name (SSID)
+        * @param aIapId IAP ID of WLAN connection 
         */
-        virtual void ConnectionEstablishedL( const TDesC& aConnectionName );
+        virtual void ConnectionEstablishedL( TInt32 aIapId );
 
         /**
         * Called when wlan connection has been lost
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void ConnectionLostL();
+        virtual void ConnectionLostL( TInt32 aIapId );
         
         /**
         * Called when the connection process failed for some reason
         * @since S60 5.0
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        virtual void ConnectingFailedL( TInt aError );
+        virtual void ConnectingFailedL(  TInt32 aIapId, TInt aError );
         
         /**
         * Called when the connection no longer needs the IAP it was using
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void ConnectedIapReleasedL();
+        virtual void ConnectedIapReleasedL( TInt32 aIapId );
 
         
     private:

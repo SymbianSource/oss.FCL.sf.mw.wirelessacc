@@ -193,9 +193,7 @@ void CWsfServer::ClientRelease()
 void CWsfServer::ClientAttach()
 	{
 	LOG_ENTERFN( "CWsfServer::ClientAttach" );
-	iCloser->Cancel();
 	++iClientCount;
-	
 	iCloser->WaitForClients( ETrue );
 	}
 

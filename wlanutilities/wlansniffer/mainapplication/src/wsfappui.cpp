@@ -116,6 +116,7 @@ CWsfAppUi::CWsfAppUi():
 //
 CWsfAppUi::~CWsfAppUi()
     {
+    LOG_ENTERFN( "CWsfAppUi::~CWsfAppUi" );
     if ( iWaitDialog )
         {
         iWaitDialog->SetCallback( NULL );
@@ -129,7 +130,6 @@ CWsfAppUi::~CWsfAppUi()
     
     delete iIdle;
     delete iConnectedDetailsDialog;
-    LOG_WRITE( "CWsfAppUi::~CWsfAppUi" );
     }
 
 

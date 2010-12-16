@@ -180,11 +180,11 @@ EXPORT_C TWsfWlanSignalStrengthLevel TWsfWlanInfo::SignalStrength()
 	// smaller value means stronger signal
 	TWsfWlanSignalStrengthLevel level( EAverage );
 	
-    if ( iStrengthLevel < EWlanSignalStrengthGood )
+    if ( iStrengthLevel <= EWlanSignalStrengthGood )
         {
         level = EExcelent;
         }
-    else if ( iStrengthLevel > EWlanSignalStrengthLow )
+    else if ( iStrengthLevel >= EWlanSignalStrengthLow )
         {
         if ( iStrengthLevel == EWlanSignalUnavailable )
             {
@@ -213,7 +213,7 @@ EXPORT_C TInt TWsfWlanInfo::SignalStrengthPercentage()
         {
         signalStrength = KMaxPercentage;
         }
-    else if ( iStrengthLevel < EWlanSignalStrengthMin )
+    else if ( iStrengthLevel <= EWlanSignalStrengthMin )
         {
         TInt diff = EWlanSignalStrengthMin - iStrengthLevel;
         signalStrength = diff * KMaxPercentage / 

@@ -262,21 +262,24 @@ NONSHARABLE_CLASS( CWsfSession ): public CSession2,
         /**
         * Called when a WLAN connection has been established
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        void ConnectedL();
+        void ConnectedL( TInt32 aIapId );
         
         /**
         * Called when the active WLAN connection has been terminated
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        void DisconnectedL();
+        void DisconnectedL( TInt32 aIapId );
         
         /**
         * Called when an error occured during the connecting process
         * @since S60 5.0
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        void ConnectingFailedL( TInt aError );
+        void ConnectingFailedL( TInt32 aIapId, TInt aError );
 
 
     private:    // new methods

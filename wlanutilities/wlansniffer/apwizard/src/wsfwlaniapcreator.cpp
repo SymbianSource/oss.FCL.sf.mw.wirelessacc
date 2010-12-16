@@ -55,8 +55,25 @@ static const TUint KWpaKeyMaxLength = 64;
 */
 static const TUint KMaxWepKeyLen = 26; 
 
+/**
+* EAP_SIM id in expanded form
+*/
+const TUint8 KEapSimId[] = {0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x12};
 
+/**
+* EAP-AKA id in expanded form
+*/
+const TUint8 KEapAkaId[] = {0xfe, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x17};
 
+/**
+* Maximum length of the EAP list
+*/
+const TUint KEapListMaxLength = 1024;
+
+/**
+* Length of EAP id that is in expanded form
+*/
+const TUint KEapExpandedIdLength = 8;
   
 
 // ----------------------------------------------------------------------------
@@ -187,28 +204,20 @@ void CWsfWlanIapCreator::StoreWPADataL( const TInt aIapId,
     if ( !usesPsk )
         {
         // not PSK -> must be EAP
-        LOG_WRITE( "saving EAP info..." );
-        RImplInfoPtrArray eapArray;
-        REComSession::ListImplementationsL( KEapTypeInterfaceUid, eapArray );
-        CleanupClosePushL( eapArray );
+        LOG_WRITE( "saving default EAP types..." );
         
-        for ( TInt i = 0; i < eapArray.Count(); ++i )
-            {
-            // IsDisallowedOutsidePEAP actually means IsDisallowedOutsideTunnel
-            if ( !CEapType::IsDisallowedOutsidePEAP( *eapArray[i] ) )
-                {
-                CEapType* eapType = CEapType::NewL( eapArray[i]->DataType(), 
-                                                    ELan, 
-                                                    serviceId );
-                CleanupStack::PushL( eapType );
-                
-                eapType->SetIndexL( ELan, serviceId );
-                CleanupStack::PopAndDestroy( eapType );
-                }
-            }
-
-        eapArray.ResetAndDestroy();
-        CleanupStack::PopAndDestroy( &eapArray );
+        //Enable EAP-SIM and EAP-AKA
+        TBuf8<KEapListMaxLength> enabledEapList;         
+        TBuf8< KEapExpandedIdLength > eapTypeCue;
+        
+        eapTypeCue.Copy( KEapSimId, KEapExpandedIdLength );
+        enabledEapList.Append( eapTypeCue );
+        
+        eapTypeCue.Copy( KEapAkaId, KEapExpandedIdLength );
+        enabledEapList.Append( eapTypeCue );
+        
+        CMDBField<TDesC8>* eaps = (CMDBField<TDesC8>*)generic->GetFieldByIdL( KCDTIdWlanEnabledEaps );
+        eaps->SetL( enabledEapList ); 
         }
 
     if ( !found )

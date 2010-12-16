@@ -26,8 +26,7 @@
 #include <wlanerrorcodes.h>
 #include <cmconnectionmethodext.h>
 #include <commdb.h>
-#include <WlanCdbCols.h>
-
+#include <wdbifwlansettings.h>
 
 
 //  CLASS HEADER
@@ -301,7 +300,7 @@ void CWsfWlanBearerConnectionMonitor::EventL(
 
                     // notify observer ...
                     iConnectionId = connectionId;
-                    iObserver->ConnectionEstablishedL( iWlanNetworkName );
+                    iObserver->ConnectionEstablishedL( iConnIap );
                     }
                 }
             break;
@@ -325,7 +324,7 @@ void CWsfWlanBearerConnectionMonitor::EventL(
                     iConnectionId = KNoConnection;
                     
                     // notify observer
-                    iObserver->ConnectionLostL();
+                    iObserver->ConnectionLostL( iConnIap );
                     }
                 }
             break;
@@ -354,35 +353,29 @@ TBool CWsfWlanBearerConnectionMonitor::CheckConnectionDetailsL(
     // Add only connections with valid id
     if ( aConnectionId > 0 )
         {
-        CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewLC();
-        iMonitor.GetIntAttribute( aConnectionId, 0, KBearer, 
-                                  (TInt&)bearerType, 
-                                  waiter->iStatus );
-        waiter->WaitForRequest();
-        LOG_WRITEF( "found bearer: %d", bearerType );        
+        TRequestStatus status;
+        iMonitor.GetIntAttribute( 
+                aConnectionId, 
+                0, 
+                KBearer, 
+                (TInt&)bearerType, 
+                status );
+        
+        User::WaitForRequest( status );
 
-        if ( waiter->iStatus.Int() == KErrNone )
+        if ( status.Int() == KErrNone )
             {
-            LOG_WRITE( "status: KErrNone" );
+            LOG_WRITEF( "found bearer: %d", bearerType );
+            
             if ( bearerType == EBearerWLAN )
                 {
-                
-                iMonitor.GetStringAttribute( aConnectionId, 0, KNetworkName, 
-                                         iWlanNetworkName, waiter->iStatus );
-                waiter->WaitForRequest();        
-                if ( waiter->iStatus.Int() == KErrNone )
-                    {
-                    LOG_WRITEF( "WLAN network name: %S", &iWlanNetworkName );
-                    foundWlanBearer = ETrue;
-                    }
-                
+                foundWlanBearer = ETrue;
                 }
             }
         else
             {
-            LOG_WRITEF( "status: %d", waiter->iStatus.Int() );
+            LOG_WRITEF( "status: %d", status.Int() );
             }
-        CleanupStack::PopAndDestroy( waiter );
         }
 
     return foundWlanBearer;
@@ -533,9 +526,10 @@ TBool CWsfWlanBearerConnectionMonitor::ConnectedWlanConnectionDetailsL(
     LOG_WRITEF( "Monitor iConnectingState =%d and iConnectionId = %d", 
                          iConnectingState, iConnectionId );
     
-    if ( iConnectingState == ECsIdle && iConnectionId == KNoConnection )
+    if ( iConnectionId == KNoConnection )
         {
         // Make sure that we have connection id
+        // We have connection id if WLAN is connecting or connected
         FindWlanBearerConnectedL();
         }
     
@@ -552,78 +546,6 @@ TBool CWsfWlanBearerConnectionMonitor::ConnectedWlanConnectionDetailsL(
     
     CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewLC();
     
-    // security mode
-    TInt securityAttribute( EWlanConnectionSecurityOpen );
-    iMonitor.GetIntAttribute( iConnectionId, 0, KSecurityMode, 
-                              securityAttribute, waiter->iStatus );
-    waiter->WaitForRequest();
-    
-    if ( waiter->iStatus.Int() != KErrNone )
-        {
-        aWlanInfo->iConnectionState = ENotConnected;
-        CleanupStack::PopAndDestroy( waiter );
-        return EFalse;
-        }
-
-    switch ( securityAttribute )
-        {
-        case EConnMonSecurityWep:
-            {
-            aWlanInfo->iSecurityMode = EWlanSecModeWep;
-            break;
-            }
-
-        case EConnMonSecurity802d1x:
-            {
-            aWlanInfo->iSecurityMode = EWlanSecMode802_1x;
-            break;
-            }
-
-        case EConnMonSecurityWpa:       // fall-through
-        case EConnMonSecurityWpaPsk:
-            {
-            aWlanInfo->iSecurityMode = EWlanSecModeWpa;
-            break;
-            }
-
-        case EConnMonSecurityOpen:      // fall-through
-        default:
-            {
-            aWlanInfo->iSecurityMode = EWlanSecModeOpen;
-            }
-        }    
-    LOG_WRITEF( "conn.secmode = %d", aWlanInfo->iSecurityMode );
-    
-    aWlanInfo->SetUsesPreSharedKey( 
-            EConnMonSecurityWpaPsk == securityAttribute );
-    
-    LOG_WRITEF( "conn.usespresharedkey = %d", aWlanInfo->UsesPreSharedKey() );
-
-    // network mode    
-    TInt networkModeAttribute( 0 );
-    
-    iMonitor.GetIntAttribute( iConnectionId, 0, KNetworkMode, 
-                              networkModeAttribute, waiter->iStatus );
-    waiter->WaitForRequest();  
-    
-    if ( waiter->iStatus.Int() != KErrNone )
-        {
-        aWlanInfo->iConnectionState = ENotConnected;
-        CleanupStack::PopAndDestroy( waiter );
-        return EFalse;
-        }
-
-    if ( networkModeAttribute == EConnMonAdHoc )
-        {
-        aWlanInfo->iNetMode = EAdhoc;
-        }
-    else
-        {
-        aWlanInfo->iNetMode = EInfra;
-        }
-        
-    LOG_WRITEF( "conn.netmode = %d", aWlanInfo->iNetMode );
-
     // iap id
     TUint iapIdAttribute( 0 );
     iMonitor.GetUintAttribute( iConnectionId, 0, KIAPId, 
@@ -640,24 +562,103 @@ TBool CWsfWlanBearerConnectionMonitor::ConnectedWlanConnectionDetailsL(
     aWlanInfo->iIapId = iapIdAttribute;
     
     LOG_WRITEF( "conn.iap = %d", aWlanInfo->iIapId );
-
-    // signal strength
-    TInt signStrengthAttribute( 0 );          
-    iMonitor.GetIntAttribute( iConnectionId, 0, KSignalStrength, 
-                              signStrengthAttribute, waiter->iStatus );
-    waiter->WaitForRequest(); 
-	
-	if ( waiter->iStatus.Int() != KErrNone )
-        {
-        aWlanInfo->iConnectionState = ENotConnected;
-        CleanupStack::PopAndDestroy( waiter );
-        return EFalse;
-        }
-	
-    aWlanInfo->iStrengthLevel = signStrengthAttribute;
-    LOG_WRITEF( "conn.signalstrength = %d", aWlanInfo->iStrengthLevel );
     
-    if ( aWlanInfo->iIapId )
+    // security mode
+    TInt securityAttribute( EWlanConnectionSecurityOpen );
+    iMonitor.GetIntAttribute( iConnectionId, 0, KSecurityMode, 
+                              securityAttribute, waiter->iStatus );
+    waiter->WaitForRequest();
+
+    // the operation gives an error code if WLAN is not connected or is in 
+    // connecting state. We must use this information to determine 
+    // A) Connected state (KErrNone): Read informtation from ConnMon
+    // B) Connecting state (!KErrNone): Read information from database 
+    TBool ret( ETrue );
+    if ( waiter->iStatus.Int() != KErrNone )
+        {
+        LOG_WRITE( "WLAN is in connecting state" );
+        ret = ConnectingWlanConnectionDetails( aWlanInfo );     
+        }
+    else
+        {
+        LOG_WRITE( "WLAN is in connected state" );
+        switch ( securityAttribute )
+            {
+            case EConnMonSecurityWep:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeWep;
+                break;
+                }
+    
+            case EConnMonSecurity802d1x:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecMode802_1x;
+                break;
+                }
+    
+            case EConnMonSecurityWpa:       // fall-through
+            case EConnMonSecurityWpaPsk:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeWpa;
+                break;
+                }
+    
+            case EConnMonSecurityOpen:      // fall-through
+            default:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeOpen;
+                }
+            }    
+        LOG_WRITEF( "conn.secmode = %d", aWlanInfo->iSecurityMode );
+        
+        aWlanInfo->SetUsesPreSharedKey( 
+                EConnMonSecurityWpaPsk == securityAttribute );
+        
+        LOG_WRITEF( "conn.usespresharedkey = %d", aWlanInfo->UsesPreSharedKey() );
+    
+        // network mode    
+        TInt networkModeAttribute( 0 );
+        
+        iMonitor.GetIntAttribute( iConnectionId, 0, KNetworkMode, 
+                                  networkModeAttribute, waiter->iStatus );
+        waiter->WaitForRequest();  
+        
+        if ( waiter->iStatus.Int() != KErrNone )
+            {
+            aWlanInfo->iConnectionState = ENotConnected;
+            CleanupStack::PopAndDestroy( waiter );
+            return EFalse;
+            }
+    
+        if ( networkModeAttribute == EConnMonAdHoc )
+            {
+            aWlanInfo->iNetMode = EAdhoc;
+            }
+        else
+            {
+            aWlanInfo->iNetMode = EInfra;
+            }
+            
+        LOG_WRITEF( "conn.netmode = %d", aWlanInfo->iNetMode );
+    
+        // signal strength
+        TInt signStrengthAttribute( 0 );          
+        iMonitor.GetIntAttribute( iConnectionId, 0, KSignalStrength, 
+                                  signStrengthAttribute, waiter->iStatus );
+        waiter->WaitForRequest(); 
+        
+        if ( waiter->iStatus.Int() != KErrNone )
+            {
+            aWlanInfo->iConnectionState = ENotConnected;
+            CleanupStack::PopAndDestroy( waiter );
+            return EFalse;
+            }
+        
+        aWlanInfo->iStrengthLevel = signStrengthAttribute;
+        LOG_WRITEF( "conn.signalstrength = %d", aWlanInfo->iStrengthLevel );
+        }
+    
+    if ( ret && aWlanInfo->iIapId )
         {
         LOG_WRITE( "IAP id != 0" );
         
@@ -961,18 +962,17 @@ void CWsfWlanBearerConnectionMonitor::ShutdownOwnedConnectionL()
     iConnectionOwned = EFalse;
 
     // tell the engine we have released the IAP 
-    iObserver->ConnectedIapReleasedL();
+    iObserver->ConnectedIapReleasedL( iConnIap );
 
     
     iServerCloser.WaitForOwnedConnection( EFalse );
     
-    if ( !iAborting )
-        {
-        // notify observers only if connection creation 
-        // was not aborted
-        iObserver->ConnectionLostL();
-        }
-
+    // notify observers only if connection creation 
+    // was not aborted
+    iObserver->ConnectionLostL( iConnIap );
+    
+    // Make sure that the internal status is reset.
+    iConnectionId = KNoConnection;
     iAborting = EFalse;
     
     CleanupStack::PopAndDestroy( 1 ); // ReleaseShutdownMutex()
@@ -990,6 +990,7 @@ void CWsfWlanBearerConnectionMonitor::RunL()
     if ( iAborting )
         {
         // if connection creation was aborted, do the cleanup
+        LOG_WRITEF("Connection was aborted: iap id: %d", iConnIap);
         ShutdownOwnedConnectionL();
         return;
         }
@@ -998,7 +999,7 @@ void CWsfWlanBearerConnectionMonitor::RunL()
         {
         case ECsNotConnected:
             {
-            LOG_WRITE( "<ENotConnected>" );
+            LOG_WRITEF( "<ENotConnected> iap id=%d", iConnIap );
 
             TInt err( KErrNone );
             err = iSocketServ.Connect();
@@ -1014,7 +1015,7 @@ void CWsfWlanBearerConnectionMonitor::RunL()
                 LOG_WRITEF( "connection.Open error = %d", err );
                 ShutdownOwnedConnectionL();
         
-                iObserver->ConnectingFailedL( err );
+                iObserver->ConnectingFailedL( iConnIap, err );
                 break;
                 }            
 
@@ -1030,14 +1031,14 @@ void CWsfWlanBearerConnectionMonitor::RunL()
             
         case ECsSocketOpened:
             {
-            LOG_WRITE( "<ESocketOpened>" );
+            LOG_WRITEF( "<ESocketOpened> iap id=%d", iConnIap );
             if ( iStatus.Int() != KErrNone )
                 {
                 // there was an error while connecting
-                LOG_WRITE( "connection.Start error" );
+                LOG_WRITEF( "connection.Start error: %d", iStatus.Int() );
                 ShutdownOwnedConnectionL();
         
-                iObserver->ConnectingFailedL( iStatus.Int() );
+                iObserver->ConnectingFailedL( iConnIap, iStatus.Int() );
 
                 break;
                 }
@@ -1053,7 +1054,7 @@ void CWsfWlanBearerConnectionMonitor::RunL()
                 LOG_WRITEF( "FindWlanBearerConnectedL error=%d", error );
                 ShutdownOwnedConnectionL();
                         
-                iObserver->ConnectingFailedL( ( error )? error : KErrGeneral );
+                iObserver->ConnectingFailedL( iConnIap, ( error )? error : KErrGeneral );
 
                 break;
                 }
@@ -1067,7 +1068,7 @@ void CWsfWlanBearerConnectionMonitor::RunL()
             
         case ECsConnectionCreated:
             {
-            LOG_WRITE( "<EConnectionCreated>" );
+            LOG_WRITEF( "<EConnectionCreated> iap id=%d", iConnIap );
             
             // start monitoring the iap
             MonitorAccessPoint( iConnIap );
@@ -1084,7 +1085,8 @@ void CWsfWlanBearerConnectionMonitor::RunL()
             LOG_WRITE( "connection client polling started" );
             
             // notify observers of the connection name
-            iObserver->ConnectionEstablishedL( iWlanNetworkName );
+            iObserver->ConnectionEstablishedL(
+                    iConnIap );
             
             TRAPD( err, iIct->TestConnectedAccessPointL( iConnIap ) );
             if ( err )
@@ -1135,3 +1137,78 @@ TInt CWsfWlanBearerConnectionMonitor::RunError( TInt /*aError*/ )
     }
 
     
+// ---------------------------------------------------------------------------
+// CWsfWlanBearerConnectionMonitor::ConnectingWlanConnectionDetailsL
+// TODO: replace this with new CmManager (server)
+// ---------------------------------------------------------------------------
+//
+TBool CWsfWlanBearerConnectionMonitor::ConnectingWlanConnectionDetails( 
+        TWsfWlanInfo* aWlanInfo )
+    {
+    LOG_ENTERFN( "CWsfWlanBearerConnectionMonitor::ConnectingWlanConnectionDetails" );
+    
+    TBool ret( EFalse );
+    SWLANSettings settings; 
+
+    aWlanInfo->iConnectionState = ENotConnected;
+    aWlanInfo->iStrengthLevel = EWlanSignalUnavailable;
+    
+    // Reads following information
+    // a) Network mode
+    // b) Security mode
+    // c) Is PSK used?
+    CWLanSettings *settingsIf( NULL );
+    TRAP_IGNORE( settingsIf = new (ELeave)CWLanSettings() );
+    if ( settingsIf && 
+         !settingsIf->Connect() && 
+         !settingsIf->GetWlanSettingsForIap( aWlanInfo->iIapId, settings ) )
+        {
+        LOG_WRITE( "Reading values" );
+        
+        aWlanInfo->iConnectionState = EConnecting;
+    
+        switch ( settings.SecurityMode )
+            {
+            case Wep:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeWep;
+                break;
+                }
+    
+            case Wlan8021x:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecMode802_1x;
+                break;
+                }
+    
+            case Wpa:       // fall-through
+            case Wpa2Only:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeWpa;
+                break;
+                }
+    
+            case AllowUnsecure:      // fall-through
+            default:
+                {
+                aWlanInfo->iSecurityMode = EWlanSecModeOpen;
+                }
+            }    
+        
+        aWlanInfo->SetUsesPreSharedKey( settings.EnableWpaPsk );    
+    
+        if ( settings.ConnectionMode == Adhoc )
+            {
+            aWlanInfo->iNetMode = EAdhoc;
+            }
+        else
+            {
+            aWlanInfo->iNetMode = EInfra;
+            }
+        
+        ret = ETrue;
+        }
+
+    delete settingsIf;
+    return ret;
+    }

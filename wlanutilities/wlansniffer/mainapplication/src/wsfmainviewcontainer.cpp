@@ -464,7 +464,7 @@ void CWsfMainViewContainer::UpdateHotSpotsL( MDesCArray* aItemTextArray,
     iListBox->Reset();
     iListBox->Model()->SetItemTextArray( aItemTextArray );
     iListBox->Model()->SetOwnershipType( ELbmDoesNotOwnItemArray );
-    iListBox->HandleItemAdditionL(); 
+    iListBox->HandleItemAdditionL();
     
     if ( aItemTextArray->MdcaCount() )
         {
@@ -635,7 +635,6 @@ void CWsfMainViewContainer::DoConnectingAnimationStepL()
             CDesCArray* itemArray = static_cast<CDesCArray*>(listArray);         
             itemArray->Delete(0,1); 
             itemArray->InsertL(0,buffer);
-            iListBox->HandleItemAdditionL(); 
             iListBox->DrawDeferred(); 
             LOG_WRITE("Connecting status found");
             }

@@ -225,43 +225,7 @@ EXPORT_C const TDesC8& CWsfModel::ObservedWlan()
 // CWsfModel::ConnectL
 // ----------------------------------------------------------------------------
 //
-EXPORT_C int CWsfModel::ConnectL( TUint32 aIapId, TBool aConnectOnly,
-                                  TWsfIapPersistence aPersistence )
-    {
-    LOG_ENTERFN( "CWsfModel::ConnectL" );
-    
-    if ( iObserver )
-        {
-        iObserver->ConnectingL( aIapId );
-        }
-    
-    TInt err = iSession.ConnectWlanBearerL( aIapId, aConnectOnly, aPersistence );
-    if ( err == KErrNone )
-        {
-        iConnectedIapId = aIapId;
-        }
-    else
-        {
-        if ( iObserver )
-            {
-            iObserver->BrowserLaunchFailed( err );            
-            }
-        }
-
-    if ( iObserver )
-        {
-        iObserver->ConnectingFinishedL( err );
-        }
-    
-    return err;
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::ConnectL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
+EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TInt>& aPckg, TUint32 aIapId,
                                    TBool aConnectOnly,
                                    TWsfIapPersistence aPersistence,
                                    TRequestStatus& aStatus )
@@ -276,6 +240,7 @@ EXPORT_C void CWsfModel::ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
     iSession.ConnectWlanBearer( aPckg, aIapId, aConnectOnly, aPersistence, aStatus );
     }
 
+
 // ----------------------------------------------------------------------------
 // CWsfModel::SetConnectResultL
 // ----------------------------------------------------------------------------
@@ -289,23 +254,6 @@ EXPORT_C void CWsfModel::SetConnectResultL( TInt aResult, TUint /*aIapId*/ )
     if ( iObserver && aResult != KErrNone )
         {
         iObserver->ConnectingFinishedL( aResult );
-        }
-    }
-
-
-// ----------------------------------------------------------------------------
-// CWsfModel::DisconnectL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C void CWsfModel::DisconnectL()
-    {
-    LOG_ENTERFN( "CWsfModel::DisconnectL" );
-    TBool disconnected = iSession.DisconnectWlanBearerL();
-    LOG_WRITEF( "disconnected = %d", disconnected );
-    iConnectedIapId = 0;
-    if ( !disconnected )
-        {
-        iRefreshing = iSession.RequestScanL(); 
         }
     }
 
@@ -702,10 +650,7 @@ EXPORT_C void CWsfModel::GetConnectedWlanDetails( TPckgBuf<TBool>& aPckg,
 EXPORT_C void CWsfModel::AbortConnectingL()
     {
     LOG_ENTERFN( "CWsfModel::AbortConnectingL" );
-    if ( iConnecting )
-        {
-        iSession.AbortConnectingL();
-        }
+    iSession.AbortConnectingL();
     }
 
 

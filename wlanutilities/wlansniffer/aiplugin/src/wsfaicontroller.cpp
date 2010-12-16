@@ -28,7 +28,6 @@
 #include <StringLoader.h>
 #include <aknnotewrappers.h>
 #include <wsfaipluginrsc.rsg>
-#include <rconnmon.h>
 #include <utf.h>
 #include <cmmanager.h>
 #include <internetconnectivitycrkeys.h>
@@ -47,7 +46,6 @@
 #include "wsfmodel.h"
 #include "wsfsearchwlansdialog.h"
 #include "wsfaicontrollercmds.h"
-#include "wsfactivewaiter.h"
 #include "wsflogger.h"
 #include "wsfdbobserver.h"
 #include "wsfactivewrappers.h"
@@ -80,7 +78,9 @@ TWsfAiController::TWsfAiController():
     iAiModel( NULL ),
     iUi( NULL ),
     iDbObserver( NULL ),
-    iConnectOnly( EFalse )
+    iConnectOnly( EFalse ),
+    iDialogActive( EFalse ),
+    iHaveControl( EFalse )
     {
     // null the pointers
     iConnectedWlan.iConnectionState = ENotConnected;
@@ -88,12 +88,17 @@ TWsfAiController::TWsfAiController():
 
 
 // ---------------------------------------------------------
-// CWsfActiveWaiter::DeInitializeL
+// TWsfAiController::DeInitializeL
 // ---------------------------------------------------------
 //    
 void TWsfAiController::DeInitializeL()
     {
     LOG_ENTERFN( "TWsfAiController::DeInitializeL" );
+    // Close all open dialogs
+    if ( iDialogActive )
+        {
+        DismissDialogsL();
+        }
     }
 
 
@@ -214,14 +219,23 @@ void TWsfAiController::StartupRefreshDataReadyL()
     
     iInfoArray = iActiveWrappers->GetWLANList();
     iConnectedWlan = iActiveWrappers->GetConnectedWLANNetwork();
+    
     iAiModel->SetConnected( iConnectedWlan.Connected() );
     iAiModel->SetConnectedWlanInfo( iConnectedWlan );
-    
     LOG_WRITEF( "Connected = %d", iConnectedWlan.Connected() );
     
-    MDesCArray* data = iAiModel->FormatSingleLineWlanListL( iInfoArray );
-    
-    iUi->UpdateHotSpotsL( data, KSuppressRefreshIndex );    
+    if ( iConnectedWlan.ConnectionStatus() == EConnecting )
+        {
+        ConnectingL( iConnectedWlan.iIapId );
+        }
+    else
+        {
+        iModel->SetConnecting( EFalse );
+        iAiModel->SetConnecting( EFalse );
+        
+        MDesCArray* data = iAiModel->FormatSingleLineWlanListL( iInfoArray );
+        iUi->UpdateHotSpotsL( data, KSuppressRefreshIndex );    
+        }
     }
 
 
@@ -245,7 +259,7 @@ void TWsfAiController::HandleSelectionKeyL()
     LOG_ENTERFN( "TWsfAiController::HandleSelectionKeyL" );
     _ASS_D( iAiModel );
     
-    if ( !iAiModel->ScanningOn() && !iAiModel->Connected() )
+    if ( !iAiModel->ScanningOn() && !iAiModel->Connected() && !iModel->IsConnecting() )
         {
         // scanning was off and there wasn't a connected network
         EnableScanL();
@@ -267,18 +281,23 @@ void TWsfAiController::HandleSelectionKeyL()
         else
             {
             // connected
-            if ( IsWlanUsedByBrowserL() )
-                {
-                // browser is using active WLAN connection
-                HandleMskIfBrowsingL();
-                }
-            else
-                {
-                // browser is not running or not using the WLAN
-                HandleMskIfConnectedL();
-                }
+            CheckIsWlanUsedByBrowserL();
             }
         }
+    }
+
+
+// --------------------------------------------------------------------------
+// TWsfAiController::DismissDialogsL
+// --------------------------------------------------------------------------
+//
+void TWsfAiController::DismissDialogsL()
+    {
+    LOG_ENTERFN("TWsfAiController::DismissDialogsL" );
+    TKeyEvent key;
+    key.iCode = EKeyEscape;
+    key.iModifiers = 0;
+    iEnv->SimulateKeyEventL( key, EEventKey );
     }
 
 
@@ -313,61 +332,73 @@ void TWsfAiController::WlanListDataReadyL()
     
     iInfoArray = iActiveWrappers->GetWLANList();
     iConnectedWlan = iActiveWrappers->GetConnectedWLANNetwork();
+    
     iAiModel->SetConnected( iConnectedWlan.Connected() );
     iAiModel->SetConnectedWlanInfo( iConnectedWlan );
     
     LOG_WRITEF( "Connected = %d", iConnectedWlan.Connected() );
     
-    if ( !iAiModel->ScanningOn() && !iAiModel->Connected() )
+    if ( iConnectedWlan.ConnectionStatus() == EConnecting )
         {
-        return;
+        ConnectingL( iConnectedWlan.iIapId );
         }
-    
-    _ASS_D( iModel );
-    _ASS_D( iUi );
-    
-    TBool match( EFalse );    
-    TWsfWlanInfo previousSelected;        
-    CWsfWlanInfoArray* modelArr = iAiModel->GetInfoArray();   
-    
-    if ( modelArr )
+    else
         {
-        TInt selectedItem = iUi->SelectedItem();
-        if ( selectedItem >= KFirstItemArrayIndex && 
-             selectedItem < modelArr->Count() )
-            {
-            TWsfWlanInfo* temp = modelArr->At( selectedItem );
-            if ( temp )
-                {
-                match = ETrue;
-                previousSelected = *temp;
-                }                
-            }
-        }
+        iModel->SetConnecting( EFalse );
+        iAiModel->SetConnecting( EFalse );
         
-    MDesCArray* data = iUi->MultilineControl() ? 
-            iAiModel->FormatWlanListL( iInfoArray, ETrue ): 
-            iAiModel->FormatSingleLineWlanListL( iInfoArray );
-    
-    
-    TInt index( KErrNotFound );
-    if ( match )
-        {            
-        TWsfWlanInfo* currentMatch = iInfoArray->Match( 
-                                                    previousSelected.iSsid, 
-                                                    iInfoArray->Count() );
-        if ( currentMatch )
+        if ( !iAiModel->ScanningOn() && !iAiModel->Connected() )
             {
-            index = iInfoArray->GetArrayIndex( currentMatch );
+            return;
             }
+        
+        _ASS_D( iModel );
+        _ASS_D( iUi );
+        
+        TBool match( EFalse );    
+        TWsfWlanInfo previousSelected;        
+        CWsfWlanInfoArray* modelArr = iAiModel->GetInfoArray();   
+        
+        if ( modelArr )
+            {
+            TInt selectedItem = iUi->SelectedItem();
+            if ( selectedItem >= KFirstItemArrayIndex && 
+                 selectedItem < modelArr->Count() )
+                {
+                TWsfWlanInfo* temp = modelArr->At( selectedItem );
+                if ( temp )
+                    {
+                    match = ETrue;
+                    previousSelected = *temp;
+                    }                
+                }
+            }
+            
+        MDesCArray* data = iUi->MultilineControl() ? 
+                iAiModel->FormatWlanListL( iInfoArray, ETrue ): 
+                iAiModel->FormatSingleLineWlanListL( iInfoArray );
+        
+        
+        TInt index( KErrNotFound );
+        if ( match )
+            {            
+            TWsfWlanInfo* currentMatch = iInfoArray->Match( 
+                                                        previousSelected.iSsid, 
+                                                        iInfoArray->Count() );
+            if ( currentMatch )
+                {
+                index = iInfoArray->GetArrayIndex( currentMatch );
+                }
+            }
+        
+        if ( !iUi->MultilineControl() && iModel->IsConnecting() )
+            {
+            index = KSuppressRefreshIndex;
+            }
+        
+        iUi->UpdateHotSpotsL( data, index );
+        
         }
-    
-    if ( !iUi->MultilineControl() && iModel->IsConnecting() )
-        {
-        index = KSuppressRefreshIndex;
-        }
-    
-    iUi->UpdateHotSpotsL( data, index );
     }
 
 
@@ -410,7 +441,7 @@ void TWsfAiController::ScanEnabledL()
 // TWsfAiController::WlanConnectionActivatedL
 // --------------------------------------------------------------------------
 //
-void TWsfAiController::WlanConnectionActivatedL()
+void TWsfAiController::WlanConnectionActivatedL( TInt32 /* aIapId */ )
     {
     LOG_ENTERFN( "TWsfAiController::WlanConnectionActivatedL" );
     iModel->SetConnecting( EFalse );
@@ -425,9 +456,10 @@ void TWsfAiController::WlanConnectionActivatedL()
 // TWsfAiController::WlanConnectionClosedL
 // --------------------------------------------------------------------------
 //
-void TWsfAiController::WlanConnectionClosedL()
+void TWsfAiController::WlanConnectionClosedL( TInt32 /* aIapId */ )
     {
     LOG_ENTERFN( "TWsfAiController::WlanConnectionClosedL" );
+    iHaveControl = EFalse;
     iModel->SetConnecting( EFalse );
     iAiModel->SetConnected( EFalse );
     iAiModel->SetConnecting( EFalse );
@@ -446,12 +478,15 @@ void TWsfAiController::WlanConnectionClosedL()
 // TWsfMainController::ConnectionCreationProcessFinished
 // ---------------------------------------------------------------------------
 //
-void TWsfAiController::ConnectionCreationProcessFinishedL( TInt aResult )
+void TWsfAiController::ConnectionCreationProcessFinishedL( 
+        TInt32  aIapId,
+        TInt aResult )
     {
     LOG_ENTERFN( "TWsfAiController::ConnectionCreationProcessFinished" );
     LOG_WRITEF( "aResult = %d", aResult );
     // release flags if we leave occures
     CleanupStack::PushL( TCleanupItem( CleanUpConnectingL, this ) );
+    iUsedInfo.iIapId = aIapId;
     if ( iModel->IsConnecting() )
         {
         iModel->SetConnecting( EFalse );
@@ -460,8 +495,9 @@ void TWsfAiController::ConnectionCreationProcessFinishedL( TInt aResult )
     if ( aResult == KErrNone )
         {
         iAiModel->SetConnected( ETrue );
-        if ( !iConnectOnly )
+        if ( !iConnectOnly && iHaveControl )
             {
+            iHaveControl = EFalse;
             StartWebBrowserL( iUsedInfo );
             }
         }
@@ -469,6 +505,8 @@ void TWsfAiController::ConnectionCreationProcessFinishedL( TInt aResult )
         {
         iAiModel->SetConnected( EFalse );
         }
+    
+    iHaveControl = EFalse;
     // pop cleanup item 
     CleanupStack::Pop();
     }
@@ -509,6 +547,10 @@ void TWsfAiController::StartBrowsingL( TWsfWlanInfo& aInfo )
         iConnectOnly = EFalse;
         StartWebBrowserL( iUsedInfo );
         }
+    
+    // I must continue by starting the browser in 
+    // ConnectionCreationProcessFinishedL
+    iHaveControl = ETrue;
     
     // pop cleanup item 
     CleanupStack::Pop();
@@ -571,7 +613,8 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly,
     CleanupStack::PushL( TCleanupItem( CleanUpConnectingL, this ) );
     
     if ( !iUsedInfo.iIapId && !iUsedInfo.Hidden() &&
-            iUsedInfo.iSecurityMode == CMManager::EWlanSecModeOpen )
+            ( iUsedInfo.iSecurityMode == CMManager::EWlanSecModeOpen ||
+              !iUsedInfo.UsesPreSharedKey() ) )
         {
         TBool success( EFalse );
         // just create the IAP
@@ -604,26 +647,32 @@ void TWsfAiController::ConnectL( TWsfWlanInfo& aInfo, TBool aConnectOnly,
         testAccessPoint = ETrue;
         // let the helper app do the query if necessary
         LOG_WRITE("AiHelper needs to be launched");
-        iActiveWrappers->LaunchHelperApplicationL( iUsedInfo, 
-                                                   iConnectOnly,
-                                                   testAccessPoint );
+        iActiveWrappers->LaunchHelperApplicationL( 
+                iUsedInfo, 
+                iConnectOnly,
+                testAccessPoint );
         }
     
     // Connect
     if ( iUsedInfo.iIapId )
         {
+        TWsfIapPersistence persistence;
+        
         if ( testAccessPoint )
             {
-            iActiveWrappers->Connect( iUsedInfo.iIapId, iConnectOnly, 
-                                      EIapExpireOnDisconnect );
-            
+            persistence = EIapExpireOnDisconnect;
             }
         else
             {
-            iActiveWrappers->Connect( iUsedInfo.iIapId, iConnectOnly, 
-                                      EIapPersistent );
+            persistence = EIapPersistent;
             }
+        
+        iActiveWrappers->Connect( 
+                iUsedInfo.iIapId, 
+                iConnectOnly, 
+                persistence );
         }
+    
     // pop cleanup item 
     CleanupStack::Pop();
     }
@@ -673,7 +722,7 @@ TBool TWsfAiController::LaunchSearchDialogL( TWsfWlanInfo& aInfo )
     TBool success( EFalse );
 
     TRAPD( err, success = DoLaunchSearchDialogL( selectedWlan ) );
-    
+    iDialogActive = EFalse;
     iUi = temp;
     User::LeaveIfError( err );
     
@@ -720,6 +769,8 @@ TBool TWsfAiController::DoLaunchSearchDialogL( TInt& aSelectedItem )
     
     _ASS_D( iAiModel );
     _ASS_D( iModel );
+    
+    iDialogActive = ETrue;
     
     CWsfSearchWlansDialog* dialog = CWsfSearchWlansDialog::NewL( 
                                                              aSelectedItem );
@@ -785,6 +836,7 @@ void TWsfAiController::EnableScanL()
         {
         return;
         }
+    
     iModel->EnableScanL();
     iAiModel->SetScanningOn();
     
@@ -836,12 +888,12 @@ void TWsfAiController::DoHandleEngineErrorL( TInt aError )
 
 
 // ---------------------------------------------------------------------------
-// TWsfAiController::IsWlanUsedByBrowserL
+// TWsfAiController::CheckIsWlanUsedByBrowserL
 // ---------------------------------------------------------------------------
 //
-TBool TWsfAiController::IsWlanUsedByBrowserL()
+TBool TWsfAiController::CheckIsWlanUsedByBrowserL()
     {
-    LOG_ENTERFN( "CWsfMainView::IsWlanUsedByBrowserL" );
+    LOG_ENTERFN( "TWsfAiController::CheckIsWlanUsedByBrowserL" );
     
     _ASS_D( iAiModel );
     
@@ -861,95 +913,23 @@ TBool TWsfAiController::IsWlanUsedByBrowserL()
         // The Browser is already running.
         // Check if the selected WLAN is connected.
         TBool connected( iAiModel->Connected() );
-        LOG_WRITEF("Connected? %d", connected);
+        LOG_WRITEF("Connected %d", connected);
 
         if ( connected )
             {
-            RConnectionMonitor connectionMonitor;
-            connectionMonitor.ConnectL();
-            // We have to check if the Browser using the selected 
-            // connection.
-            // We have get the connectiond ID first.
-            CWsfActiveWaiter* waiter = CWsfActiveWaiter::NewL();
-            CleanupStack::PushL( waiter );
-            
-            // first call, need to get the connection parameters
-            TUint connectionCount( 0 );
-            
-            connectionMonitor.GetConnectionCount( connectionCount, 
-                                                  waiter->iStatus );
-            waiter->WaitForRequest();
-            
-            // find the connection with WLAN bearer 
-            // that will be the selected WLAN
-            TUint connectionId( 0 );
-            for ( TUint i = 1; i <= connectionCount; ++i )
-                {
-                TUint tmpConnectionId( 0 );
-                TUint subConnectionCount( 0 );
-                TConnMonBearerType bearerType( EBearerUnknown );
-                
-                connectionMonitor.GetConnectionInfo( i, 
-                                                     tmpConnectionId, 
-                                                     subConnectionCount );
-                connectionMonitor.GetIntAttribute( tmpConnectionId, 
-                                                   0, 
-                                                   KBearer, 
-                                                   ( TInt& )bearerType, 
-                                                   waiter->iStatus );
-                waiter->WaitForRequest();
-                if ( bearerType == EBearerWLAN )
-                    {
-                    connectionId = tmpConnectionId;
-                    break;
-                    }
-                }
-            // Now we have the connectiond ID.
-            LOG_WRITEF( "connectionId: %d", connectionId );
-            
-            TInt count( 0 );
-            TConnMonClientEnumBuf clientBuf;
-                
-            connectionMonitor.GetPckgAttribute( connectionId,
-                                                0,
-                                                KClientInfo,
-                                                clientBuf,
-                                                waiter->iStatus );
-            waiter->WaitForRequest();
-            if ( !waiter->iStatus.Int() )
-                {
-                count = clientBuf().iCount;
-                }
-            
-            RApaLsSession appSess;
-            TApaAppInfo appInfo;
-            
-            // The connection could be shared by several applications
-            User::LeaveIfError( appSess.Connect() );
-            
-            for ( TUint i = 0; i < count; i++ )
-                {
-                appInfo.iCaption.Zero();
-                TInt result = appSess.GetAppInfo( appInfo, 
-                                                  clientBuf().iUid[i] );
-                
-                LOG_WRITEF( "result: %d", result ); 
-                LOG_WRITEF( "iClientInfo.iUid[i].iUid: %x", 
-                             clientBuf().iUid[i].iUid );
-                
-                if ( clientBuf().iUid[i].iUid == KBrowserUid )
-                    {
-                    isWlanUsed = ETrue;
-                    }
-                }
-            CleanupStack::PopAndDestroy( waiter );
-            appSess.Close();
-            connectionMonitor.Close();
-            }                
+            iActiveWrappers->CheckIsWlanUsedByBrowserL();
+            }
+        else
+            {
+            // Not connected
+            HandleMskIfConnectedL();
+            }
+               
         }
     else 
         {
         LOG_WRITE( "No Browser running." );
+        HandleMskIfConnectedL();
         }
         
 #endif // __WINS__
@@ -967,6 +947,8 @@ void TWsfAiController::HandleMskIfOfflineL()
     {
     LOG_ENTERFN( "TWsfAiController::HandleMskIfOfflineL" );
     
+    iDialogActive = ETrue;
+    
     // create the dialog with options
     TInt selectedMode( 0 );
     CAknListQueryDialog* listQuery = new (ELeave) CAknListQueryDialog( 
@@ -976,9 +958,10 @@ void TWsfAiController::HandleMskIfOfflineL()
     if ( !listQuery->RunLD() )
         {
         // cancelled
+        iDialogActive = EFalse;
         return;
         }
-    
+    iDialogActive = EFalse;
     CWsfWlanInfoArray* wlanArray = iAiModel->GetInfoArray(); 
     
     switch ( selectedMode )
@@ -1083,6 +1066,8 @@ void TWsfAiController::HandleMskIfConnectedL()
     
     _ASS_D( iModel );
     
+    iDialogActive = ETrue;
+    
     TInt selectedMode( 0 );
     CAknListQueryDialog* listQuery = new (ELeave) CAknListQueryDialog( 
                                                            &selectedMode );
@@ -1090,6 +1075,7 @@ void TWsfAiController::HandleMskIfConnectedL()
     
     if ( listQuery->RunLD() )
         {
+        iDialogActive = EFalse;
         if ( selectedMode == EAiConnectedStartBrowsing )
             {
             StartBrowsingL( iConnectedWlan );
@@ -1100,6 +1086,7 @@ void TWsfAiController::HandleMskIfConnectedL()
             iActiveWrappers->Disconnect();     
             }
         }
+    iDialogActive = EFalse;
     }
 
 
@@ -1113,13 +1100,16 @@ void TWsfAiController::HandleMskIfConnectingL()
     
     _ASS_D( iModel );
     
+    iDialogActive = ETrue;
+    
     TInt selectedMode( 0 );
-    CAknListQueryDialog* listQuery = new (ELeave) CAknListQueryDialog( 
+    CAknListQueryDialog* listQuery = new (ELeave) CAknListQueryDialog(
                                                            &selectedMode );
     listQuery->PrepareLC( R_QTN_AIPLUGIN_OPTIONS_CONNECTING );
     
     if ( listQuery->RunLD() )
         {
+        iDialogActive = EFalse;
         if ( selectedMode == EAiConnectingDisconnect )
             {
             if ( !iModel->IsConnecting() )
@@ -1135,6 +1125,7 @@ void TWsfAiController::HandleMskIfConnectingL()
                 }
             }
         }
+    iDialogActive = EFalse;
     }
 
 
@@ -1148,6 +1139,8 @@ void TWsfAiController::HandleMskIfBrowsingL()
     
     _ASS_D( iModel );
     
+    iDialogActive = ETrue;
+    
     TInt selectedMode( KFirstItemArrayIndex );
     CAknListQueryDialog* listQuery = new (ELeave) CAknListQueryDialog( 
                                                            &selectedMode );
@@ -1155,6 +1148,7 @@ void TWsfAiController::HandleMskIfBrowsingL()
 
     if ( listQuery->RunLD() )
         {
+        iDialogActive = EFalse;
         if ( selectedMode == EAiBrowsingContinueBrowsing )
             {
             // launch the browser...
@@ -1166,6 +1160,7 @@ void TWsfAiController::HandleMskIfBrowsingL()
             iActiveWrappers->Disconnect();
             }
         }
+    iDialogActive = EFalse;
     }
 
 // --------------------------------------------------------------------------

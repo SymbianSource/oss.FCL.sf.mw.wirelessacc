@@ -398,7 +398,7 @@ void CWsfAiHelperAppUi::ScanEnabledL()
 // CWsfAiHelperAppUi::WlanConnectionActivatedL
 // ---------------------------------------------------------------------------
 //
-void CWsfAiHelperAppUi::WlanConnectionActivatedL()
+void CWsfAiHelperAppUi::WlanConnectionActivatedL( TInt32 /* aIapId */ )
     {
     // no implementation required
     }
@@ -408,7 +408,7 @@ void CWsfAiHelperAppUi::WlanConnectionActivatedL()
 // CWsfAiHelperAppUi::WlanConnectionClosedL
 // ---------------------------------------------------------------------------
 //
-void CWsfAiHelperAppUi::WlanConnectionClosedL()
+void CWsfAiHelperAppUi::WlanConnectionClosedL( TInt32 /* aIapId */ )
     {
     // no implementation required
     }
@@ -418,7 +418,9 @@ void CWsfAiHelperAppUi::WlanConnectionClosedL()
 // CWsfAiHelperAppUi::ConnectingFinishedL
 // ---------------------------------------------------------------------------
 //
-void CWsfAiHelperAppUi::ConnectionCreationProcessFinishedL( TInt /*aResult*/ )
+void CWsfAiHelperAppUi::ConnectionCreationProcessFinishedL(
+        TInt32 /* aIapId */,
+        TInt /*aResult*/ )
     {
     // no implementation required
     }

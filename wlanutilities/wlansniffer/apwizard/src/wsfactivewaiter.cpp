@@ -11,10 +11,9 @@
 *
 * Contributors:
 *
-* Description:   Implementation of CWsfActiveWaiter
+* Description:  Implementation of CWsfActiveWaiter
 *
 */
-
 
 
 // INCLUDE FILES
@@ -44,6 +43,7 @@ CWsfActiveWaiter* CWsfActiveWaiter::NewLC()
     {
     CWsfActiveWaiter* self = new ( ELeave ) CWsfActiveWaiter();
     CleanupStack::PushL( self );
+    
     return self;        
     }
 
@@ -75,6 +75,12 @@ CWsfActiveWaiter::~CWsfActiveWaiter()
 // 
 void CWsfActiveWaiter::DoCancel()
     {
+	LOG_ENTERFN( "CWsfActiveWaiter:DoCancel()" );
+    if ( iWait.IsStarted() )
+        {
+        LOG_WRITE("async call completed, resuming.");
+        iWait.AsyncStop();
+        }
     }
      
  

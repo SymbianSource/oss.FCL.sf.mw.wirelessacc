@@ -32,12 +32,16 @@ CAPABILITY              CAP_GENERAL_DLL
 // Source files
 SOURCEPATH 		../src
 
-SOURCE			wsfmodel.cpp
-SOURCE			wsfscreensaverwatcher.cpp
-SOURCE			wsfapplauncher.cpp 
-SOURCE          wsfactivewaiter.cpp
-
-
+SOURCE	        wsfmodel.cpp
+SOURCE	        wsfscreensaverwatcher.cpp
+SOURCE	        wsfapplauncher.cpp 
+SOURCE          wsfactivewrappers.cpp
+SOURCE          wsfconnectactivewrapper.cpp
+SOURCE          wsfdisconnectactivewrapper.cpp
+SOURCE          wsflaunchaihelperactivewrapper.cpp
+SOURCE          wsfrefreshscanactivewrapper.cpp
+SOURCE          wsfwlanlistactivewrapper.cpp
+SOURCE          wsfconnmonactivewrapper.cpp
 
 // own headers
 USERINCLUDE     ../inc
@@ -66,6 +70,7 @@ LIBRARY         cmmanager.lib
 LIBRARY         cmmanagerdatabase.lib
 LIBRARY         sysutil.lib
 LIBRARY         efsrv.lib
+LIBRARY         connmon.lib
 
 LIBRARY         wsfwlaninfo.lib 
 LIBRARY         wsfclient.lib

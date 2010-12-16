@@ -384,10 +384,10 @@ void CWsfSession::ScanDisabledL()
 // CWsfSession::ConnectedL
 // ---------------------------------------------------------------------------
 //    
-void CWsfSession::ConnectedL()
+void CWsfSession::ConnectedL( TInt32 aIapId )
     {
     LOG_ENTERFN( "CWsfSession::ConnectedL" );
-    TWsfNotifyEventContainer event = { EEngineConnected, KErrNone };
+    TWsfNotifyEventContainer event = { EEngineConnected, KErrNone, aIapId };
     iEventQueue.AppendL( event );
 
     NotifyClientL();
@@ -398,10 +398,10 @@ void CWsfSession::ConnectedL()
 // CWsfSession::DisconnectedL
 // ---------------------------------------------------------------------------
 //    
-void CWsfSession::DisconnectedL()
+void CWsfSession::DisconnectedL( TInt32 aIapId )
     {
     LOG_ENTERFN( "CWsfSession::DisconnectedL" );
-    TWsfNotifyEventContainer event = { EEngineDisconnected, KErrNone };
+    TWsfNotifyEventContainer event = { EEngineDisconnected, KErrNone, aIapId };
     iEventQueue.AppendL( event );
     
     NotifyClientL();
@@ -412,10 +412,10 @@ void CWsfSession::DisconnectedL()
 // CWsfSession::ConnectingFailedL
 // ---------------------------------------------------------------------------
 //    
-void CWsfSession::ConnectingFailedL( TInt aError )
+void CWsfSession::ConnectingFailedL( TInt32 aIapId, TInt aError )
     {
     LOG_ENTERFN( "CWsfSession::ConnectingFailedL" );
-    TWsfNotifyEventContainer event = { EEngineConnectingFailed, aError };
+    TWsfNotifyEventContainer event = { EEngineConnectingFailed, aError, aIapId };
     iEventQueue.AppendL( event );
     
     NotifyClientL();

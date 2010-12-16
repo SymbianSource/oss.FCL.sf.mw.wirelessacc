@@ -28,8 +28,8 @@ class CHsBrowserContainer;
 
 // CONSTANTS
 _LIT8( KHttp, "http" );
-const TInt KTotalPollingTime = 300000000;
-const TInt KExecutionTimeInterval = 10000000;
+const TInt KTotalPollingTime = 600000000;       // 10 minutes
+const TInt KExecutionTimeInterval = 10000000;   // 10 seconds
 const TInt KBufSize = 4;
 
 // CLASS DECLARATION

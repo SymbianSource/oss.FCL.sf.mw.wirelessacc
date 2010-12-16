@@ -16,7 +16,6 @@
 */
 
 
-
 #ifndef C_WSFACTIVEWAITER_H
 #define C_WSFACTIVEWAITER_H
 

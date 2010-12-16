@@ -19,7 +19,7 @@
 #include "wsfappui.h"
 #include "wsfdocument.h"
 #include "wsfwlaninfoarrayvisitor.h"
-
+#include "wsfactivewrappers.h"
 #include "wsfmodel.h"
 
 
@@ -54,6 +54,7 @@ void CWsfDocument::ConstructL()
     {
     iModel = CWsfModel::NewL( iMainController, EFalse );
     iModel->SetEngineObserver( &iMainController );
+    iAsyncModel = CWsfActiveWrappers::NewL( iModel, iMainController );
     iWlanInfoBranding = CWsfWlanInfoArrayVisitor::NewL( EFalse );
     iWlanInfoBranding->LoadFilterDefinitionsL();
     }    
@@ -74,6 +75,8 @@ CWsfDocument::CWsfDocument( CEikApplication& aApp ) : CAknDocument( aApp )
 CWsfDocument::~CWsfDocument()
     {
     delete iWlanInfoBranding;
+    // Needs iModel, delete before iModel
+    delete iAsyncModel;
     delete iModel;
     }
 
@@ -89,7 +92,11 @@ CEikAppUi* CWsfDocument::CreateAppUiL()
     appUi->SetUiObserver( &iMainController );
         
     // Give references to main controller.
-    iMainController.Initialize( *appUi, *iModel, *iWlanInfoBranding );   
+    iMainController.InitializeL( 
+            *appUi, 
+            *iModel, 
+            *iAsyncModel, 
+            *iWlanInfoBranding );   
     
     return appUi;
     }

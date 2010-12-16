@@ -107,7 +107,7 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         */
         IMPORT_C CWsfWlanInfoArray* GetWlanListL();
         
-		/**
+        /**
         * Asyncronous request to the server to return wlan list size
         * @since S60 5.2
         * @param aPckg request result
@@ -117,11 +117,11 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         IMPORT_C void GetWlanListSize( TPckgBuf<TUint>& aPckg, 
                                        TRequestStatus& aStatus );
 
-		/**
+        /**
         * Asyncronous request to the server to return wlan list
         * @since S60 5.2
         * @param aPckg request result
-		* @param aPtr wlan list
+        * @param aPtr wlan list
         * @param aStatus The request status object used to contain 
         *        the completion status of the request.
         */
@@ -155,21 +155,10 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @return Active WLAN's name (SSID) 
         */
         IMPORT_C const TDesC8& ObservedWlan();
-
-        /**
-        * Connects to the given WLAN IAP
-        * @since S60 5.0
-        * @param aIapId WLAN IAP id to connect to.
-        * @param aConnectOnly ETrue if Connect selected
-        * @param aPersistence The value of the persistence property
-        */
-        IMPORT_C int ConnectL( TUint32 aIapId, 
-                               TBool aConnectOnly,
-                               TWsfIapPersistence aPersistence );
         
         /**
         * Asyncronous request to the server to connect to the given WLAN IAP
-        * @since S60 5.2
+        * @since Symbian^3
         * @param aPckg request result
         * @param aIapId WLAN IAP id to connect to.
         * @param aConnectOnly ETrue if Connect selected
@@ -177,7 +166,7 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @param aStatus The request status object used to contain 
         *        the completion status of the request.
         */
-        IMPORT_C void ConnectL( TPckgBuf<TBool>& aPckg, TUint32 aIapId,
+        IMPORT_C void ConnectL( TPckgBuf<TInt>& aPckg, TUint32 aIapId,
                                 TBool aConnectOnly,
                                 TWsfIapPersistence aPersistence,
                                 TRequestStatus& aStatus );
@@ -189,16 +178,10 @@ NONSHARABLE_CLASS( CWsfModel ): public CBase,
         * @param aIapId WLAN IAP
         */
         IMPORT_C void SetConnectResultL( TInt aResult, TUint aIapId );
-
-        /**
-        * Disconnects WLAN
-        * @since S60 5.0
-        */
-        IMPORT_C void DisconnectL();
         
         /**
         * Asyncronous request to the server to disconnect
-        * @since S60 5.2
+        * @since Symbian^3
         * @param aPckg request result
         * @param aStatus The request status object used to contain 
         *        the completion status of the request.

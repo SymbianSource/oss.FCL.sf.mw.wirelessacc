@@ -56,9 +56,6 @@ static const TInt KMaxIapDeletionRetries = 10;
 static const TUint KDelayBetweenDeletionRetries = 500 * 1000;
 
 
-
-
-
 //  CONSTRUCTION AND DESTRUCTION
 
 // ----------------------------------------------------------------------------
@@ -140,13 +137,6 @@ void CWsfEngine::ConstructL()
 
     iWlanBearerMonitor->StartMonitoringL( this );
 
-    if ( iWlanBearerMonitor->GetWlanBearerNameL() != KNullDesC() )
-        {
-        HBufC* name = ConnectedWlanSsidL();
-        CleanupStack::PushL( name );
-        iScanner->ConnectionEstablishedL( *name );
-        CleanupStack::PopAndDestroy( name );
-        }
     }
 
 
@@ -220,7 +210,11 @@ void CWsfEngine::EnableScanningL()
             {
             iScanner->StopScanning();
             }
-        iScanner->StartScanningL();
+        // Do not scan if connected
+        if ( !IsConnected() )
+            {
+            iScanner->StartScanningL();
+            }
         }
     }
 
@@ -255,23 +249,6 @@ void CWsfEngine::MonitorAccessPointL( TUint32 aIapId )
     LOG_ENTERFN( "CWsfEngine::MonitorAccessPointL" );
     
     iMonitoredIap = aIapId;
-
-    if ( iIapPersistence == EIapExpireOnShutdown )
-        {
-        // web browsing with a temporary IAP
-        LOG_WRITE( "EIapExpireOnShutdown => EIapExpireOnBrowserExit" );
-        SetIapPersistenceL( EIapExpireOnBrowserExit );
-        iServerCloser.WaitForBrowserExit( ETrue );
-        
-        // semaphore to keep the order of calls
-        iSuppressIapDeletion = ETrue;  
-        }
-    else if ( iIapPersistence == EIapExpireOnDisconnect )
-        {
-        LOG_WRITE( "EIapExpireOnDisconnect => EIapNestedExpireOnDisconnect" );
-        SetIapPersistenceL( EIapNestedExpireOnDisconnect );
-        }
- 
     
     LOG_WRITEF( "iMonitoredIap = %d", iMonitoredIap );
     }
@@ -369,16 +346,16 @@ void CWsfEngine::NotifyError( TInt aError )
 // CWsfEngine::ConnectionEstablishedL
 // ----------------------------------------------------------------------------
 //
-void CWsfEngine::ConnectionEstablishedL( const TDesC& aConnectionName )
+void CWsfEngine::ConnectionEstablishedL( TInt32 aIapId  )
     {
     LOG_ENTERFN( "CWsfEngine::ConnectionEstablishedL" );
     // set the scanner to check connected accounts
-    iScanner->ConnectionEstablishedL( aConnectionName );
+    iScanner->ConnectionEstablishedL( aIapId );
     
     // notify the observers
     for ( TInt i( 0 ); i < iObservers.Count(); ++i )
         {
-        (iObservers)[i]->ConnectedL();
+        (iObservers)[i]->ConnectedL( aIapId );
         }
     }
 
@@ -387,10 +364,11 @@ void CWsfEngine::ConnectionEstablishedL( const TDesC& aConnectionName )
 // CWsfEngine::ConnectionLostL
 // ----------------------------------------------------------------------------
 //
-void CWsfEngine::ConnectionLostL()
+void CWsfEngine::ConnectionLostL( TInt32 aIapId )
     {
     LOG_ENTERFN( "CWsfEngine::ConnectionLostL" );
-
+    LOG_WRITEF("iap id = %d", aIapId );
+    
     // check temporarity here as well since it is not guaranteed that 
     // the connection was owned and ConnectedIapReleasedL was called
     if ( iSuppressIapDeletion )
@@ -413,14 +391,14 @@ void CWsfEngine::ConnectionLostL()
             iIapPersistence = EIapExpireOnBrowserExit;
             }
         }
-
-    iScanner->ConnectionLostL();
-    iScanner->RestartScanning();
+    
+    iScanner->ConnectionLostL( aIapId );
+    iScanner->RestartScanning(); 
 
     // notify the observers
     for ( TInt i( 0 ); i < iObservers.Count(); ++i )
         {
-        (iObservers)[i]->DisconnectedL();
+        (iObservers)[i]->DisconnectedL( aIapId );
         }
     }
 
@@ -429,13 +407,14 @@ void CWsfEngine::ConnectionLostL()
 // CWsfEngine::ConnectingFailedL
 // ----------------------------------------------------------------------------
 //
-void CWsfEngine::ConnectingFailedL( TInt aError )
+void CWsfEngine::ConnectingFailedL( TInt32 aIapId, TInt aError )
     {
     LOG_ENTERFN( "CWsfEngine::ConnectingFailedL" );
-
+    LOG_WRITEF( "Iap id: %d", aIapId );
+    
     for ( TInt i( 0 ); i < iObservers.Count(); ++i )
         {
-        (iObservers)[i]->ConnectingFailedL( aError );
+        (iObservers)[i]->ConnectingFailedL( aIapId, aError );
         }
     }
 
@@ -444,9 +423,10 @@ void CWsfEngine::ConnectingFailedL( TInt aError )
 // CWsfEngine::ConnectedIapReleasedL
 // ----------------------------------------------------------------------------
 //
-void CWsfEngine::ConnectedIapReleasedL()
+void CWsfEngine::ConnectedIapReleasedL( TInt32 aIapId )
     {
     LOG_ENTERFN( "CWsfEngine::ConnectedIapReleasedL" );
+    LOG_WRITEF("iap id = %d", aIapId );
     
     // deleting temporary IAP if necessary
     if ( !iSuppressIapDeletion && iMonitoredIap )

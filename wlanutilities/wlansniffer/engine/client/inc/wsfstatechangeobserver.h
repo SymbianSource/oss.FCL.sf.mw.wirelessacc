@@ -66,21 +66,26 @@ class MWsfStateChangeObserver
         /**
         * A WLAN connection has been established
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void WlanConnectionActivatedL() = 0;
+        virtual void WlanConnectionActivatedL( TInt32 aIapId ) = 0;
 
         /**
         * A WLAN connection has been closed
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        virtual void WlanConnectionClosedL() = 0;
+        virtual void WlanConnectionClosedL( TInt32 aIapId ) = 0;
         
         /**
         * A WLAN connection creation finished
         * @since S60 5.2
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        virtual void ConnectionCreationProcessFinishedL( TInt aError ) = 0;
+        virtual void ConnectionCreationProcessFinishedL(
+                TInt32 aIapId,
+                TInt aError ) = 0;
         
         
     };

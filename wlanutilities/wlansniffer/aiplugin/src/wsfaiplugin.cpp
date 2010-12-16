@@ -239,8 +239,6 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
     TBool published( EFalse );
     TInt iconId( 0 );
 
-    ClearL();   // Clear all WLAN Wizard content from the AI2
-
     for ( iCurrentObserverIndex = 0; 
           iCurrentObserverIndex < iObservers.Count(); 
           ++iCurrentObserverIndex )
@@ -260,6 +258,13 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
             published = PublishIconL( observer, 
                                       EAiWizardContentStatusIcon,
                                       iconId ) || published;
+            }
+        else 
+            {
+            observer->Clean( 
+                *this, 
+                EAiWizardContentStatusIcon, 
+                EAiWizardContentStatusIcon );
             }
 
         LOG_WRITE( "Publish -> Strength icon" );
@@ -283,6 +288,13 @@ void CWsfAiPlugin::PublishContentL( CArrayFix<TInt>* aPublishIconArray,
             published = PublishText( observer, 
                                      EAiWizardContentNetworkName,
                                      *localCurrentNetworkName ) || published;
+            }
+        else 
+            {
+            observer->Clean( 
+                *this, 
+                EAiWizardContentNetworkName, 
+                EAiWizardContentNetworkName );
             }
         
         if ( localCurrentNetworkStatus )
@@ -360,6 +372,7 @@ void CWsfAiPlugin::Start( TStartReason /*aReason*/ )
 void CWsfAiPlugin::Stop( TStopReason /*aReason*/ )
     {
     LOG_ENTERFN( "CWsfAiPlugin::Stop" );
+    // HS page switch -> dismiss open dialogs/menus
     TRAP_IGNORE( iController.DeInitializeL() );
     if ( iAnimationPeriodic )
         {
@@ -490,33 +503,6 @@ void CWsfAiPlugin::HandleEvent( TInt aEvent, const TDesC& /*aParam*/ )
         default:
             {
             }
-        }
-    }
-
-
-// --------------------------------------------------------------------------
-// CWsfAiPlugin::ClearL
-// --------------------------------------------------------------------------
-//
-void CWsfAiPlugin::ClearL()
-    {
-    LOG_ENTERFN( "CWsfAiPlugin::ClearL" );
-    for ( TInt i = 0; i < iObservers.Count(); ++i )
-        {
-        MAiContentObserver* observer = iObservers[i];
-
-        observer->StartTransaction( reinterpret_cast<TInt32>( this ) );
-
-        observer->Clean( *this, EAiWizardContentStatusIcon, 
-                                EAiWizardContentStatusIcon );
-        observer->Clean( *this, EAiWizardContentStrengthIcon, 
-                                EAiWizardContentStrengthIcon );
-        observer->Clean( *this, EAiWizardContentSecureIcon, 
-                                EAiWizardContentSecureIcon );
-        observer->Clean( *this, EAiWizardContentNetworkName, 
-                                EAiWizardContentNetworkName );
-        
-        observer->Commit( reinterpret_cast<TInt32>( this ) );
         }
     }
 
@@ -847,8 +833,6 @@ void CWsfAiPlugin::PublishStatusIconL( CArrayFix<TInt>* aPublishIconArray,
     TBool published( EFalse );
     TInt iconId( 0 );
 
-    ClearL();   // Clear all WLAN Wizard content from the AI2
-
     for ( iCurrentObserverIndex = 0; 
           iCurrentObserverIndex < iObservers.Count(); 
           ++iCurrentObserverIndex )
@@ -870,6 +854,21 @@ void CWsfAiPlugin::PublishStatusIconL( CArrayFix<TInt>* aPublishIconArray,
                                      *statusText ) || published;
             CleanupStack::PopAndDestroy( statusText );
             }
+        
+        observer->Clean( 
+                *this, 
+                EAiWizardContentStrengthIcon, 
+                EAiWizardContentStrengthIcon );
+        
+        observer->Clean( 
+                *this, 
+                EAiWizardContentSecureIcon, 
+                EAiWizardContentSecureIcon );
+        
+        observer->Clean( 
+                *this, 
+                EAiWizardContentNetworkName, 
+                EAiWizardContentNetworkName );
         
         // If we published something then commit, 
         // otherwise cancel transaction

@@ -31,6 +31,7 @@ PRJ_EXPORTS
 ../inc/wsfbrowserlaunchobserver.h       |../../../inc/wsfbrowserlaunchobserver.h 
 ../inc/wsfbrowserlaunchadapter.h        |../../../inc/wsfbrowserlaunchadapter.h 
 ../inc/wsfscreensaverstateobserver.h    |../../../inc/wsfscreensaverstateobserver.h 
+../inc/wsfactivewrappers.h              |../../../inc/wsfactivewrappers.h
 
 // inner API
 ../inc/wsfmodelobserver.h               |../../inc/wsfmodelobserver.h

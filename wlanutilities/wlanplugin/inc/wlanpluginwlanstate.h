@@ -39,8 +39,9 @@ class CWlanPluginTimeShifter;
 /**
 * WLAN state class.
 */
-class CWlanPluginWlanState : public CBase,
-                                public MWsfStateChangeObserver
+class CWlanPluginWlanState : 
+    public CBase,
+    public MWsfStateChangeObserver
     {
         
     public:
@@ -148,19 +149,23 @@ class CWlanPluginWlanState : public CBase,
 
         /*
         * Wlan bearer opened using accesspoint
+        * @param aIapId Access point id
         */
-        virtual void WlanConnectionActivatedL();
+        virtual void WlanConnectionActivatedL( TInt32 aIapid );
 
         /*
         * wlan bearer has been closed
+        * @param aIapId Access point id
         */
-        virtual void WlanConnectionClosedL();
+        virtual void WlanConnectionClosedL( TInt32 aIapid );
         
         /**
         * Connection creation process finished
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        virtual void ConnectionCreationProcessFinishedL( TInt aError );
+        virtual void ConnectionCreationProcessFinishedL( TInt32 aIapid, TInt aError );
+        
         
     protected:
         /*

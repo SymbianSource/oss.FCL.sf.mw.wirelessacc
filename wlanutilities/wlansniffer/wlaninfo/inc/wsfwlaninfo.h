@@ -57,10 +57,10 @@ enum TWsfWlanConnectionState
  */    
 enum TWsfWlanSignalStrength
     {
-    EWlanSignalStrengthMax = 60,
-    EWlanSignalStrengthGood = 74,
-    EWlanSignalStrengthLow = 87,
-    EWlanSignalStrengthMin = 100,
+    EWlanSignalStrengthMax = 50,
+    EWlanSignalStrengthGood = 65,
+    EWlanSignalStrengthLow = 81,
+    EWlanSignalStrengthMin = 95,
     EWlanSignalUnavailable = 9999
     };
 

@@ -90,7 +90,6 @@ CWsfWlanScanner::~CWsfWlanScanner()
     Cancel();
     iTimer.Close();
     iCmManagerExt.Close();
-    delete iActiveConnectionName;
     delete iScanResults;
     delete iWlanMgmtClient;
     delete iWlanSettingsAccessor;
@@ -404,18 +403,6 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
     // Get the possible connection
     if ( iConnectionDetailsProvider )
         {
-        TWlanSsid connectedSsid;
-        TInt error = iWlanMgmtClient->GetConnectionSsid( connectedSsid );
-        
-        LOG_WRITEF( "GetConnectionSsid returned=%d", error );
-        
-        TBool connected = ( error == KErrNone && connectedSsid.Length() );
-    
-        if ( !connected && !iConnectionDetailsProvider->IsConnected() )
-            {
-            LOG_WRITEF( "Not connected [connected=%d]", connected );
-            return;
-            }
         
         TWsfWlanInfo* connectedInfo = new (ELeave) TWsfWlanInfo();
         CleanupStack::PushL( connectedInfo );
@@ -428,8 +415,8 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
             // ConnectedWlanConnectionDetailsL() may have returned an IAP name instead of SSID.
             // make sure that we really have SSID in connectedInfo->iSSID at this phase.
             
-            connectedInfo->iRawSsid.Copy( connectedSsid );
-            connectedInfo->iSsid.Copy( connectedSsid );
+            connectedInfo->iRawSsid.Copy( connectedSsidOrIap );
+            connectedInfo->iSsid.Copy( connectedSsidOrIap );
             connectedInfo->iCoverage = 0;
             connectedInfo->iVisibility = 1;
 
@@ -471,7 +458,7 @@ void CWsfWlanScanner::AddConnectedWLANInfoL()
                 {
                 LOG_WRITE( "Info found" );
                 TWsfWlanInfo* temp = matchArray[0];
-                temp->iConnectionState = EConnected;
+                temp->iConnectionState = connectedInfo->iConnectionState;
                 temp->iIapId = connectedInfo->iIapId;
                 temp->iSsid.Copy( connectedSsidOrIap );
                 temp->iNetworkName.Zero();
@@ -1764,18 +1751,9 @@ void CWsfWlanScanner::RefreshTechnology( TWsfWlanInfo& aWlanInfo )
 // CWsfWlanScanner::ConnectionEstablishedL
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanScanner::ConnectionEstablishedL( const TDesC& aConnectionName )
+void CWsfWlanScanner::ConnectionEstablishedL( TInt32 /* aIapId */ )
     {
     LOG_ENTERFN( "CWsfWlanScanner::ConnectionEstablishedL" );
-    LOG_WRITEF( "aConnectionName: [%S]", &aConnectionName );
-    
-    HBufC* temp = aConnectionName.AllocL();
-    if ( iActiveConnectionName )
-        {
-        delete iActiveConnectionName;
-        iActiveConnectionName = NULL;
-        }
-    iActiveConnectionName = temp;
     }
 
 
@@ -1783,14 +1761,9 @@ void CWsfWlanScanner::ConnectionEstablishedL( const TDesC& aConnectionName )
 // CWsfWlanScanner::ConnectionLostL
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanScanner::ConnectionLostL()
+void CWsfWlanScanner::ConnectionLostL( TInt32 /* aIapId */)
     {
     LOG_ENTERFN( "CWsfWlanScanner::ConnectionLostL" );
-    if ( iActiveConnectionName )
-        {
-        delete iActiveConnectionName;
-        iActiveConnectionName = NULL;
-        }
     }
 
 
@@ -1798,7 +1771,7 @@ void CWsfWlanScanner::ConnectionLostL()
 // CWsfWlanScanner::ConnectingFailedL
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanScanner::ConnectingFailedL( TInt /*aError*/ )
+void CWsfWlanScanner::ConnectingFailedL( TInt32 /* aIapId */, TInt /*aError*/ )
     {
     // no implementation required
     }
@@ -1808,7 +1781,7 @@ void CWsfWlanScanner::ConnectingFailedL( TInt /*aError*/ )
 // CWsfWlanScanner::ConnectedIapReleasedL
 // ---------------------------------------------------------------------------
 //
-void CWsfWlanScanner::ConnectedIapReleasedL()
+void CWsfWlanScanner::ConnectedIapReleasedL( TInt32 /* aIapId */)
     {
     // no implementation required
     }

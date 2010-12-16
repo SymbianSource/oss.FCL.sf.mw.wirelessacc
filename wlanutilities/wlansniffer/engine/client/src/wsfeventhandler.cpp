@@ -85,7 +85,7 @@ void CWsfEventHandler::DoRunL()
     {
     LOG_ENTERFN( "CWsfEventHandler::DoRunL" );    
     LOG_WRITEF( "CWsfEventHandler::DoRunL event = %d", iEvent().iEvent );    
-
+    
     switch ( iEvent().iEvent )
         {
         case EEngineWlanDataChanged:
@@ -111,7 +111,7 @@ void CWsfEventHandler::DoRunL()
             if ( !iBlockConnectedEvent )
                 {
                 // if the event wasn't blocked, notify the observer
-                iObserver->WlanConnectionActivatedL();
+                iObserver->WlanConnectionActivatedL( iEvent().iIapId );
                 }
             else
                 {
@@ -120,19 +120,15 @@ void CWsfEventHandler::DoRunL()
                 }
                 
             // anyhow, connecting process is finished
-            if ( iConnecting )
-                {
-                iConnecting = EFalse;
-                iSession->StopConnectingWait();
-                iObserver->ConnectionCreationProcessFinishedL( 
-                                        KErrNone );
-                }
+            iObserver->ConnectionCreationProcessFinishedL(
+                    iEvent().iIapId,
+                    KErrNone );
             break;
             }
 
         case EEngineDisconnected:
             {
-            iObserver->WlanConnectionClosedL();
+            iObserver->WlanConnectionClosedL( iEvent().iIapId );
             break;
             }
 
@@ -144,17 +140,10 @@ void CWsfEventHandler::DoRunL()
             
         case EEngineConnectingFailed:
             {
-            if ( iConnecting )
-                {
-                // connecting is over
-                iConnecting = EFalse;
-
-                // make client return with KErrCancel
-                iSession->iConnectingResult = iEvent().iError;
-                iSession->StopConnectingWait();
-                iObserver->ConnectionCreationProcessFinishedL( 
-                        iSession->iConnectingResult );
-                }
+            // make client return with KErrCancel
+            iObserver->ConnectionCreationProcessFinishedL(
+                    iEvent().iIapId,
+                    KErrCancel );
             break;
             }
 
@@ -336,6 +325,6 @@ void CWsfEventHandler::SetConnecting( TBool aConnecting )
 //
 TBool CWsfEventHandler::Connecting() const
     {
-    return iConnecting;
+    return ETrue;
     }
 

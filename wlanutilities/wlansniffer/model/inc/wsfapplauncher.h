@@ -221,12 +221,6 @@ NONSHARABLE_CLASS( CWsfAppLauncher ): public CActive
         TWsfLaunchState iLaunchState;  
 
         /**
-        * Indicates whether to launch bookmarks page 
-        * (if homepage is not set)
-        */
-        TBool iLaunchBookMarks;
-
-        /**
         * Browser app's UID
         */
         TUid iBrowserUid;

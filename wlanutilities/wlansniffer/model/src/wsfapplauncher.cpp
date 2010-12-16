@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* Copyright (c) 2007-2010 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -11,12 +11,9 @@
 *
 * Contributors:
 *
-* Description:  Implementation of CWsfAppLauncher
-*
+* Description:
+* Implementation of CWsfAppLauncher.
 */
-
-
-
 
 //  EXTERNAL INCLUDES
 #include <apgtask.h>
@@ -45,6 +42,17 @@ static const TInt KTimerTickInterval = 2 * 1000 * 1000;
 */
 static const TUint32 KBrowserNGHomepageURL = 0x00000030;
 
+/**
+* Maximum length of IAP ID in characters
+*/
+static const TUint32 KMaxIAPIDLength = 3;
+
+/**
+* Default homepage in case we were not able to read one from repository.
+* There is no way to read this information from anywhere, it has been
+* hardcoded also to browser codes
+*/
+_LIT( KDefaultHomepageURL, "www.ovi.com" );
 
 #ifdef _DEBUG
     _LIT( KBrowserLauncherPanic, "CWsfAppLauncher" );
@@ -91,6 +99,7 @@ CWsfAppLauncher::~CWsfAppLauncher()
     delete iRepository;
     iTimer.Close();
     iWsSession.Close();     
+    iThread.Close();
     }
 
 
@@ -101,8 +110,7 @@ CWsfAppLauncher::~CWsfAppLauncher()
 CWsfAppLauncher::CWsfAppLauncher(): 
     CActive( CActive::EPriorityStandard ),
     iIapId( 0 ), 
-    iLaunchState( EIdle ),
-    iLaunchBookMarks( EFalse )
+    iLaunchState( EIdle )
     {
     }
 
@@ -167,8 +175,6 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
                         NCentralRepositoryConstants::KMaxUnicodeStringLength );
     TPtr urlPtr( url->Des() );
     
-    iLaunchBookMarks = EFalse;
-    
     RCmManager cmManager;
     
     cmManager.OpenL();
@@ -196,12 +202,14 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
         TInt err = BrowserHomepage( urlPtr );   
         
         // if browser homepage is not defined either,
-        // launch bookmarks view
+        // launch the hardcoded default URL
         if ( err || url->Length() == 0 )
             {
             LOG_WRITE( 
                    "CWsfAppLauncher::LaunchBrowserL_2 -->> err in url length" );
-            iLaunchBookMarks = ETrue;
+            LOG_WRITE( 
+                   "CWsfAppLauncher::LaunchBrowserL_2 -->> setting default www.ovi.com" );            
+            *url = KDefaultHomepageURL;
             }
         }
     else
@@ -227,22 +235,21 @@ void CWsfAppLauncher::LaunchBrowserL( MWsfBrowserLaunchObserver& aObserver,
 void CWsfAppLauncher::DoLaunchBrowserL()
     {
     LOG_ENTERFN( "CWsfAppLauncher::DoLaunchBrowserL" );
-    _LIT( KFormatCommand, "%d %S" );
+    
+    // The syntax of the launch parameter is:
+    // "<4> <URL> <IAPID>", where 4 means that the next parameter is a URL
+    _LIT( KFormatCommand, "%d %S %d" );
     const TInt KBrowserFirstParamUrlFollows = 4;
     
+    _ASSERTD( iURL->Length() > 0 );
+    
     iLaunchState = EStartingUp;    
-    HBufC* param = NULL; 
-    if ( iLaunchBookMarks )
-        {
-        param = KNullDesC().AllocLC();
-        }
-    else
-        {
-        param = HBufC::NewLC( KFormatCommand().Length() + iURL->Length() );
-        param->Des().Format( KFormatCommand, 
-                             KBrowserFirstParamUrlFollows, iURL );
-        }
-        
+    HBufC* param = HBufC::NewLC( KFormatCommand().Length() + 
+        iURL->Length() + KMaxIAPIDLength );
+    param->Des().Format( KFormatCommand, 
+                         KBrowserFirstParamUrlFollows, iURL, iIapId );
+    LOG_WRITEF( "CWsfAppLauncher::DoLaunchBrowserL: %S", param );
+    
     RApaLsSession appArcSession;
     User::LeaveIfError( appArcSession.Connect() ); // connect to AppArc server
     CleanupClosePushL( appArcSession );
@@ -298,7 +305,7 @@ TInt CWsfAppLauncher::BrowserHomepage( TDes& aHomePageURL )
                 }
             default:
                 {
-                aHomePageURL.Zero();                     
+                aHomePageURL.Zero();
                 }
             }
         }
@@ -457,7 +464,7 @@ void CWsfAppLauncher::RunL()
             TRequestStatus* status = &iStatus;
             User::RequestComplete( status, err );
             SetActive();    
-            break;    
+            break;
             }
         case ECompleted:  //Browser exists, notify observer about completion
             {
@@ -475,7 +482,8 @@ void CWsfAppLauncher::RunL()
         case EFinished:  //Browser exists, notify observer about completion
             {
             LOG_WRITE( "CWsfAppLauncher::RunL -->> EFinished" );
-            iObserver->BrowserExitL();  
+            iObserver->BrowserExitL();
+            iThread.Close();
             iLaunchState = EIdle;
             break;    
             }
@@ -512,7 +520,5 @@ TInt CWsfAppLauncher::RunError( TInt aError )
         }    
         
     iLaunchState = EIdle;
-    return aError;
+    return KErrNone;
     }
-
-

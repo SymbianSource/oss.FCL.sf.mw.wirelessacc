@@ -451,28 +451,31 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
         /**
         * Called when a wlan connection is established
         * @since S60 5.0
-        * @param aConnectionName WLAN connection name (SSID)
+        * @param aIapId Access point id
         */
-        void ConnectionEstablishedL( const TDesC& aConnectionName );
+        void ConnectionEstablishedL( TInt32 aIapId );
 
         /**
         * Called when wlan connection has been lost
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        void ConnectionLostL();
+        void ConnectionLostL( TInt32 aIapId );
         
         /**
         * Called when the connection process failed for some reason
         * @since S60 5.0
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        void ConnectingFailedL( TInt aError );
+        void ConnectingFailedL( TInt32 aIapId, TInt aError );
         
         /**
         * Called when the connection no longer needs the IAP it was using
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        void ConnectedIapReleasedL();
+        void ConnectedIapReleasedL( TInt32 aIapId );
         
         
     public: // from MWsfWlanScanIntervalChangeObserver
@@ -523,12 +526,7 @@ NONSHARABLE_CLASS( CWsfWlanScanner ): public CActive,
         * (owned)
         */
         CWsfWlanInfoArray* iScanArray;
-        
-        /**
-        * Name of the active connection (owned)
-        */
-        HBufC* iActiveConnectionName;
-        
+       
         /**
         * Timer for scheduling WLAN scans
         */

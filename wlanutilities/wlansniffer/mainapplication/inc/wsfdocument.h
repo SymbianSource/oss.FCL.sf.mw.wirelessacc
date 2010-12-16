@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2007-2008 Nokia Corporation and/or its subsidiary(-ies). 
+* Copyright (c) 2007-2010 Nokia Corporation and/or its subsidiary(-ies). 
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of "Eclipse Public License v1.0"
@@ -30,6 +30,7 @@ class CWsfAppUi;
 class CEikApplication;
 class CWsfModel;
 class CWsfWlanInfoArrayVisitor;
+class CWsfActiveWrappers;
 
 
 /**
@@ -81,6 +82,13 @@ NONSHARABLE_CLASS( CWsfDocument ) : public CAknDocument
          */
         inline CWsfModel& Model() const;
     
+        /**
+         * Returns a reference to the main controller (TWsfMainController)
+         * @since Symbian^3
+         * @return reference to TWsfMainController
+         */
+        inline const TWsfMainController* MainController() const;
+        
     public: // from CAknDocument
         
         /**
@@ -126,6 +134,11 @@ NONSHARABLE_CLASS( CWsfDocument ) : public CAknDocument
          * Own.
          */
         CWsfWlanInfoArrayVisitor *iWlanInfoBranding;
+		
+        /**
+         * Reference to Active wrapper, provides async operations to model
+         */
+        CWsfActiveWrappers *iAsyncModel;
     };
 
 

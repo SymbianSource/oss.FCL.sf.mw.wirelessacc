@@ -72,7 +72,7 @@ LIBRARY     commdb.lib
 LIBRARY     cmmanagerdatabase.lib
 LIBRARY     cmmanager.lib
 LIBRARY     ictsclientinterface.lib
-
+LIBRARY     wlandbif.lib
 LIBRARY     esock.lib 
 LIBRARY     charconv.lib
 LIBRARY     connmon.lib

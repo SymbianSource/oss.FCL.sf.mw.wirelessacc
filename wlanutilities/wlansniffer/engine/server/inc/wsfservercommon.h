@@ -227,6 +227,11 @@ class TWsfNotifyEventContainer
          * Error code
          */
          TInt iError;    
+         
+         /**
+          * IAP ID assiciated with the event if any
+          */
+         TInt32 iIapId;
     };
     
 

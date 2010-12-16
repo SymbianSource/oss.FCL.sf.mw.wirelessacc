@@ -11,30 +11,28 @@
  *
  * Contributors:
  *
- * Description:  Implementation of CWsfConnectActiveWrapper.
+ * Description:  Implementation of CWsfDisconnectActiveWrapper.
  *
  */
 
-#ifndef CWSFCONNECTACTIVEWRAPPER_H
-#define CWSFCONNECTACTIVEWRAPPER_H
+#ifndef CWSFDISCONNECTACTIVEWRAPPER_H
+#define CWSFDISCONNECTACTIVEWRAPPER_H
 
 //  EXTERNAL INCLUDES
 #include <e32base.h>	
 
 //  INTERNAL INCLUDES
-#include "wsfaicontroller.h"
-#include "wsfcommon.h"
 
 //  FORWARD DECLARATIONS
 class CWsfModel;
 
 /**
- *  Active object that connects WLAN
+ *  Active object that disconnects wlan
  *
  *  @lib wsfaiplugin.lib
  *  @since S60 v5.2
  */
-class CWsfConnectActiveWrapper : public CActive
+class CWsfDisconnectActiveWrapper : public CActive
     {
 public:
     // Constructors and destructor
@@ -43,38 +41,34 @@ public:
      * Destructor
      * @since S60 5.2     
      */
-    ~CWsfConnectActiveWrapper();
+    ~CWsfDisconnectActiveWrapper();
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfConnectActiveWrapper* NewL( CWsfModel* aModel );
+    static CWsfDisconnectActiveWrapper* NewL( CWsfModel* aModel );
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfConnectActiveWrapper* NewLC( CWsfModel* aModel );
+    static CWsfDisconnectActiveWrapper* NewLC( CWsfModel* aModel );
 
 public:
 
     /**
      * Function for making the initial request
      * @since S60 5.2     
-     * @param aIapId WLAN IAP id to connect to.
-     * @param aConnectOnly ETrue if Connect selected
-     * @param aPersistence Persistence property of the IAP
      */
-    void Start( TUint aIapID, TBool aConnectOnly, 
-                TWsfIapPersistence aPersistence );
+    void Start();
 
 private:
 
     /**
      * constructor
      */
-    CWsfConnectActiveWrapper();
+    CWsfDisconnectActiveWrapper();
 
     /**
      * Factory function.
@@ -104,7 +98,7 @@ private:
     /**
      * States of the active object
      */
-    enum CWsfConnectActiveWrapperState
+    enum CWsfDisconnectActiveWrapperState
         {
         EUninitialized, // Uninitialized
         EInitialized, // Initalized
@@ -120,30 +114,15 @@ private:
     TInt iState; // State of the active object
 
     /**
-     * Result
+     * Request result
      */
-    TPckgBuf<TBool> iPckg;
+    TPckgBuf<TInt> iPckg;
 
     /**
      * Reference to Model
      */
     CWsfModel* iModel;
-    
-    /**
-     * IAP ID
-     */
-    TUint iIapID;
-    
-    /**
-     * Indicates whether Connect or Start Web browsing was selected
-     */
-    TBool iConnectOnly;
-    
-    /**
-     * Persistence value of IAP
-     */
-    TWsfIapPersistence iPersistence;
 
     };
 
-#endif // CWSFCONNECTACTIVEWRAPPER_H
+#endif // CWSFDISCONNECTACTIVEWRAPPER_H

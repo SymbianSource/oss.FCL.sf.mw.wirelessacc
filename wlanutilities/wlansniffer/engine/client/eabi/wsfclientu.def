@@ -13,18 +13,15 @@ EXPORTS
 	_ZN11RWsfSession16AbortConnectingLEv @ 12 NONAME
 	_ZN11RWsfSession17CancelNotifyEventEv @ 13 NONAME
 	_ZN11RWsfSession17ConnectWlanBearerER8TPckgBufIiEmi18TWsfIapPersistenceR14TRequestStatus @ 14 NONAME
-	_ZN11RWsfSession18ConnectWlanBearerLEmi18TWsfIapPersistence @ 15 NONAME
-	_ZN11RWsfSession18SetIapPersistenceLE18TWsfIapPersistence @ 16 NONAME
-	_ZN11RWsfSession19MonitorAccessPointLEm @ 17 NONAME
-	_ZN11RWsfSession20DisconnectWlanBearerER8TPckgBufIiER14TRequestStatus @ 18 NONAME
-	_ZN11RWsfSession21ConnectedAccountNameLEv @ 19 NONAME
-	_ZN11RWsfSession21DisconnectWlanBearerLEv @ 20 NONAME
-	_ZN11RWsfSession23ControlDisconnectTimerLEj @ 21 NONAME
-	_ZN11RWsfSession23GetConnectedWlanDetailsER8TPckgBufIiER12TWsfWlanInfoR14TRequestStatus @ 22 NONAME
-	_ZN11RWsfSession24GetConnectedWlanDetailsLER12TWsfWlanInfo @ 23 NONAME
-	_ZN11RWsfSession26SetConnectWlanBearerResultEi @ 24 NONAME
-	_ZN11RWsfSession5CloseEv @ 25 NONAME
-	_ZN11RWsfSession7ConnectEv @ 26 NONAME
-	_ZN11RWsfSessionC1Ev @ 27 NONAME
-	_ZN11RWsfSessionC2Ev @ 28 NONAME
+	_ZN11RWsfSession18SetIapPersistenceLE18TWsfIapPersistence @ 15 NONAME
+	_ZN11RWsfSession19MonitorAccessPointLEm @ 16 NONAME
+	_ZN11RWsfSession20DisconnectWlanBearerER8TPckgBufIiER14TRequestStatus @ 17 NONAME
+	_ZN11RWsfSession23ControlDisconnectTimerLEj @ 18 NONAME
+	_ZN11RWsfSession23GetConnectedWlanDetailsER8TPckgBufIiER12TWsfWlanInfoR14TRequestStatus @ 19 NONAME
+	_ZN11RWsfSession24GetConnectedWlanDetailsLER12TWsfWlanInfo @ 20 NONAME
+	_ZN11RWsfSession26SetConnectWlanBearerResultEi @ 21 NONAME
+	_ZN11RWsfSession5CloseEv @ 22 NONAME
+	_ZN11RWsfSession7ConnectEv @ 23 NONAME
+	_ZN11RWsfSessionC1Ev @ 24 NONAME
+	_ZN11RWsfSessionC2Ev @ 25 NONAME
 

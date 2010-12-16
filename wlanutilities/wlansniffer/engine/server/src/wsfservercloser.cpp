@@ -110,6 +110,10 @@ void CWsfServer::CWsfServerCloser::WaitForClients( TBool aWait )
         {
         StartClosureWait();
         }
+    else
+        {
+        Cancel();
+        }
     }
 
 // ---------------------------------------------------------------------------
@@ -122,6 +126,10 @@ void CWsfServer::CWsfServerCloser::WaitForOwnedConnection( TBool aWait )
     if ( !aWait )
         {
         StartClosureWait();
+        }
+    else
+        {
+        Cancel();
         }
     }
     
@@ -136,6 +144,10 @@ void CWsfServer::CWsfServerCloser::WaitForBrowserExit( TBool aWait )
     if ( !aWait )
         {
         StartClosureWait();
+        }
+    else
+        {
+        Cancel();
         }
     }
 

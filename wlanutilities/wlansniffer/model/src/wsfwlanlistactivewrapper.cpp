@@ -19,8 +19,8 @@
 // INCLUDE FILES
 #include "wsflogger.h"
 #include "wsfmodel.h"
+#include "wsfmodelobserver.h"
 #include "wsfwlaninfoarray.h"
-#include "wsfaicontroller.h"
 #include "wsfwlanlistactivewrapper.h"
 
 
@@ -34,8 +34,10 @@ static const TInt KRetries = 5;
 // CWsfWLANListActiveWrapper::CWsfWLANListActiveWrapper
 // ----------------------------------------------------------------------------
 //
-CWsfWLANListActiveWrapper::CWsfWLANListActiveWrapper() :
+CWsfWLANListActiveWrapper::CWsfWLANListActiveWrapper(
+        MWsfModelObserver &aModelObserver ) :
     CActive( EPriorityStandard ), // Standard priority
+    iModelObserver(aModelObserver),
     iPtr( NULL, 0 )
     {
     }
@@ -46,13 +48,13 @@ CWsfWLANListActiveWrapper::CWsfWLANListActiveWrapper() :
 // ----------------------------------------------------------------------------
 //
 CWsfWLANListActiveWrapper* CWsfWLANListActiveWrapper::NewLC( CWsfModel* aModel, 
-                                                TWsfAiController &aController )
+                                                MWsfModelObserver &aModelObserver )
     {
     LOG_ENTERFN( "CWsfWLANListActiveWrapper::NewLC" );
     CWsfWLANListActiveWrapper* self =
-            new (ELeave) CWsfWLANListActiveWrapper();
+            new (ELeave) CWsfWLANListActiveWrapper(aModelObserver);
     CleanupStack::PushL(self);
-    self->ConstructL( aModel, aController );
+    self->ConstructL( aModel );
     return self;
     }
 
@@ -62,11 +64,11 @@ CWsfWLANListActiveWrapper* CWsfWLANListActiveWrapper::NewLC( CWsfModel* aModel,
 // ----------------------------------------------------------------------------
 //
 CWsfWLANListActiveWrapper* CWsfWLANListActiveWrapper::NewL( CWsfModel* aModel, 
-                                                TWsfAiController &aController )
+                                                MWsfModelObserver &aModelObserver )
     {
     LOG_ENTERFN( "CWsfWLANListActiveWrapper::NewL" );
     CWsfWLANListActiveWrapper* self = CWsfWLANListActiveWrapper::NewLC(
-             aModel, aController );
+             aModel, aModelObserver );
     CleanupStack::Pop(); // self;
     return self;
     }
@@ -76,13 +78,11 @@ CWsfWLANListActiveWrapper* CWsfWLANListActiveWrapper::NewL( CWsfModel* aModel,
 // CWsfWLANListActiveWrapper::ConstructL
 // ----------------------------------------------------------------------------
 //
-void CWsfWLANListActiveWrapper::ConstructL( CWsfModel* aModel,
-                                            TWsfAiController &aController )
+void CWsfWLANListActiveWrapper::ConstructL( CWsfModel* aModel )
     {
     LOG_ENTERFN( "CWsfWLANListActiveWrapper::ConstructL" );
     CActiveScheduler::Add(this); // Add to scheduler
     iModel = aModel;
-    iController = &aController;
     iArray = CWsfWlanInfoArray::NewL();
     }
 
@@ -244,11 +244,11 @@ void CWsfWLANListActiveWrapper::RunL()
             
             if ( iStartUp )
                 {
-                iController->StartupRefreshDataReadyL();
+                iModelObserver.StartupRefreshDataReadyL();
                 }
             else
                 {
-                iController->WlanListDataReadyL();
+                iModelObserver.WlanListDataReadyL();
                 }
             }
         else

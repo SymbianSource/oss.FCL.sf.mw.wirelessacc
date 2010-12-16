@@ -123,6 +123,12 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         void RefreshRefreshingL();
         
         /**
+        * Dismisses the AI menu/other dialogs if there was any open
+        * @since S60 5.2
+        */
+        void DismissDialogsL();
+        
+        /**
         * Refreshes the connecting icon
         * @since S60 5.2
         */
@@ -178,21 +184,24 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         /**
         * A WLAN connection has been established
         * @since S60 5.0
+        * @param aIapId Access point id
         */
-        void WlanConnectionActivatedL();
+        void WlanConnectionActivatedL( TInt32 aIapid );
         
         /**
         * A WLAN connection has been closed
         * @since S60 5.0
-        */
-        void WlanConnectionClosedL();
+        * @param aIapId Access point id
+		*/
+        void WlanConnectionClosedL( TInt32 aIapid );
         
         /**
         * Connection creation process finished
-        * @since S60 5.2
+        * @since Symbian^3
+        * @param aIapId Access point id
         * @param aError System wide error code
         */
-        void ConnectionCreationProcessFinishedL( TInt aError );
+        void ConnectionCreationProcessFinishedL( TInt32 aIapid, TInt aError );
         
         
     public:     //From MWsfModelObserver
@@ -211,167 +220,182 @@ NONSHARABLE_CLASS( TWsfAiController ): public MWsfStateChangeObserver,
         void BrowserLaunchFailed( TInt aError );
     
         /**
-        * Called when the previously launched browser exits
-        * @since S60 5.0
-        */
+         * Called when the previously launched browser exits
+         * @since S60 5.0
+         */
         void BrowserExitL();
+
+        /**
+         * Notification to wlan widget when browser is used
+         * @since Symbian^3
+         */
+        void HandleMskIfConnectingL();
         
         /**
-        * Notification that connection is going to be created
-        * @since S60 5.0
-        * @param aIapId The IAP id of the connection being created
-        */
+         * Notification to wlan widget when just connected
+         * @since Symbian^3
+         */
+        void HandleMskIfOfflineL();
+        
+    public: // From MWsfModelObserver
+        
+        /**
+         * Notification that connection is going to be created
+         * @since S60 5.0
+         * @param aIapId The IAP id of the connection being created
+         */
         void ConnectingL( TUint32 aIapId );
     
         /**
-        * Notification that the connection creation process ended
-        * @since S60 5.0
-        * @param aResult The result of the connection creation
-        */
+         * Notification that the connection creation process ended
+         * @since S60 5.0
+         * @param aResult The result of the connection creation
+         */
         void ConnectingFinishedL( TInt aResult );
-    
-    private:
-        
-        /*
-        * Start web browsing with the given wlaninfo
-        * @since S60 5.0
-        * @param aInfo Wlaninfo to connect with
-        */ 
-        void StartBrowsingL( TWsfWlanInfo& aInfo );
-        
-        /*
-        * Start web browser with the given wlaninfo
-        * @since S60 5.2
-        * @param aInfo Wlaninfo to connect with
-        */ 
-        void StartWebBrowserL( TWsfWlanInfo& aInfo );
-        
-        /**
-        * Cleanup function to release connecting state
-        * @param aPtr Pointer for this class
-        */
-        static void CleanUpConnectingL( TAny* aPtr );
-
-        /*
-        * Brings browser to the foreground
-        * @since S60 5.0
-        */
-        void ContinueBrowsingL();
-
-        /*
-        * Launches a listquerydialog which holds all available wlans.
-        * @since S60 5.0
-        * @param aInfo The wlaninfo resulting from the selection if 
-        *              no error/cancellation occured 
-        * @return ETrue if a valid network was selected, EFalse otherwise 
-        */ 
-        TBool LaunchSearchDialogL( TWsfWlanInfo& aInfo );
-        
-        /* 
-        * Trapped routine of LaunchSearchDialogL
-        * @param - aSelectedItem which list item was selected
-        * @return - ETrue if connection should be made, otherwise EFalse 
-        */
-        TBool DoLaunchSearchDialogL( TInt& aSelectedItem );
-        
-        /*
-        *  Refreshes the current ui when the ui changes
-        */ 
-        void RefreshUiL();
-
-        /**
-        * Handle error event
-        * @since S60 5.0
-        * @param aError System wide error code
-        */
-        void DoHandleEngineErrorL( TInt aError );
-
-        /**
-        * Checks whether the browser is using the currently active WLAN 
-        * connection (if any)
-        * @since S60 5.0
-        * @return ETrue if there is a WLAN connection and browser is using it,
-        *         EFalse otherwise
-        */
-        TBool IsWlanUsedByBrowserL();
-
-        /**
-        * Handle MSK if not connected
-        * @since S60 5.0
-        */
-        void HandleMskIfOfflineL();
-        
-        /**
+           
+       /**
         * Handle MSK if connected to a WLAN
         * @since S60 5.0
         */
-        void HandleMskIfConnectedL();
-        
-        /**
-        * Handle MSK if connecting to a WLAN
-        * @since S60 5.0
-        */
-        void HandleMskIfConnectingL();
-
-        /**
+       void HandleMskIfConnectedL();
+       
+       /**
         * Handle MSK if connected and browser is using the connection
         * @since S60 5.0
         */
-        void HandleMskIfBrowsingL();
+       void HandleMskIfBrowsingL();
+               
+    private:
         
+        /*
+         * Start web browsing with the given wlaninfo
+         * @since S60 5.0
+         * @param aInfo Wlaninfo to connect with
+         */ 
+        void StartBrowsingL( TWsfWlanInfo& aInfo );
+        
+        /*
+         * Start web browser with the given wlaninfo
+         * @since Symbian^3
+         * @param aInfo Wlaninfo to connect with
+         */ 
+        void StartWebBrowserL( TWsfWlanInfo& aInfo );
+        
+        /**
+         * Cleanup function to release connecting state
+         * @param aPtr Pointer for this class
+         */
+        static void CleanUpConnectingL( TAny* aPtr );
+
+        /*
+         * Brings browser to the foreground
+         * @since S60 5.0
+         */
+        void ContinueBrowsingL();
+
+        /*
+         * Launches a listquerydialog which holds all available wlans.
+         * @since S60 5.0
+         * @param aInfo The wlaninfo resulting from the selection if 
+         *              no error/cancellation occured 
+         * @return ETrue if a valid network was selected, EFalse otherwise 
+         */ 
+        TBool LaunchSearchDialogL( TWsfWlanInfo& aInfo );
+        
+        /* 
+         * Trapped routine of LaunchSearchDialogL
+         * @param - aSelectedItem which list item was selected
+         * @return - ETrue if connection should be made, otherwise EFalse 
+         */
+        TBool DoLaunchSearchDialogL( TInt& aSelectedItem );
+        
+        /*
+         *  Refreshes the current ui when the ui changes
+         */ 
+        void RefreshUiL();
+
+        /**
+         * Handle error event
+         * @since S60 5.0
+         * @param aError System wide error code
+         */
+        void DoHandleEngineErrorL( TInt aError );
+
+        /**
+         * Checks whether the browser is using the currently active WLAN 
+         * connection (if any)
+         * @since S60 5.02
+         * @return ETrue if there is a WLAN connection and browser is using it,
+         *         EFalse otherwise
+         */
+        TBool CheckIsWlanUsedByBrowserL();
+
             
     private: // data
         
         /**
-        * Handle to Eikon environment.
-        * Own.
-        */
+         * Handle to Eikon environment.
+         * Own.
+         */
         CEikonEnv* iEnv;
 
         /**
-        * Cache of the used info
-        */
+         * Cache of the used info
+         */
         TWsfWlanInfo iUsedInfo;
 
         /**
-        * Reference to Wlan array
-        */
+         * Reference to Wlan array
+         */
         CWsfWlanInfoArray* iInfoArray;
         
         /**
-        * Reference to Model
-        */
+         * Reference to Model
+         */
         CWsfModel* iModel;
 
         /**
-        * Reference to Active Idle plugin's Model
-        */
+         * Reference to Active Idle plugin's Model
+         */
         CWsfAiModel* iAiModel;
 
         /**
-        * A pointer to active idle plugin ui control observer instance
-        */
+         * A pointer to active idle plugin ui control observer instance
+         */
         MWsfAiUiObserver* iUi;
         
         /**
-        * Cache of the connected WLAN data
-        */
+         * Cache of the connected WLAN data
+         */
         TWsfWlanInfo iConnectedWlan;
         
         /**
-        * The Database change observer
-        */
+         * The Database change observer
+         */
         CWsfDbObserver* iDbObserver;
         
         /**
-         * Indicates whether Connect or Start Web browsing was selected
-         */
+          * Indicates whether Connect or Start Web browsing was selected
+          */
         TBool iConnectOnly;
         
         /**
-        * A pointer to CWsfActiveWrappers
-        */
+         * Indicates if UI dialog is open 
+         */
+        TBool iDialogActive;
+        
+        /**
+         * A pointer to CWsfActiveWrappers
+         */
         CWsfActiveWrappers* iActiveWrappers;
+        
+        /**
+         * ETrue, if plugin has started any operation and should continue
+         * processing some operations based on received signals. E.g.
+         * If plugin start web browsing it has to continue the operation
+         * after the connection has been established.
+         */
+        TBool iHaveControl;
         
     };
 

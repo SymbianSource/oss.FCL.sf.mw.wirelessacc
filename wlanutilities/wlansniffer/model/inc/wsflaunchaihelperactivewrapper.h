@@ -20,12 +20,14 @@
 
 //  EXTERNAL INCLUDES
 #include <e32base.h>
+#include <e32property.h>
 
 //  INTERNAL INCLUDES
-#include "wsfaicontroller.h"
+//#include "wsfaicontroller.h"
 
 //  FORWARD DECLARATIONS
 class CWsfModel;
+class CWsfActiveWrappers;
 
 /**
  *  Active object launches ai helper
@@ -47,15 +49,17 @@ public: // Constructors and destructor
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfLaunchAiHelperActiveWrapper* NewL( CWsfModel* aModel,
-                                            TWsfAiController &aController );
+    static CWsfLaunchAiHelperActiveWrapper* NewL(
+            CWsfModel* aModel,
+            CWsfActiveWrappers &aParent );
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfLaunchAiHelperActiveWrapper* NewLC( CWsfModel* aModel, 
-                                             TWsfAiController &aController );
+    static CWsfLaunchAiHelperActiveWrapper* NewLC(
+            CWsfModel* aModel, 
+            CWsfActiveWrappers &aParent );
 
 public:
     /**
@@ -67,15 +71,17 @@ public:
      * @param aTestAccessPoint ETrue if ICT is executed, 
      *                         EFalse if ICT is not executed  
      */
-    void Start( TWsfWlanInfo& aInfo, TBool aConnectOnly, 
-                TBool aTestAccessPoint );
+    void Start( 
+            TWsfWlanInfo& aInfo, 
+            TBool aConnectOnly, 
+            TBool aTestAccessPoint );
 
 private:
     
     /**
      * constructor
      */
-    CWsfLaunchAiHelperActiveWrapper();
+    CWsfLaunchAiHelperActiveWrapper(CWsfActiveWrappers &aParent);
 
     /**
      * Factory function.
@@ -83,7 +89,7 @@ private:
      * @param aModel Whether to react to screensaver events 
      * @param aController Whether to react to screensaver events
      */
-    void ConstructL( CWsfModel* aModel, TWsfAiController &aController );
+    void ConstructL( CWsfModel* aModel );
 
 private: // From CActive
 
@@ -127,9 +133,9 @@ private:
     CWsfModel* iModel;
 
     /**
-     * Pointer to TWsfAiController
+     * Pointer to Parent active wrapper
      */
-    TWsfAiController *iController;
+    CWsfActiveWrappers &iParent;
     
     /**
     * Handle to the ai helper exit code property value

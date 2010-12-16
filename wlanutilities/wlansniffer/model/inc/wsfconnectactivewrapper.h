@@ -11,29 +11,29 @@
  *
  * Contributors:
  *
- * Description:  Implementation of CWsfRefreshScanActiveWrapper.
+ * Description:  Implementation of CWsfConnectActiveWrapper.
  *
  */
 
-#ifndef CWSFREFRESHSCANACTIVEWRAPPER_H
-#define CWSFREFRESHSCANACTIVEWRAPPER_H
+#ifndef CWSFCONNECTACTIVEWRAPPER_H
+#define CWSFCONNECTACTIVEWRAPPER_H
 
 //  EXTERNAL INCLUDES
 #include <e32base.h>	
 
 //  INTERNAL INCLUDES
-#include "wsfaicontroller.h"
+#include "wsfcommon.h"
 
 //  FORWARD DECLARATIONS
 class CWsfModel;
 
 /**
- *  Active object that requests scans
+ *  Active object that connects WLAN
  *
  *  @lib wsfaiplugin.lib
  *  @since S60 v5.2
  */
-class CWsfRefreshScanActiveWrapper : public CActive
+class CWsfConnectActiveWrapper : public CActive
     {
 public:
     // Constructors and destructor
@@ -42,41 +42,45 @@ public:
      * Destructor
      * @since S60 5.2     
      */
-    ~CWsfRefreshScanActiveWrapper();
+    ~CWsfConnectActiveWrapper();
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfRefreshScanActiveWrapper* NewL(CWsfModel* aModel);
+    static CWsfConnectActiveWrapper* NewL( CWsfModel* aModel );
 
     /**
      * Two-phased constructor.
      * @since S60 5.2     
      */
-    static CWsfRefreshScanActiveWrapper* NewLC(CWsfModel* aModel);
+    static CWsfConnectActiveWrapper* NewLC( CWsfModel* aModel );
 
 public:
 
     /**
      * Function for making the initial request
      * @since S60 5.2     
+     * @param aIapId WLAN IAP id to connect to.
+     * @param aConnectOnly ETrue if Connect selected
+     * @param aPersistence Persistence property of the IAP
      */
-    void Start();
+    void Start( TUint aIapID, TBool aConnectOnly, 
+                TWsfIapPersistence aPersistence );
 
 private:
 
     /**
      * constructor
      */
-    CWsfRefreshScanActiveWrapper();
+    CWsfConnectActiveWrapper();
 
     /**
      * Factory function.
-     * @since S60 5.0
+     * @since S60 5.2
      * @param aModel CWsfModel pointer
      */
-    void ConstructL(CWsfModel* aModel);
+    void ConstructL( CWsfModel* aModel );
 
 private:
     // From CActive
@@ -93,13 +97,13 @@ private:
     /**
      * @see CActive
      */
-    TInt RunError(TInt aError);
+    TInt RunError( TInt aError );
 
 private:
     /**
      * States of the active object
      */
-    enum CWsfRefreshScanActiveWrapperState
+    enum CWsfConnectActiveWrapperState
         {
         EUninitialized, // Uninitialized
         EInitialized, // Initalized
@@ -115,15 +119,30 @@ private:
     TInt iState; // State of the active object
 
     /**
-     * Request result
+     * Result
      */
-    TPckgBuf<TBool> iPckg;
+    TPckgBuf<TInt> iPckg;
 
     /**
      * Reference to Model
      */
     CWsfModel* iModel;
+    
+    /**
+     * IAP ID
+     */
+    TUint iIapID;
+    
+    /**
+     * Indicates whether Connect or Start Web browsing was selected
+     */
+    TBool iConnectOnly;
+    
+    /**
+     * Persistence value of IAP
+     */
+    TWsfIapPersistence iPersistence;
 
     };
 
-#endif // CWSFREFRESHSCANACTIVEWRAPPER_H
+#endif // CWSFCONNECTACTIVEWRAPPER_H

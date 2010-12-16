@@ -25,6 +25,8 @@
 #include "wsfdisconnectactivewrapper.h"
 #include "wsfconnectactivewrapper.h"
 #include "wsflaunchaihelperactivewrapper.h"
+#include "wsfconnmonactivewrapper.h"
+#include "wsfmodelobserver.h"
 
 
 // ----------------------------------------------------------------------------
@@ -41,13 +43,14 @@ CWsfActiveWrappers::CWsfActiveWrappers()
 // CWsfActiveWrappers::~CWsfActiveWrappers
 // ----------------------------------------------------------------------------
 //
-CWsfActiveWrappers::~CWsfActiveWrappers()
+EXPORT_C CWsfActiveWrappers::~CWsfActiveWrappers()
     {
     delete iWLANListActiveWrapper;
     delete iRefreshScanActiveWrapper;
     delete iDisconnectActiveWrapper;
     delete iConnectActiveWrapper;
     delete iLaunchAiHelperActiveWrapper;
+    delete iConnMonActiveWrapper;
     }
 
 
@@ -55,13 +58,13 @@ CWsfActiveWrappers::~CWsfActiveWrappers()
 // CWsfActiveWrappers::NewLC
 // ----------------------------------------------------------------------------
 //
-CWsfActiveWrappers* CWsfActiveWrappers::NewLC( CWsfModel* aModel,
-        TWsfAiController &aController )
+EXPORT_C CWsfActiveWrappers* CWsfActiveWrappers::NewLC( CWsfModel* aModel,
+        MWsfModelObserver &aModelObserver )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::NewLC" );
     CWsfActiveWrappers* self = new ( ELeave ) CWsfActiveWrappers();
     CleanupStack::PushL( self );
-    self->ConstructL( aModel, aController );
+    self->ConstructL( aModel, aModelObserver );
     return self;
     }
 
@@ -70,11 +73,11 @@ CWsfActiveWrappers* CWsfActiveWrappers::NewLC( CWsfModel* aModel,
 // CWsfActiveWrappers::NewL
 // ----------------------------------------------------------------------------
 //
-CWsfActiveWrappers* CWsfActiveWrappers::NewL( CWsfModel* aModel,
-        TWsfAiController &aController )
+EXPORT_C CWsfActiveWrappers* CWsfActiveWrappers::NewL( CWsfModel* aModel,
+        MWsfModelObserver &aModelObserver )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::NewL" );
-    CWsfActiveWrappers* self = CWsfActiveWrappers::NewLC( aModel, aController );
+    CWsfActiveWrappers* self = CWsfActiveWrappers::NewLC( aModel, aModelObserver );
     CleanupStack::Pop(); // self;
     return self;
     }
@@ -85,11 +88,12 @@ CWsfActiveWrappers* CWsfActiveWrappers::NewL( CWsfModel* aModel,
 // ----------------------------------------------------------------------------
 //
 void CWsfActiveWrappers::ConstructL( CWsfModel* aModel,
-        TWsfAiController &aController )
+        MWsfModelObserver &aModelObserver )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::ConstructL" );
-    iWLANListActiveWrapper = CWsfWLANListActiveWrapper::NewL( aModel, 
-                                                              aController );
+    iWLANListActiveWrapper = CWsfWLANListActiveWrapper::NewL( 
+            aModel, 
+            aModelObserver );
     
     iRefreshScanActiveWrapper = CWsfRefreshScanActiveWrapper::NewL( aModel );
     
@@ -97,8 +101,12 @@ void CWsfActiveWrappers::ConstructL( CWsfModel* aModel,
     
     iConnectActiveWrapper = CWsfConnectActiveWrapper::NewL( aModel );
     
-    iLaunchAiHelperActiveWrapper = CWsfLaunchAiHelperActiveWrapper::NewL( 
-                                                          aModel, aController );
+    iLaunchAiHelperActiveWrapper = 
+        CWsfLaunchAiHelperActiveWrapper::NewL(
+            aModel, 
+            *this );
+    
+    iConnMonActiveWrapper = CWsfConnMonActiveWrapper::NewL( aModelObserver );
     }
 
 
@@ -106,7 +114,7 @@ void CWsfActiveWrappers::ConstructL( CWsfModel* aModel,
 // CWsfActiveWrappers::Disconnect
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::Disconnect()
+EXPORT_C void CWsfActiveWrappers::Disconnect()
     {
     LOG_ENTERFN( "CWsfActiveWrappers::Disconnect" );
     iDisconnectActiveWrapper->Start();
@@ -117,7 +125,7 @@ void CWsfActiveWrappers::Disconnect()
 // CWsfActiveWrappers::Connect
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::Connect( TUint aIapID, TBool aConnectOnly, 
+EXPORT_C void CWsfActiveWrappers::Connect( TUint aIapID, TBool aConnectOnly, 
                                   TWsfIapPersistence aPersistence )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::Connect" );
@@ -129,7 +137,7 @@ void CWsfActiveWrappers::Connect( TUint aIapID, TBool aConnectOnly,
 // CWsfActiveWrappers::RefreshScan
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::RefreshScan()
+EXPORT_C void CWsfActiveWrappers::RefreshScan()
     {
     LOG_ENTERFN( "CWsfActiveWrappers::RefreshScan" );
     iRefreshScanActiveWrapper->Start();
@@ -140,7 +148,7 @@ void CWsfActiveWrappers::RefreshScan()
 // CWsfActiveWrappers::RefreshWLANList
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::RefreshWLANList( TBool aStarUp )
+EXPORT_C void CWsfActiveWrappers::RefreshWLANList( TBool aStarUp )
     {
     LOG_ENTERFN( "CWsfActiveWrappers::RefreshWLANList" );
     iWLANListActiveWrapper->Start( aStarUp );
@@ -151,7 +159,7 @@ void CWsfActiveWrappers::RefreshWLANList( TBool aStarUp )
 // CWsfActiveWrappers::LaunchHelperApplicationL
 // ----------------------------------------------------------------------------
 //
-void CWsfActiveWrappers::LaunchHelperApplicationL( TWsfWlanInfo& aInfo, 
+EXPORT_C void CWsfActiveWrappers::LaunchHelperApplicationL( TWsfWlanInfo& aInfo, 
                                                    TBool aConnectOnly,
                                                    TBool aTestAccessPoint )
     {
@@ -164,7 +172,7 @@ void CWsfActiveWrappers::LaunchHelperApplicationL( TWsfWlanInfo& aInfo,
 // CWsfActiveWrappers::GetWLANList
 // ----------------------------------------------------------------------------
 //
-CWsfWlanInfoArray* CWsfActiveWrappers::GetWLANList()
+EXPORT_C CWsfWlanInfoArray* CWsfActiveWrappers::GetWLANList()
     {
     LOG_ENTERFN( "CWsfActiveWrappers::GetWLANList" );
     return iWLANListActiveWrapper->GetWlanList();
@@ -175,10 +183,19 @@ CWsfWlanInfoArray* CWsfActiveWrappers::GetWLANList()
 // CWsfActiveWrappers::GetConnectedWLANNetwork
 // ----------------------------------------------------------------------------
 //
-TWsfWlanInfo CWsfActiveWrappers::GetConnectedWLANNetwork()
+EXPORT_C TWsfWlanInfo CWsfActiveWrappers::GetConnectedWLANNetwork()
     {
     LOG_ENTERFN( "CWsfActiveWrappers::GetConnectedWLANNetwork" );
     return iWLANListActiveWrapper->GetConnectedWLANNetwork();
     }
-
+	
+// ----------------------------------------------------------------------------
+// CWsfActiveWrappers::CheckIsWlanUsedByBrowserL
+// ----------------------------------------------------------------------------
+//
+EXPORT_C void CWsfActiveWrappers::CheckIsWlanUsedByBrowserL()
+    {
+    LOG_ENTERFN( "CWsfActiveWrappers::CheckIsWlanUsedByBrowserL" );
+    return iConnMonActiveWrapper->Start();
+	}
 

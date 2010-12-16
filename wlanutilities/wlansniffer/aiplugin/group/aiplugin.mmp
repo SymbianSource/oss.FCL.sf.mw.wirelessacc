@@ -36,14 +36,7 @@ SOURCE          wsfsearchwlansdialog.cpp
 SOURCE          wsfaimodel.cpp
 SOURCE          wsfaicontroller.cpp
 SOURCE          wsfaiview.cpp
-SOURCE          wsfactivewaiter.cpp
 SOURCE          wsfdbobserver.cpp
-SOURCE          wsfwlanlistactivewrapper.cpp
-SOURCE          wsfrefreshscanactivewrapper.cpp
-SOURCE          wsfdisconnectactivewrapper.cpp
-SOURCE          wsfconnectactivewrapper.cpp
-SOURCE          wsfactivewrappers.cpp
-SOURCE          wsflaunchaihelperactivewrapper.cpp
 
 
 // Plugin's own resources.

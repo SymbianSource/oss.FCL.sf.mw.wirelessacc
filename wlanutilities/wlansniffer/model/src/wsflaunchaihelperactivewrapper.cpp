@@ -19,7 +19,7 @@
 // INCLUDE FILES
 #include "wsflogger.h"
 #include "wsfmodel.h"
-#include "wsfaicontroller.h"
+#include "wsfactivewrappers.h"
 #include "wsflaunchaihelperactivewrapper.h"
 
 // Category UID of AiHelper property
@@ -39,8 +39,10 @@ static const TInt KTimerTickInterval = 1 * 1000 * 1000;
 // CWsfLaunchAiHelperActiveWrapper::CWsfLaunchAiHelperActiveWrapper
 // ----------------------------------------------------------------------------
 //
-CWsfLaunchAiHelperActiveWrapper::CWsfLaunchAiHelperActiveWrapper() :
-    CActive( EPriorityStandard ) // Standard priority
+CWsfLaunchAiHelperActiveWrapper::CWsfLaunchAiHelperActiveWrapper(
+        CWsfActiveWrappers &aParent) :
+    CActive( EPriorityStandard ), // Standard priority
+    iParent(aParent)
     {
     }
 
@@ -50,13 +52,14 @@ CWsfLaunchAiHelperActiveWrapper::CWsfLaunchAiHelperActiveWrapper() :
 // ----------------------------------------------------------------------------
 //
 CWsfLaunchAiHelperActiveWrapper* CWsfLaunchAiHelperActiveWrapper::NewLC( 
-                              CWsfModel* aModel, TWsfAiController &aController )
+      CWsfModel* aModel, 
+      CWsfActiveWrappers &aParent )
     {
     LOG_ENTERFN( "CWsfLaunchAiHelperActiveWrapper::NewLC" );
     CWsfLaunchAiHelperActiveWrapper* self =
-            new (ELeave) CWsfLaunchAiHelperActiveWrapper();
+            new (ELeave) CWsfLaunchAiHelperActiveWrapper( aParent );
     CleanupStack::PushL( self );
-    self->ConstructL( aModel, aController );
+    self->ConstructL( aModel );
     return self;
     }
 
@@ -66,11 +69,14 @@ CWsfLaunchAiHelperActiveWrapper* CWsfLaunchAiHelperActiveWrapper::NewLC(
 // ----------------------------------------------------------------------------
 //
 CWsfLaunchAiHelperActiveWrapper* CWsfLaunchAiHelperActiveWrapper::NewL( 
-                            CWsfModel* aModel, TWsfAiController &aController )
+    CWsfModel* aModel, 
+    CWsfActiveWrappers &aParent )
     {
     LOG_ENTERFN( "CWsfLaunchAiHelperActiveWrapper::NewL" );
     CWsfLaunchAiHelperActiveWrapper* self = 
-            CWsfLaunchAiHelperActiveWrapper::NewLC( aModel, aController );
+            CWsfLaunchAiHelperActiveWrapper::NewLC( 
+                    aModel, 
+                    aParent );
     CleanupStack::Pop(); // self;
     return self;
     }
@@ -80,13 +86,12 @@ CWsfLaunchAiHelperActiveWrapper* CWsfLaunchAiHelperActiveWrapper::NewL(
 // CWsfLaunchAiHelperActiveWrapper::ConstructL
 // ----------------------------------------------------------------------------
 //
-void CWsfLaunchAiHelperActiveWrapper::ConstructL( CWsfModel* aModel,
-                                            TWsfAiController &aController )
+void CWsfLaunchAiHelperActiveWrapper::ConstructL( 
+        CWsfModel* aModel )
     {
     LOG_ENTERFN( "CWsfLaunchAiHelperActiveWrapper::ConstructL" );
     CActiveScheduler::Add( this ); // Add to scheduler
     iModel = aModel;
-    iController = &aController;
     User::LeaveIfError( iTimer.CreateLocal() );
     User::LeaveIfError( iAiHelperAppExitCode.Attach( KWsfAiHelperCategoryUid, 
                                                     KWsfAiHelperExitCodeKey ) );
@@ -187,8 +192,22 @@ void CWsfLaunchAiHelperActiveWrapper::RunL()
                 if ( iUsedInfo.iIapId )
                     {
                     LOG_WRITE( "Iap id exist - connect" );
-                    iController->ConnectL( iUsedInfo, iConnectOnly, 
-                                           iTestAccessPoint );
+                    
+                    TWsfIapPersistence persistence;
+
+                    if ( iTestAccessPoint )
+                        {
+                        persistence = EIapExpireOnDisconnect;
+                        }
+                    else
+                        {
+                        persistence = EIapPersistent;
+                        }
+                    
+                    iParent.Connect( 
+                            iUsedInfo.iIapId,
+                            iConnectOnly,
+                            persistence);
                     }
                 else
                     {
